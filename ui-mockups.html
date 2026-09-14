@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390,height=844">
+<title>BusSahayak UI Mockups</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    padding: 40px;
+    justify-content: center;
+  }
+  
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #000;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    border: 4px solid #1a1a1a;
+  }
+  
+  .phone .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+  
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .status-bar {
+    height: 54px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  .nav-bar {
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .nav-bar .back {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+  }
+  .nav-bar .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 16px 24px 24px;
+    overflow: hidden;
+  }
+  
+  /* Phone 1: Onboarding */
+  .onboard-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+  }
+  .onboard-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 32px;
+  }
+  .onboard-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+  }
+  .onboard-desc {
+    font-size: 16px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 32px;
+    padding: 0 20px;
+  }
+  .onboard-dots {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+  .onboard-dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: #333;
+  }
+  .onboard-dots .dot.active {
+    width: 28px;
+    background: #2563eb;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 18px;
+    background: #2563eb;
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-skip {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 16px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .mic-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 36px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 32px;
+    border: 2px solid #333;
+  }
+  .mic-circle svg { width: 28px; height: 28px; }
+  
+  /* Phone 2: Search */
+  .search-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 16px;
+    background: #111;
+    border: 2px solid #222;
+    border-radius: 14px;
+    color: white;
+    font-size: 18px;
+    font-family: inherit;
+    margin-bottom: 12px;
+  }
+  .swap-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: #111;
+    border: 2px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -6px auto;
+    color: #2563eb;
+    font-size: 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .date-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #111;
+    border: 2px solid #222;
+    border-radius: 14px;
+    color: white;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+  .search-mic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 28px 0;
+    gap: 10px;
+  }
+  .search-mic-label {
+    font-size: 14px;
+    color: #64748b;
+  }
+  
+  /* Phone 3: Results */
+  .bus-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .bus-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .bus-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+  }
+  .bus-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+  .badge-sleeper { background: #7c3aed; }
+  .badge-volvo { background: #f59e0b; }
+  .badge-ac { background: #3b82f6; }
+  .bus-type {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 12px;
+  }
+  .bus-times {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .bus-time-label {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .bus-time {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+  }
+  .bus-duration {
+    font-size: 12px;
+    color: #475569;
+  }
+  .bus-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #1a1a1a;
+  }
+  .bus-seats {
+    font-size: 13px;
+    color: #4ade80;
+    font-weight: 600;
+  }
+  .bus-fare {
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+  }
+  
+  /* Phone 4: Seat Selection */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #64748b;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+  }
+  .deck-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+  }
+  .seat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .seat {
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+  }
+  .seat-available {
+    background: rgba(34,197,94,0.1);
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+  .seat-booked {
+    background: rgba(239,68,68,0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+    opacity: 0.4;
+  }
+  .seat-selected {
+    background: rgba(59,130,246,0.2);
+    border-color: #3b82f6;
+    color: #3b82f6;
+    border-width: 3px;
+  }
+  .seat-ladies {
+    background: rgba(236,72,153,0.1);
+    border-color: #ec4899;
+    color: #ec4899;
+  }
+  .seat-pos {
+    font-size: 8px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  .selected-summary {
+    background: #2563eb;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .selected-summary .text {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+  }
+  .selected-summary .fare {
+    font-size: 17px;
+    font-weight: 800;
+    color: white;
+  }
+  
+  /* Phone 5: Booking */
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px;
+    background: #111;
+    border: 2px solid #222;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-family: inherit;
+    margin-bottom: 14px;
+  }
+  .form-row {
+    display: flex;
+    gap: 10px;
+  }
+  .form-row .form-group { flex: 1; }
+  .gender-row {
+    display: flex;
+    gap: 8px;
+  }
+  .gender-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: 2px solid #222;
+    background: #111;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    font-family: inherit;
+  }
+  .gender-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+  }
+  
+  /* Phone 6: Tickets */
+  .success-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #052e16;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .success-banner .icon { font-size: 28px; }
+  .success-banner .text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #22c55e;
+  }
+  .ticket-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .ticket-pnr-label {
+    font-size: 13px;
+    color: #64748b;
+    text-align: center;
+  }
+  .ticket-pnr {
+    font-size: 32px;
+    font-weight: 900;
+    color: #2563eb;
+    text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+  .ticket-divider {
+    height: 1px;
+    background: #222;
+    margin: 12px 0;
+  }
+  .ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  .ticket-label {
+    font-size: 14px;
+    color: #64748b;
+  }
+  .ticket-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+  }
+  .ticket-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #222;
+    margin-top: 8px;
+  }
+  .ticket-total .label {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+  }
+  .ticket-total .value {
+    font-size: 22px;
+    font-weight: 900;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<!-- PHONE 1: ONBOARDING -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="content">
+      <div class="onboard-center">
+        <svg class="onboard-icon" viewBox="0 0 400 400">
+          <defs><linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2563eb"/><stop offset="100%" style="stop-color:#7c3aed"/></linearGradient></defs>
+          <circle cx="200" cy="200" r="180" fill="url(#og)"/>
+          <rect x="90" y="130" width="220" height="120" rx="20" fill="white"/>
+          <rect x="105" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <rect x="160" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <rect x="215" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <circle cx="140" cy="265" r="20" fill="white"/>
+          <circle cx="140" cy="265" r="11" fill="#3b82f6"/>
+          <circle cx="270" cy="265" r="20" fill="white"/>
+          <circle cx="270" cy="265" r="11" fill="#3b82f6"/>
+          <path d="M310 170 Q340 190 310 210" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M325 155 Q370 190 325 225" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+          <rect x="55" y="170" width="16" height="28" rx="8" fill="white"/>
+          <path d="M47 200 Q47 218 63 218 Q79 218 79 200" stroke="white" stroke-width="3" fill="none"/>
+          <line x1="63" y1="218" x2="63" y2="232" stroke="white" stroke-width="3"/>
+          <line x1="52" y1="232" x2="74" y2="232" stroke="white" stroke-width="3"/>
+        </svg>
+        <div class="onboard-title">Welcome to<br>BusSahayak</div>
+        <div class="onboard-desc">Book bus tickets using voice commands or touch. Designed for screen readers.</div>
+        <div class="onboard-dots">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <button class="btn-primary">Next</button>
+        <button class="btn-skip">Skip</button>
+        <div class="mic-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 2: SEARCH -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="nav-bar">
+      <div class="back">←</div>
+      <div class="title">Search Buses</div>
+    </div>
+    <div class="content">
+      <div style="text-align:center; margin-bottom:12px;">
+        <span style="font-size:12px; color:#64748b;">Step 1 of 4</span><br>
+        <span style="font-size:18px; font-weight:700; color:white;">Search Buses</span>
+        <div style="display:flex; gap:6px; justify-content:center; margin-top:8px;">
+          <div style="width:24px; height:4px; border-radius:2px; background:#2563eb;"></div>
+          <div style="width:8px; height:4px; border-radius:2px; background:#333;"></div>
+          <div style="width:8px; height:4px; border-radius:2px; background:#333;"></div>
+          <div style="width:8px; height:4px; border-radius:2px; background:#333;"></div>
+        </div>
+      </div>
+      
+      <div class="search-label">From</div>
+      <div class="search-input" style="display:flex; align-items:center; gap:10px;">
+        <span style="color:#64748b;">📍</span>
+        <span style="color:white;">Mumbai</span>
+      </div>
+      
+      <div class="swap-btn">⇅</div>
+      
+      <div class="search-label">To</div>
+      <div class="search-input" style="display:flex; align-items:center; gap:10px;">
+        <span style="color:#64748b;">📍</span>
+        <span style="color:white;">Pune</span>
+      </div>
+      
+      <div class="search-label" style="margin-top:8px;">Travel Date</div>
+      <div class="date-pill">
+        <span>📅</span>
+        <span>2026-09-05</span>
+      </div>
+      
+      <div class="search-mic">
+        <span class="search-mic-label">Or use voice</span>
+        <div style="width:64px; height:64px; border-radius:32px; background:#1a1a1a; display:flex; align-items:center; justify-content:center; border:2px solid #333;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+        </div>
+      </div>
+      
+      <button class="btn-primary">Search Buses</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 3: RESULTS -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="nav-bar">
+      <div class="back">←</div>
+      <div style="flex:1;">
+        <div class="title">Mumbai → Pune</div>
+        <div style="font-size:12px; color:#64748b;">2026-09-05 • 5 buses found</div>
+      </div>
+    </div>
+    <div class="content" style="padding-top:8px;">
+      <div class="bus-card">
+        <div class="bus-header">
+          <span class="bus-name">VRL Travels</span>
+          <span class="bus-badge badge-sleeper">SLEEPER</span>
+        </div>
+        <div class="bus-type">Volvo A/C Sleeper (2+1)</div>
+        <div class="bus-times">
+          <div><div class="bus-time-label">Depart</div><div class="bus-time">22:00</div></div>
+          <div class="bus-duration">4h 00m</div>
+          <div style="text-align:right;"><div class="bus-time-label">Arrive</div><div class="bus-time">02:00</div></div>
+        </div>
+        <div class="bus-footer">
+          <span class="bus-seats">12 seats left</span>
+          <span class="bus-fare">₹800</span>
+        </div>
+      </div>
+      
+      <div class="bus-card">
+        <div class="bus-header">
+          <span class="bus-name">Neeta Travels</span>
+          <span class="bus-badge badge-volvo">VOLVO</span>
+        </div>
+        <div class="bus-type">Volvo A/C Seater (2+2)</div>
+        <div class="bus-times">
+          <div><div class="bus-time-label">Depart</div><div class="bus-time">23:30</div></div>
+          <div class="bus-duration">4h 30m</div>
+          <div style="text-align:right;"><div class="bus-time-label">Arrive</div><div class="bus-time">04:00</div></div>
+        </div>
+        <div class="bus-footer">
+          <span class="bus-seats">24 seats left</span>
+          <span class="bus-fare">₹650</span>
+        </div>
+      </div>
+      
+      <div class="bus-card">
+        <div class="bus-header">
+          <span class="bus-name">MSRTC Shivneri</span>
+          <span class="bus-badge badge-ac">AC</span>
+        </div>
+        <div class="bus-type">A/C Seater (2+2)</div>
+        <div class="bus-times">
+          <div><div class="bus-time-label">Depart</div><div class="bus-time">06:00</div></div>
+          <div class="bus-duration">4h 30m</div>
+          <div style="text-align:right;"><div class="bus-time-label">Arrive</div><div class="bus-time">10:30</div></div>
+        </div>
+        <div class="bus-footer">
+          <span class="bus-seats">8 seats left</span>
+          <span class="bus-fare">₹450</span>
+        </div>
+      </div>
+      
+      <div style="text-align:center; padding:12px;">
+        <div style="width:56px; height:56px; border-radius:28px; background:#1a1a1a; display:inline-flex; align-items:center; justify-content:center; border:2px solid #333;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 4: SEAT SELECTION -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="nav-bar">
+      <div class="back">←</div>
+      <div class="title">Select Seats</div>
+    </div>
+    <div class="content" style="padding-top:4px;">
+      <div style="font-size:14px; color:#64748b; margin-bottom:4px;">Step 3 of 4</div>
+      <div style="font-size:16px; font-weight:700; color:white; margin-bottom:12px;">VRL Travels • 22:00 → 02:00</div>
+      
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>Booked</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ec4899;"></div>Ladies</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div>Selected</div>
+      </div>
+      
+      <div class="deck-label">Upper Deck</div>
+      <div class="seat-grid">
+        <div class="seat seat-available">1L<span class="seat-pos">window</span></div>
+        <div class="seat seat-booked">1M<span class="seat-pos">middle</span></div>
+        <div class="seat seat-available">1R<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-available">1A<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-selected">2L<span class="seat-pos">window</span></div>
+        <div class="seat seat-available">2M<span class="seat-pos">middle</span></div>
+        <div class="seat seat-booked">2R<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-available">2A<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-available">3L<span class="seat-pos">window</span></div>
+        <div class="seat seat-ladies">3M<span class="seat-pos">middle</span></div>
+        <div class="seat seat-available">3R<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-booked">3A<span class="seat-pos">aisle</span></div>
+      </div>
+      
+      <div class="deck-label">Lower Deck</div>
+      <div class="seat-grid">
+        <div class="seat seat-available">5L<span class="seat-pos">window</span></div>
+        <div class="seat seat-available">5M<span class="seat-pos">middle</span></div>
+        <div class="seat seat-booked">5R<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-available">5A<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-booked">6L<span class="seat-pos">window</span></div>
+        <div class="seat seat-available">6M<span class="seat-pos">middle</span></div>
+        <div class="seat seat-available">6R<span class="seat-pos">aisle</span></div>
+        <div class="seat seat-available">6A<span class="seat-pos">aisle</span></div>
+      </div>
+      
+      <div class="selected-summary">
+        <span class="text">1 seat selected</span>
+        <span class="fare">₹800</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 5: BOOKING -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="nav-bar">
+      <div class="back">←</div>
+      <div class="title">Passenger Details</div>
+    </div>
+    <div class="content" style="padding-top:8px;">
+      <div style="font-size:12px; color:#64748b; text-align:center; margin-bottom:8px;">Step 4 of 5</div>
+      
+      <div style="background:#111; border:1px solid #222; border-radius:12px; padding:14px; margin-bottom:16px;">
+        <div style="font-size:14px; font-weight:700; color:white; margin-bottom:6px;">Booking Summary</div>
+        <div style="font-size:13px; color:#64748b;">VRL Travels • A/C Sleeper</div>
+        <div style="font-size:13px; color:#4ade80; margin-top:4px;">Seat: 2L</div>
+        <div style="font-size:18px; font-weight:800; color:white; margin-top:6px;">₹800</div>
+      </div>
+      
+      <div class="form-label">Passenger Name</div>
+      <div class="form-input">Rahul Kumar</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Age</div>
+          <div class="form-input">28</div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Gender</div>
+          <div class="gender-row">
+            <div class="gender-btn active">M</div>
+            <div class="gender-btn">F</div>
+            <div class="gender-btn">O</div>
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn-primary" style="background:#333; margin-bottom:16px;">+ Add Passenger</button>
+      
+      <div class="form-label">Mobile Number</div>
+      <div class="form-input">98765 43210</div>
+      
+      <button class="btn-primary" style="margin-top:8px;">Confirm Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 6: TICKETS -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="nav-bar">
+      <div class="back" style="font-size:16px;">🏠</div>
+      <div class="title">My Booking</div>
+    </div>
+    <div class="content" style="padding-top:8px;">
+      <div class="success-banner">
+        <span class="icon">✅</span>
+        <span class="text">Booking Confirmed!</span>
+      </div>
+      
+      <div class="ticket-card">
+        <div class="ticket-pnr-label">PNR Number</div>
+        <div class="ticket-pnr">ZP_BUS_9876543</div>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-row">
+          <span class="ticket-label">Route</span>
+          <span class="ticket-value">Mumbai → Pune</span>
+        </div>
+        <div class="ticket-row">
+          <span class="ticket-label">Date</span>
+          <span class="ticket-value">2026-09-05</span>
+        </div>
+        <div class="ticket-row">
+          <span class="ticket-label">Bus</span>
+          <span class="ticket-value">VRL Travels</span>
+        </div>
+        <div class="ticket-row">
+          <span class="ticket-label">Type</span>
+          <span class="ticket-value">A/C Sleeper</span>
+        </div>
+        <div class="ticket-row">
+          <span class="ticket-label">Time</span>
+          <span class="ticket-value">22:00 → 02:00</span>
+        </div>
+        
+        <div class="ticket-divider"></div>
+        
+        <div class="ticket-row">
+          <span class="ticket-label">Seat</span>
+          <span class="ticket-value">2L</span>
+        </div>
+        <div class="ticket-row">
+          <span class="ticket-label">Passenger</span>
+          <span class="ticket-value">Rahul Kumar (28)</span>
+        </div>
+        
+        <div class="ticket-total">
+          <span class="label">Total Fare</span>
+          <span class="value">₹800</span>
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn-primary" style="background:#333; flex:1; font-size:14px; padding:14px;">Read Details</button>
+        <button class="btn-primary" style="flex:1; font-size:14px; padding:14px;">Book Another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

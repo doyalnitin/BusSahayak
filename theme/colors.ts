@@ -1,0 +1,30 @@
+export const Colors = {
+  light: {
+    background: '#ffffff',
+    text: '#000000',
+    textSecondary: '#888888',
+    primary: '#2563eb',
+    primaryText: '#ffffff',
+    border: '#e5e7eb',
+    card: '#f9fafb',
+    cardBorder: '#e5e7eb',
+    accent: '#7c3aed',
+    success: '#16a34a',
+    error: '#dc2626',
+    warning: '#d97706',
+    muted: '#f5f5f5',
+    touchHighlight: '#eff6ff',
+    seatAvailable: '#22c55e',
+    seatBooked: '#dc2626',
+    seatLadies: '#ec4899',
+    seatSelected: '#2563eb',
+    gestureBar: '#f0f4ff',
+    gestureText: '#2563eb',
+    statusPending: '#fef3c7',
+    statusPendingText: '#d97706',
+    statusConfirmed: '#f0fdf4',
+    statusConfirmedText: '#16a34a',
+  },
+};
+
+export type ColorScheme = typeof Colors.light;

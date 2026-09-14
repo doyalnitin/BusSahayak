@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=2200,height=1000">
+<title>BusSahayak White UI Mockups</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    padding: 40px;
+    justify-content: center;
+  }
+  
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #ffffff;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    border: 3px solid #e5e5e5;
+  }
+  
+  .phone .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 32px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+  
+  .screen {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .status-bar {
+    height: 52px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #000;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  
+  .nav-bar {
+    padding: 0 20px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-bar .back {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 16px;
+  }
+  .nav-bar .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 16px 20px 20px;
+    overflow: hidden;
+  }
+  
+  /* Gesture hint bar */
+  .gesture-bar {
+    padding: 10px 20px;
+    background: #f0f4ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #2563eb;
+    font-weight: 600;
+  }
+  .gesture-bar i { font-size: 12px; }
+  
+  /* ==================== PHONE 1: HOME ==================== */
+  .home-header {
+    text-align: center;
+    padding: 20px 0 24px;
+  }
+  .home-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+  }
+  .home-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #000;
+  }
+  .home-subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+  }
+  
+  .home-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .home-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+  }
+  .home-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .home-card-text h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #000;
+  }
+  .home-card-text p {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .home-card .arrow {
+    margin-left: auto;
+    color: #ccc;
+    font-size: 14px;
+  }
+  
+  .home-mic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
+    gap: 8px;
+  }
+  .mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    background: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.3);
+  }
+  .mic-label {
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+  }
+  
+  .gesture-hints {
+    margin-top: 20px;
+    padding: 14px;
+    background: #f0fdf4;
+    border-radius: 12px;
+    border: 1px solid #bbf7d0;
+  }
+  .gesture-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #16a34a;
+    margin-bottom: 6px;
+  }
+  .gesture-hint:last-child { margin-bottom: 0; }
+  .gesture-hint i { width: 16px; text-align: center; }
+  .gesture-hint strong { font-weight: 700; }
+  
+  /* ==================== PHONE 2: VOICE LISTENING ==================== */
+  .listening-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+  }
+  .listening-pulse {
+    width: 160px;
+    height: 160px;
+    border-radius: 80px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .listening-pulse::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 100px;
+    border: 3px solid #2563eb;
+    opacity: 0.2;
+  }
+  .listening-pulse::after {
+    content: '';
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 120px;
+    border: 2px solid #2563eb;
+    opacity: 0.1;
+  }
+  .listening-icon {
+    font-size: 48px;
+    color: #2563eb;
+  }
+  .listening-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 8px;
+  }
+  .listening-sub {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+  .transcript-box {
+    padding: 16px 24px;
+    background: #f5f5f5;
+    border-radius: 12px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .transcript-text {
+    font-size: 18px;
+    color: #000;
+    font-weight: 500;
+  }
+  .transcript-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 20px;
+    background: #2563eb;
+    margin-left: 4px;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  
+  .wave-bars {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 20px;
+  }
+  .wave-bar {
+    width: 4px;
+    height: 20px;
+    background: #2563eb;
+    border-radius: 2px;
+    animation: wave 0.8s ease-in-out infinite;
+  }
+  .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+  .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 24px; }
+  .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 32px; }
+  .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+  @keyframes wave { 50% { height: 10px; } }
+  
+  /* ==================== PHONE 3: RESULTS WITH NUMBERS ==================== */
+  .result-card {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .result-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .result-info { flex: 1; }
+  .result-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+  }
+  .result-type {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .result-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+  }
+  .result-time {
+    font-size: 13px;
+    color: #555;
+    font-weight: 600;
+  }
+  .result-fare {
+    font-size: 16px;
+    font-weight: 800;
+    color: #000;
+    text-align: right;
+  }
+  .result-seats {
+    font-size: 11px;
+    color: #16a34a;
+    font-weight: 600;
+  }
+  
+  .say-number {
+    text-align: center;
+    padding: 14px;
+    background: #eff6ff;
+    border-radius: 12px;
+    margin-top: 10px;
+  }
+  .say-number i {
+    color: #2563eb;
+    margin-right: 6px;
+  }
+  .say-number span {
+    font-size: 14px;
+    color: #2563eb;
+    font-weight: 600;
+  }
+  
+  /* ==================== PHONE 4: SEAT SELECTION ==================== */
+  .seat-legend {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .seat-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #888;
+  }
+  .seat-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+  }
+  .seat-deck-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 6px;
+  }
+  .seat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .seat-cell {
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid;
+  }
+  .seat-available {
+    background: #f0fdf4;
+    border-color: #22c55e;
+    color: #16a34a;
+  }
+  .seat-booked {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+    opacity: 0.5;
+  }
+  .seat-selected {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    border-width: 3px;
+  }
+  .seat-pos {
+    font-size: 8px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  
+  /* ==================== PHONE 5: BOOKING CONFIRM ==================== */
+  .confirm-card {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .confirm-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .confirm-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+  }
+  .confirm-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .confirm-row:last-child { border-bottom: none; }
+  .confirm-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 2px solid #e5e7eb;
+    margin-top: 8px;
+  }
+  .confirm-total .label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+  }
+  .confirm-total .value {
+    font-size: 22px;
+    font-weight: 900;
+    color: #2563eb;
+  }
+  
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .status-pending {
+    background: #fef3c7;
+    color: #d97706;
+  }
+  
+  /* ==================== PHONE 6: MANAGER DASHBOARD ==================== */
+  .manager-header {
+    background: #2563eb;
+    padding: 20px;
+    color: white;
+  }
+  .manager-title {
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .manager-sub {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-top: 4px;
+  }
+  .manager-stats {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .manager-stat {
+    flex: 1;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .manager-stat .num {
+    font-size: 22px;
+    font-weight: 800;
+  }
+  .manager-stat .label {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+  
+  .booking-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .booking-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .booking-info { flex: 1; }
+  .booking-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+  }
+  .booking-route {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .booking-action {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .action-call {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  .action-confirm {
+    background: #2563eb;
+    color: white;
+  }
+  
+  .phone-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- PHONE 1: HOME -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></span>
+    </div>
+    <div class="gesture-bar">
+      <i class="fa-solid fa-hand-pointer"></i>
+      Triple tap anywhere to go home
+    </div>
+    <div class="content">
+      <div class="home-header">
+        <svg class="home-logo" viewBox="0 0 400 400">
+          <defs><linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#2563eb"/><stop offset="100%" style="stop-color:#7c3aed"/></linearGradient></defs>
+          <circle cx="200" cy="200" r="180" fill="url(#hg)"/>
+          <rect x="90" y="130" width="220" height="120" rx="20" fill="white"/>
+          <rect x="105" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <rect x="160" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <rect x="215" y="145" width="45" height="40" rx="6" fill="#3b82f6"/>
+          <circle cx="140" cy="265" r="20" fill="white"/>
+          <circle cx="140" cy="265" r="11" fill="#3b82f6"/>
+          <circle cx="270" cy="265" r="20" fill="white"/>
+          <circle cx="270" cy="265" r="11" fill="#3b82f6"/>
+        </svg>
+        <div class="home-title">BusSahayak</div>
+        <div class="home-subtitle">Voice-first bus booking</div>
+      </div>
+      
+      <div class="home-actions">
+        <div class="home-card">
+          <div class="home-card-icon" style="background:#eff6ff; color:#2563eb;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="home-card-text">
+            <h3>Search Buses</h3>
+            <p>Find and book tickets</p>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+        <div class="home-card">
+          <div class="home-card-icon" style="background:#f5f3ff; color:#7c3aed;">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div class="home-card-text">
+            <h3>My Bookings</h3>
+            <p>View tickets & PNR</p>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+        <div class="home-card">
+          <div class="home-card-icon" style="background:#f0fdf4; color:#16a34a;">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="home-card-text">
+            <h3>Track Bus</h3>
+            <p>Live tracking</p>
+          </div>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+      </div>
+      
+      <div class="home-mic">
+        <div class="mic-btn">
+          <i class="fa-solid fa-microphone"></i>
+        </div>
+        <div class="mic-label">Hold to speak</div>
+      </div>
+      
+      <div class="gesture-hints">
+        <div class="gesture-hint">
+          <i class="fa-solid fa-hand-pointer"></i>
+          <span><strong>Hold</strong> screen to use voice</span>
+        </div>
+        <div class="gesture-hint">
+          <i class="fa-solid fa-pointer"></i>
+          <span><strong>Double tap</strong> to select</span>
+        </div>
+        <div class="gesture-hint">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span><strong>Triple tap</strong> to go home</span>
+        </div>
+        <div class="gesture-hint">
+          <i class="fa-solid fa-microphone"></i>
+          <span><strong>Say number</strong> to choose option</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 2: VOICE LISTENING -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></span>
+    </div>
+    <div class="gesture-bar" style="background:#fef3c7; color:#d97706;">
+      <i class="fa-solid fa-microphone"></i>
+      Listening... release to stop
+    </div>
+    <div class="content">
+      <div class="listening-screen">
+        <div class="listening-pulse">
+          <i class="fa-solid fa-microphone listening-icon"></i>
+        </div>
+        <div class="listening-text">Listening...</div>
+        <div class="listening-sub">Say where you want to travel</div>
+        
+        <div class="transcript-box">
+          <span class="transcript-text">I want to go to Pune</span>
+          <span class="transcript-cursor"></span>
+        </div>
+        
+        <div class="wave-bars">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 3: RESULTS WITH NUMBERS -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></span>
+    </div>
+    <div class="nav-bar">
+      <div class="back"><i class="fa-solid fa-arrow-left"></i></div>
+      <div class="title">Mumbai → Pune</div>
+    </div>
+    <div class="content">
+      <div style="font-size:13px; color:#888; margin-bottom:12px;">5 buses found • Say a number to select</div>
+      
+      <div class="result-card">
+        <div class="result-num">1</div>
+        <div class="result-info">
+          <div class="result-name">VRL Travels</div>
+          <div class="result-type">AC Sleeper (2+1)</div>
+          <div class="result-meta">
+            <span class="result-time"><i class="fa-regular fa-clock"></i> 22:00</span>
+            <span class="result-time">4h</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="result-fare">₹800</div>
+          <div class="result-seats">12 seats</div>
+        </div>
+      </div>
+      
+      <div class="result-card">
+        <div class="result-num">2</div>
+        <div class="result-info">
+          <div class="result-name">Neeta Travels</div>
+          <div class="result-type">Volvo AC (2+2)</div>
+          <div class="result-meta">
+            <span class="result-time"><i class="fa-regular fa-clock"></i> 23:30</span>
+            <span class="result-time">4.5h</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="result-fare">₹650</div>
+          <div class="result-seats">24 seats</div>
+        </div>
+      </div>
+      
+      <div class="result-card">
+        <div class="result-num">3</div>
+        <div class="result-info">
+          <div class="result-name">MSRTC Shivneri</div>
+          <div class="result-type">AC Seater (2+2)</div>
+          <div class="result-meta">
+            <span class="result-time"><i class="fa-regular fa-clock"></i> 06:00</span>
+            <span class="result-time">4.5h</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="result-fare">₹450</div>
+          <div class="result-seats">8 seats</div>
+        </div>
+      </div>
+      
+      <div class="say-number">
+        <i class="fa-solid fa-microphone"></i>
+        <span>Say "1", "2" or "3" to select a bus</span>
+      </div>
+    </div>
+    <div class="gesture-bar">
+      <i class="fa-solid fa-arrow-left"></i>
+      Swipe right for next • Double tap to select
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 4: SEAT SELECTION -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></span>
+    </div>
+    <div class="nav-bar">
+      <div class="back"><i class="fa-solid fa-arrow-left"></i></div>
+      <div class="title">Choose Seat</div>
+    </div>
+    <div class="content">
+      <div style="font-size:14px; color:#888; margin-bottom:4px;">Step 3 of 4</div>
+      <div style="font-size:16px; font-weight:700; color:#000; margin-bottom:12px;">VRL Travels • 22:00</div>
+      
+      <div class="seat-legend">
+        <div class="seat-legend-item"><div class="seat-legend-dot" style="background:#22c55e;"></div>Available</div>
+        <div class="seat-legend-item"><div class="seat-legend-dot" style="background:#dc2626;"></div>Booked</div>
+        <div class="seat-legend-item"><div class="seat-legend-dot" style="background:#2563eb;"></div>Selected</div>
+      </div>
+      
+      <div class="seat-deck-label">Upper Deck</div>
+      <div class="seat-grid">
+        <div class="seat-cell seat-available">1L<span class="seat-pos">window</span></div>
+        <div class="seat-cell seat-booked">1M<span class="seat-pos">middle</span></div>
+        <div class="seat-cell seat-available">1R<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-available">1A<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-selected">2L<span class="seat-pos">window</span></div>
+        <div class="seat-cell seat-available">2M<span class="seat-pos">middle</span></div>
+        <div class="seat-cell seat-booked">2R<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-available">2A<span class="seat-pos">aisle</span></div>
+      </div>
+      
+      <div class="seat-deck-label">Lower Deck</div>
+      <div class="seat-grid">
+        <div class="seat-cell seat-available">5L<span class="seat-pos">window</span></div>
+        <div class="seat-cell seat-available">5M<span class="seat-pos">middle</span></div>
+        <div class="seat-cell seat-booked">5R<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-available">5A<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-booked">6L<span class="seat-pos">window</span></div>
+        <div class="seat-cell seat-available">6M<span class="seat-pos">middle</span></div>
+        <div class="seat-cell seat-available">6R<span class="seat-pos">aisle</span></div>
+        <div class="seat-cell seat-available">6A<span class="seat-pos">aisle</span></div>
+      </div>
+      
+      <div class="say-number">
+        <i class="fa-solid fa-microphone"></i>
+        <span>Say seat number like "5L" or "2M"</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 5: BOOKING PENDING -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-full"></i></span>
+    </div>
+    <div class="nav-bar">
+      <div class="back"><i class="fa-solid fa-arrow-left"></i></div>
+      <div class="title">Booking Status</div>
+    </div>
+    <div class="content">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="width:64px; height:64px; border-radius:32px; background:#fef3c7; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+          <i class="fa-solid fa-phone" style="font-size:28px; color:#d97706;"></i>
+        </div>
+        <div style="font-size:20px; font-weight:800; color:#000;">Awaiting Confirmation</div>
+        <div style="font-size:14px; color:#888; margin-top:4px;">Manager will call you shortly</div>
+      </div>
+      
+      <div class="status-badge status-pending" style="display:flex; justify-content:center; margin-bottom:16px;">
+        <i class="fa-solid fa-clock"></i> PENDING CONFIRMATION
+      </div>
+      
+      <div class="confirm-card">
+        <div class="confirm-row">
+          <span style="color:#888; font-size:14px;">PNR</span>
+          <span style="font-weight:700; color:#2563eb; font-size:14px;">ZP_BUS_9876543</span>
+        </div>
+        <div class="confirm-row">
+          <span style="color:#888; font-size:14px;">Route</span>
+          <span style="font-weight:600; font-size:14px;">Mumbai → Pune</span>
+        </div>
+        <div class="confirm-row">
+          <span style="color:#888; font-size:14px;">Bus</span>
+          <span style="font-weight:600; font-size:14px;">VRL Travels</span>
+        </div>
+        <div class="confirm-row">
+          <span style="color:#888; font-size:14px;">Seat</span>
+          <span style="font-weight:600; font-size:14px;">2L (Window)</span>
+        </div>
+        <div class="confirm-row">
+          <span style="color:#888; font-size:14px;">Time</span>
+          <span style="font-weight:600; font-size:14px;">22:00 → 02:00</span>
+        </div>
+        <div class="confirm-total">
+          <span class="label">Total</span>
+          <span class="value">₹800</span>
+        </div>
+      </div>
+      
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:14px; text-align:center;">
+        <i class="fa-solid fa-circle-info" style="color:#16a34a; margin-right:6px;"></i>
+        <span style="font-size:13px; color:#16a34a; font-weight:600;">Manager will call to confirm payment</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHONE 6: MANAGER DASHBOARD -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="manager-header">
+      <div class="manager-title"><i class="fa-solid fa-gauge-high" style="margin-right:8px;"></i>Manager Dashboard</div>
+      <div class="manager-sub">Coffee Into Code • BusSahayak</div>
+      <div class="manager-stats">
+        <div class="manager-stat">
+          <div class="num">12</div>
+          <div class="label">Today</div>
+        </div>
+        <div class="manager-stat">
+          <div class="num">5</div>
+          <div class="label">Pending</div>
+        </div>
+        <div class="manager-stat">
+          <div class="num">7</div>
+          <div class="label">Confirmed</div>
+        </div>
+      </div>
+    </div>
+    <div class="content" style="padding-top:12px;">
+      <div style="font-size:14px; font-weight:700; color:#000; margin-bottom:10px;">Pending Bookings</div>
+      
+      <div class="booking-item">
+        <div class="booking-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="booking-info">
+          <div class="booking-name">Rahul Kumar</div>
+          <div class="booking-route">Mumbai → Pune • VRL • 22:00</div>
+        </div>
+        <button class="booking-action action-call"><i class="fa-solid fa-phone"></i> Call</button>
+      </div>
+      
+      <div class="booking-item">
+        <div class="booking-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="booking-info">
+          <div class="booking-name">Priya Sharma</div>
+          <div class="booking-route">Delhi → Jaipur • Neeta • 08:00</div>
+        </div>
+        <button class="booking-action action-call"><i class="fa-solid fa-phone"></i> Call</button>
+      </div>
+      
+      <div class="booking-item">
+        <div class="booking-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="booking-info">
+          <div class="booking-name">Amit Verma</div>
+          <div class="booking-route">BLR → Hyd • KSRTC • 10:30</div>
+        </div>
+        <button class="booking-action action-confirm"><i class="fa-solid fa-check"></i> Confirm</button>
+      </div>
+      
+      <div style="font-size:14px; font-weight:700; color:#000; margin:14px 0 10px;">Confirmed Today</div>
+      
+      <div class="booking-item" style="opacity:0.6;">
+        <div class="booking-avatar" style="background:#f0fdf4; color:#16a34a;"><i class="fa-solid fa-check"></i></div>
+        <div class="booking-info">
+          <div class="booking-name">Sneha Patil</div>
+          <div class="booking-route">Pune → Goa • Paulo • 21:00</div>
+        </div>
+        <span style="font-size:11px; color:#16a34a; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Done</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
