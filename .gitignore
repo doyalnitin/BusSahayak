@@ -5,3 +5,5 @@
 expo-env.d.ts
 # @end expo-cli
 .vercel
+.expo/
+node_modules/
