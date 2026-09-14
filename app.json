@@ -19,7 +19,9 @@
         "NSSpeechRecognitionUsageDescription": "BusSahayak uses speech recognition to help you search and book bus tickets hands-free.",
         "NSMicrophoneUsageDescription": "BusSahayak needs microphone access for voice commands.",
         "UIAccessibilityElement": true,
-        "UIAccessibilities": ["screenReader"]
+        "UIAccessibilities": [
+          "screenReader"
+        ]
       }
     },
     "android": {
@@ -43,6 +45,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "72b21e65-eb14-4ac6-ad92-cedc8cd9c5ca"
+      }
+    },
+    "owner": "nitindoyal17"
   }
 }
