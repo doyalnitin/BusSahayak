@@ -105,7 +105,6 @@ BusSahayak adapts to different levels of visual impairment with **3 unique opera
 |--------|-------------|
 | Home | Voice-first landing with gesture hints |
 | Voice Listening | Audio waveform, live transcript |
-| Search Results | Numbered bus options (say "1", "2", "3") |
 | Seat Selection | Visual seat grid with voice commands |
 | Booking Status | PNR, fare, confirmation status |
 | Manager Dashboard | Pending bookings, call to confirm |
