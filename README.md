@@ -16,16 +16,53 @@ BusSahayak is a **voice-first, screen reader-optimized** bus booking app that en
 
 ---
 
+## 3 Operating Modes
+
+BusSahayak adapts to different levels of visual impairment with **3 unique operating modes**:
+
+| Mode | Name | For Whom | How It Works |
+|------|------|----------|--------------|
+| **Mode 1** | Voice Only | Completely Blind Users | Touch LOCKED + Hands-free AI. 24kHz Audio + Haptics. Zero screen interaction needed. |
+| **Mode 2** | Dynamic Switch | Low Vision Users | Starts Locked → Unlocks via Voice. Large Visual Picture Buttons for easy navigation. |
+| **Mode 3** | Dual Combined | Voice + Touch Together | Tap = TTS + Hold = Mic. Always Active Visuals. Best of both worlds. |
+
+### Mode 1: Voice Only (For Completely Blind)
+- Screen is **locked** — no accidental taps possible
+- **Hands-free AI** — just hold and speak
+- **24kHz audio** responses via Gemini Live
+- **Haptic feedback** confirms every action
+- Triple tap anywhere → go home
+
+### Mode 2: Dynamic Switch (For Low Vision)
+- Starts in **locked mode** — voice-first
+- **Unlocks via voice** command — "Unlock screen"
+- **Large visual picture buttons** appear
+- User can switch between voice and touch anytime
+- Perfect for users with partial sight
+
+### Mode 3: Dual Combined (Voice + Touch Together)
+- **Tap** anywhere → Text-to-Speech reads content
+- **Hold** screen → Activate microphone
+- **Always active visuals** — buttons always visible
+- Best for users comfortable with both input methods
+- Most flexible mode
+
+---
+
 ## Key Features
 
 | Feature | Description |
 |---------|-------------|
 | **Voice-First Interface** | Hold screen to speak, release to get AI response. Natural Hinglish/Hindi/English. |
 | **Touch Shield** | Blocks accidental taps. Triple tap = home, Double tap = select, Hold = voice. |
+| **3 Operating Modes** | Voice Only, Dynamic Switch, Dual Combined — adapts to user's vision level. |
 | **Number Selection** | Say "1", "2", or "3" to choose from search results. |
 | **Seat Selection** | Say seat number like "5L" or "2M" to book. |
 | **Manager Dashboard** | Manager calls blind user to confirm booking and collect payment. |
 | **60-Minute Tele-Confirmation** | Redis TTL lock prevents seat hoarding. Driver confirms within 60 minutes. |
+| **Last-Mile Integration** | Rapido/Auto integration for doorstep-to-bus-stand connectivity. |
+| **Multi-Language** | Hindi, English, Hinglish, Tamil, Telugu, Bengali support. |
+| **Offline Fallback** | SMS/IVR booking when no internet available. |
 
 ---
 
@@ -165,6 +202,11 @@ DATABASE_URL=your_postgresql_url
 | "Number 2" | Select second option |
 | "Haan" / "Confirm" | Confirm booking |
 | "Ghar jaao" / Triple tap | Go to home screen |
+| "Mode 1" / "Voice Only" | Switch to Voice Only mode |
+| "Mode 2" / "Dynamic Switch" | Switch to Dynamic Switch mode |
+| "Mode 3" / "Dual" | Switch to Dual Combined mode |
+| "Unlock screen" | Unlock touch in Mode 2 |
+| "Rapido book karo" | Book Rapido to bus stand |
 
 ---
 
