@@ -56,8 +56,6 @@ BusSahayak adapts to different levels of visual impairment with **3 unique opera
 | **Voice-First Interface** | Hold screen to speak, release to get AI response. Natural Hinglish/Hindi/English. |
 | **Touch Shield** | Blocks accidental taps. Triple tap = home, Double tap = select, Hold = voice. |
 | **3 Operating Modes** | Voice Only, Dynamic Switch, Dual Combined — adapts to user's vision level. |
-| **Number Selection** | Say "1", "2", or "3" to choose from search results. |
-| **Seat Selection** | Say seat number like "5L" or "2M" to book. |
 | **Manager Dashboard** | Manager calls blind user to confirm booking and collect payment. |
 | **60-Minute Tele-Confirmation** | Redis TTL lock prevents seat hoarding. Driver confirms within 60 minutes. |
 | **Last-Mile Integration** | Rapido/Auto integration for doorstep-to-bus-stand connectivity. |
