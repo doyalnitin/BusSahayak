@@ -680,50 +680,99 @@ locked_seats = <span class="keyword">await</span> redis.<span class="function">k
       <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
         <div class="mega-card-header" style="color:#16a34a;">
           <i class="fas fa-comments" style="font-size:20px;"></i>
-          <span>VOICE SELECTION METHODS</span>
+          <span>NATURAL LANGUAGE SEAT SELECTION</span>
         </div>
         <div class="mega-card-body">
-          <strong>User can select seats in 4 ways:</strong><br><br>
+          <strong>User speaks naturally in Hindi/Hinglish. AI understands all variations:</strong><br><br>
 
-          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:6px 0;">
-            <strong style="color:#16a34a;">METHOD 1: By Seat ID</strong>
-            <div style="font-size:12px;color:#475569;">"A1 lelo" / "B4 book karo" / "Mujhe C2 chahiye"</div>
-            <div style="font-size:11px;color:#64748b;">→ Gemini extracts: seat_id = "A1"</div>
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe window seat chahiye"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI calls:</strong> <code>get_seats(bus_id="peela_001", filter="window", status="available")</code><br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Window seat mein 4 khali hain — A1, B2, C1, C4. Kaunsi chahiye?"
           </div>
 
-          <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:10px;margin:6px 0;">
-            <strong style="color:#1d4ed8;">METHOD 2: By Position</strong>
-            <div style="font-size:12px;color:#475569;">"Window seat do" / "Aisle seat chahiye"</div>
-            <div style="font-size:11px;color:#64748b;">→ Gemini calls search_buses with position filter → finds next available window/aisle</div>
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe middle window seat chahiye"<br>
+            <strong style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Problem:</strong> "Middle" aur "Window" ek seat mein nahi ho sakte — ye contradictory hai<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI understands:</strong> User bhool gaya ya confuse hai. AI clarify karega.<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Aapko window seat chahiye ya middle seat? Window seat bus ke kinare hoti hai, middle seat beech mein hoti hai. Kaunsi chahiye?"<br>
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Window wali"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Theek hai, window seat mein 4 khali hain — A1, B2, C1, C4. Kaunsi chahiye?"
           </div>
 
-          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:6px 0;">
-            <strong style="color:#7c3aed;">METHOD 3: By Number</strong>
-            <div style="font-size:12px;color:#475569;">"Pehli wali lelo" / "Teesri wali"</div>
-            <div style="font-size:11px;color:#64748b;">→ Gemini maps: "pehli" → 1st available (A1), "teesri" → 3rd available (A3)</div>
+          <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe beech mein seat do"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI calls:</strong> <code>get_seats(bus_id="peela_001", filter="middle", status="available")</code><br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Middle seat mein 5 khali hain — A2, A3, B2, C2, C4. Bol dijiye kaunsi."
           </div>
 
-          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:10px;padding:10px;margin:6px 0;">
-            <strong style="color:#d97706;">METHOD 4: By Row</strong>
-            <div style="font-size:12px;color:#475569;">"Row A se koi bhi de do" / "B row mein konsi khali hai?"</div>
-            <div style="font-size:11px;color:#64748b;">→ Gemini filters row A seats → speaks only those → user picks one</div>
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Aisle wali lelo"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI calls:</strong> <code>get_seats(bus_id="peela_001", filter="aisle", status="available")</code><br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Aisle seat mein 3 khali hain — A4, B4, C4. Kaunsi chahiye?"
+          </div>
+
+          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "A row se koi bhi de do"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI calls:</strong> <code>get_seats(bus_id="peela_001", row="A", status="available")</code><br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "A row mein chaaron khali hain — A1 Window, A2 Middle, A3 Middle, A4 Aisle. Bol dijiye."
+          </div>
+
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Pehli wali lelo"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI understands:</strong> "Pehli" = 1st available seat = A1<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "A1 le raha hoon. Haan ya naa boliye?"
+          </div>
+
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe beech wali window seat do"<br>
+            <strong style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Problem:</strong> "Bech wali" = middle, "Window" = kinare — contradictory<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI clarifies:</strong> "Aapko window seat chahiye ya middle seat? Window kinare hoti hai, middle beech mein. Kaunsi chahiye?"<br>
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Jo bhi ho, khali seat de do"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Theek hai. A1 sabse pehli khali seat hai. Lock karun?"
+          </div>
+
+          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe driver ke paas wali seat chahiye"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI understands:</strong> "Driver ke paas" = front row = Row A<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Row A — driver ke paas — chaaron khali hain. A1 Window, A2 Middle, A3 Middle, A4 Aisle. Kaunsi?"
+          </div>
+
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Mujhe peeche wali seat do, sone ke liye chahiye"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI understands:</strong> "Peeche" = last row, "Sone ke liye" = sleeper preferred<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Ye seater bus hai, sleeper nahi hai. Last row C mein 2 khali hain — C2 Middle, C4 Aisle. Kaunsi?"
+          </div>
+
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Meri taraf wali seat do"<br>
+            <strong style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Problem:</strong> AI nahi jaanta user kis taraf baitha hai<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI clarifies:</strong> "Aap left side baithna chahte hain ya right side? Left mein A1, A2 hain, Right mein A3, A4 hain."<br>
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Left wali"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Left side mein 3 khali hain — A1 Window, A2 Middle, C2 Middle. Kaunsi?"
+          </div>
+
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-comment-dots"></i> User says:</strong> "Koi bhi khali seat de do, koi farak nahi padta"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI calls:</strong> <code>get_seats(bus_id="peela_001", filter="available")</code><br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-volume-up"></i> AI responds:</strong> "Sabse pehli khali seat A1 hai. Ye lock karun? Haan ya naa boliye."
           </div>
 
           <br>
-          <span class="badge badge-green">4 SELECTION METHODS</span>
-          <span class="badge badge-blue">ALL VOICE-BASED</span>
-          <span class="badge badge-purple">NO SCREEN NEEDED</span>
+          <span class="badge badge-green">NATURAL HINDI/HINGLISH</span>
+          <span class="badge badge-blue">AI UNDERSTANDS ALL VARIATIONS</span>
+          <span class="badge badge-purple">NO NEED TO REMEMBER SEAT IDS</span>
         </div>
       </div>
     </div>
 
-    <div class="sub-title">Gemini Function Call for Seat Selection</div>
-    <div class="code-block" style="font-size:12px;"><span class="comment">// Gemini calls this function when user asks for seats</span>
+    <div class="sub-title">Gemini Function Declarations (Correct Flow)</div>
+    <div class="code-block" style="font-size:12px;"><span class="comment">// CORRECT: User selects → AI confirms → THEN locks</span>
 {
   "functionDeclarations": [
     {
       "name": "get_seats",
-      "description": "Get seat matrix for a bus. Returns all seats with status and position.",
+      "description": "Get seat matrix for a bus. Returns all seats with status and position. NO LOCKING happens here.",
       "parameters": {
         "type": "OBJECT",
         "properties": {
@@ -747,16 +796,195 @@ locked_seats = <span class="keyword">await</span> redis.<span class="function">k
         },
         "required": ["from_city", "to_city", "date"]
       }
+    },
+    {
+      "name": "confirm_booking",
+      "description": "ONLY call this after user says 'Haan' or 'Confirm'. This locks the seat in Redis and saves to PostgreSQL. NEVER call without user confirmation.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "bus_id":         { "type": "STRING", "description": "Bus ID" },
+          "seat_id":        { "type": "STRING", "description": "Seat to lock — e.g. A1, B2" },
+          "passenger_name": { "type": "STRING", "description": "User's name as spoken" },
+          "phone":          { "type": "STRING", "description": "10-digit phone number" }
+        },
+        "required": ["bus_id", "seat_id", "passenger_name", "phone"]
+      }
     }
   ]
-}</div>
+}
+
+<span class="comment">// FLOW:
+// 1. User: "A1 lelo"  → AI asks for name + phone (NO function call yet)
+// 2. User: "Rahul, 9876543210"  → AI asks "Confirm karna hai?" (NO function call yet)
+// 3. User: "Haan"  → AI calls confirm_booking() → Redis locks → PostgreSQL saves</span></div>
   </div>
 </div>
 
-<!-- SECTION 8: SEAT MATRIX VISUALIZATION -->
+<!-- SECTION 8: COMPLETE CONVERSATIONAL FLOW -->
 <div class="slide page-break">
   <div class="section">
-    <div class="section-title">8. Seat Matrix — Visual vs Voice Representation</div>
+    <div class="section-title">8. Complete Conversational Flow — Selection + Confirmation + Lock</div>
+
+    <div class="sub-title">CORRECT FLOW: Select → Confirm → THEN Lock (Not Before!)</div>
+
+    <div class="ws-window">
+      <div class="ws-titlebar">
+        <div class="ws-dot" style="background:#ef4444;"></div>
+        <div class="ws-dot" style="background:#f59e0b;"></div>
+        <div class="ws-dot" style="background:#22c55e;"></div>
+        <span style="color:#94a3b8;font-size:12px;font-weight:600;margin-left:8px;">correct-flow-with-confirmation.txt</span>
+      </div>
+      <div class="ws-content" style="font-size:12px;">
+<div style="color:#64748b;"><span class="comment"># STEP 1: User asks for seats — NO LOCK YET</span></div>
+<div style="color:#22c55e;"><i class="fas fa-user"></i> User:</span> "Peela Travels ki seats sunao"</div>
+<div style="color:#3b82f6;"><i class="fas fa-robot"></i> AI:</span> "11 seats khali hain. A1 Window, A2 Middle, A3 Middle, A4 Aisle..."</div>
+<div style="color:#64748b;"><span class="comment"># 🔓 NO LOCK — Just reading seats</span></div>
+
+<div style="color:#64748b;margin-top:8px;"><span class="comment"># STEP 2: User selects a seat — STILL NO LOCK</span></div>
+<div style="color:#22c55e;"><i class="fas fa-user"></i> User:</span> "A1 lelo"</div>
+<div style="color:#3b82f6;"><i class="fas fa-robot"></i> AI:</span> "A1 le raha hoon. Naam aur phone number bataiye."</div>
+<div style="color:#64748b;"><span class="comment"># 🔓 NO LOCK — Just recording selection</span></div>
+
+<div style="color:#64748b;margin-top:8px;"><span class="comment"># STEP 3: User gives details — STILL NO LOCK</span></div>
+<div style="color:#22c55e;"><i class="fas fa-user"></i> User:</span> "Rahul hai mera, phone 9876543210"</div>
+<div style="color:#3b82f6;"><i class="fas fa-robot"></i> AI:</span> "Rahul ji, A1 seat confirm karna hai? Haan ya naa boliye."</div>
+<div style="color:#64748b;"><span class="comment"># 🔓 NO LOCK — Just asking final confirmation</span></div>
+
+<div style="color:#64748b;margin-top:8px;"><span class="comment"># STEP 4: User confirms — NOW LOCK!</span></div>
+<div style="color:#22c55e;"><i class="fas fa-user"></i> User:</span> "Haan bhaiya, confirm karo"</div>
+<div style="color:#64748b;"><span class="comment"># ✅ NOW Redis locks: SET seat_lock:peela_001:A1 ... EX 3600 NX</span></div>
+<div style="color:#64748b;"><span class="comment"># ✅ NOW PostgreSQL: INSERT INTO bookings ... status='locked'</span></div>
+<div style="color:#64748b;"><span class="comment"># ✅ NOW FCM: Send notification to manager</span></div>
+<div style="color:#3b82f6;"><i class="fas fa-robot"></i> AI:</span> "Booking confirm! A1 Window seat, Peela Travels. Ticket BK-78901. Manager call karega 60 minute mein."</div>
+      </div>
+    </div>
+
+    <div class="sub-title">Ambiguous Language — How AI Handles Confusion</div>
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <i class="fas fa-exclamation-triangle" style="font-size:20px;"></i>
+          <span>CONTRADICTORY REQUESTS</span>
+        </div>
+        <div class="mega-card-body">
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong>"Middle window seat do"</strong><br>
+            <span style="color:#dc2626;"><i class="fas fa-times-circle"></i> Middle ≠ Window — contradictory</span><br>
+            <span style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI:</span> "Window seat chahiye ya middle? Window kinare hoti hai, middle beech mein."
+          </div>
+
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong>"Aisle window seat do"</strong><br>
+            <span style="color:#dc2626;"><i class="fas fa-times-circle"></i> Aisle ≠ Window — contradictory</span><br>
+            <span style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI:</span> "Aisle seat chahiye ya window? Aisle beech ka raasta hai, window kinare."
+          </div>
+
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong>"Left right dono seat do"</strong><br>
+            <span style="color:#dc2626;"><i class="fas fa-times-circle"></i> Left + Right = 2 different seats</span><br>
+            <span style="color:#1d4ed8;"><i class="fas fa-robot"></i> AI:</span> "Ek seat chahiye ya do? Pehle ek bataiye, phir doosri."
+          </div>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <i class class="fas fa-check-circle" style="font-size:20px;"></i>
+          <span>AI CLARIFICATION STRATEGY</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Rule 1: Detect Ambiguity</strong><br>
+          If user says 2 contradictory positions → AI detects conflict<br><br>
+
+          <strong>Rule 2: Ask Simple Question</strong><br>
+          Don't confuse user more. Ask ONE clear question:<br>
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:8px;padding:8px;margin:6px 0;font-size:12px;">
+            "Window seat chahiye ya middle?"<br>
+            "Ek seat chahiye ya do?"<br>
+            "Left side ya right side?"
+          </div>
+
+          <strong>Rule 3: After Clarification → Confirm</strong><br>
+          User says "Window" → AI shows window seats → User picks → AI asks "Haan ya naa?" → THEN lock<br><br>
+
+          <strong>Rule 4: If User Says "Koi Bhi"</strong><br>
+          User: "Koi bhi de do" → AI picks first available → Still asks "Confirm karna hai?" → THEN lock
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Complete Conversation Examples (With Confirmation)</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-comment-dots" style="color:#22c55e;"></i> Example 1: Clean Flow</div>
+        <div class="card-content">
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:8px;padding:8px;margin:4px 0;font-size:11px;">
+            <span style="color:#22c55e;font-weight:800;">User:</span> "A1 lelo"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "A1 le raha hoon. Naam bataiye."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Rahul, 9876543210"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Rahul ji, A1 confirm karna hai? Haan ya naa."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Haan"<br>
+            <span style="color:#16a34a;font-weight:800;">✅ LOCK + BOOKING CREATED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-comment-dots" style="color:#f59e0b;"></i> Example 2: Ambiguous → Clarify → Confirm</div>
+        <div class="card-content">
+          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:8px;padding:8px;margin:4px 0;font-size:11px;">
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Middle window seat do"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Window chahiye ya middle?"<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Window wali"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Window mein 4 khali — A1, B2, C1, C4."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "A1 lelo, Rahul, 9876543210"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "A1 confirm karna hai? Haan ya naa."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Haan"<br>
+            <span style="color:#16a34a;font-weight:800;">✅ LOCK + BOOKING CREATED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-comment-dots" style="color:#a855f7;"></i> Example 3: Vague → AI Picks → Confirm</div>
+        <div class="card-content">
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:8px;padding:8px;margin:4px 0;font-size:11px;">
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Koi bhi seat de do"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "A1 sabse pehli khali hai. Ye le sakta hoon?"<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Haan theek hai"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Naam aur phone bataiye."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Sunita, 9123456780"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Sunita ji, A1 confirm karna hai? Haan ya naa."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Haan"<br>
+            <span style="color:#16a34a;font-weight:800;">✅ LOCK + BOOKING CREATED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-comment-dots" style="color:#ef4444;"></i> Example 4: User Changes Mind</div>
+        <div class="card-content">
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:8px;padding:8px;margin:4px 0;font-size:11px;">
+            <span style="color:#22c55e;font-weight:800;">User:</span> "A1 lelo"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "A1 le raha hoon. Naam bataiye."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Rahul, 9876543210"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "A1 confirm karna hai? Haan ya naa."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Nahi, B2 lelo"<br>
+            <span style="color:#3b82f6;font-weight:800;">AI:</span> "Theek hai. B2 le raha hoon. Confirm karna hai? Haan ya naa."<br>
+            <span style="color:#22c55e;font-weight:800;">User:</span> "Haan"<br>
+            <span style="color:#16a34a;font-weight:800;">✅ LOCK B2 + BOOKING CREATED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 9: SEAT MATRIX VISUALIZATION -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">9. Seat Matrix — Visual vs Voice Representation</div>
 
     <div class="sub-title">Seater Bus (2+2 Layout) — How AI Converts Visual → Spoken</div>
 
@@ -842,10 +1070,10 @@ locked_seats = <span class="keyword">await</span> redis.<span class="function">k
   </div>
 </div>
 
-<!-- SECTION 9: COMPLETE CODE FLOW -->
+<!-- SECTION 10: COMPLETE CODE FLOW -->
 <div class="slide page-break">
   <div class="section">
-    <div class="section-title">9. Complete Code Flow — Every Function Call</div>
+    <div class="section-title">10. Complete Code Flow — Every Function Call</div>
 
     <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
       <div class="flow-step-num" style="background:#ef4444;">1</div>
@@ -936,7 +1164,35 @@ locked_seats = <span class="keyword">await</span> redis.<span class="function">k
       <div class="flow-step-content">
         <div class="flow-step-title"><i class="fas fa-user"></i> User: "A1 lelo"</div>
         <div class="flow-step-desc">
-          User holds MIC again → Gemini calls <code>create_booking(bus_id, seat_id="A1", name, phone)</code> → FastAPI locks seat → PostgreSQL saves → Booking confirmed
+          User holds MIC → Gemini understands selection → AI asks "Naam aur phone bataiye" → <strong>NO LOCK YET</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#f59e0b;background:#fffbeb;">
+      <div class="flow-step-num" style="background:#f59e0b;">9</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-user"></i> User: "Rahul, 9876543210"</div>
+        <div class="flow-step-desc">
+          Gemini extracts name + phone → AI asks "Rahul ji, A1 confirm karna hai? Haan ya naa boliye" → <strong>NO LOCK YET</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#22c55e;background:#f0fdf4;">
+      <div class="flow-step-num" style="background:#22c55e;">10</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-user"></i> User: "Haan confirm karo"</div>
+        <div class="flow-step-desc">
+          <strong>NOW</strong> Gemini calls <code>confirm_booking(bus_id="peela_001", seat_id="A1", passenger_name="Rahul", phone="9876543210")</code><br>
+          → FastAPI: Redis <code>SETNX</code> locks A1 with 60-min TTL<br>
+          → FastAPI: PostgreSQL <code>INSERT</code> saves booking<br>
+          → FastAPI: FCM notifies manager<br>
+          → Gemini: "Booking confirm! A1 Window seat. Ticket BK-78901."
         </div>
       </div>
     </div>
@@ -946,7 +1202,7 @@ locked_seats = <span class="keyword">await</span> redis.<span class="function">k
 <!-- SECTION 10: JUDGE Q&A -->
 <div class="slide page-break">
   <div class="section">
-    <div class="section-title">10. Judge Q&A — Seat Matrix Specific</div>
+    <div class="section-title">11. Judge Q&A — Seat Matrix Specific</div>
 
     <div class="grid-2">
       <div>
