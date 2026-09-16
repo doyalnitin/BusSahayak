@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak — Azure Complete Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #ffffff;
+    color: #1e293b;
+    padding: 40px;
+    line-height: 1.6;
+  }
+
+  .slide {
+    max-width: 1100px;
+    margin: 0 auto 60px auto;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: 32px;
+  }
+  .team-badge {
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .header-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .sih-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .sih-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid #2563eb;
+    display: inline-block;
+  }
+  .sub-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 12px;
+    margin-top: 20px;
+  }
+
+  /* Flow boxes */
+  .flow-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+  }
+  .flow-box {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 2px solid;
+  }
+  .flow-box-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .flow-box-content {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.7;
+  }
+  .flow-box-content code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #7c3aed;
+  }
+  .flow-connector {
+    width: 3px;
+    height: 24px;
+    background: #cbd5e1;
+  }
+
+  .box-blue { background: #eff6ff; border-color: #3b82f6; }
+  .box-blue .flow-box-title { color: #1d4ed8; }
+
+  .box-purple { background: #faf5ff; border-color: #a855f7; }
+  .box-purple .flow-box-title { color: #7c3aed; }
+
+  .box-green { background: #f0fdf4; border-color: #22c55e; }
+  .box-green .flow-box-title { color: #16a34a; }
+
+  .box-amber { background: #fffbeb; border-color: #f59e0b; }
+  .box-amber .flow-box-title { color: #d97706; }
+
+  .box-red { background: #fef2f2; border-color: #ef4444; }
+  .box-red .flow-box-title { color: #dc2626; }
+
+  .box-teal { background: #f0fdfa; border-color: #14b8a6; }
+  .box-teal .flow-box-title { color: #0d9488; }
+
+  .box-gray { background: #f8fafc; border-color: #e2e8f0; }
+  .box-gray .flow-box-title { color: #0f172a; }
+
+  /* Tables */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+  }
+  .data-table th {
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+  }
+  .data-table td {
+    padding: 10px 16px;
+    font-size: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .data-table tr:nth-child(even) td { background: #f8fafc; }
+
+  /* Code blocks */
+  .code-block {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #a855f7; }
+  .code-block .string { color: #22c55e; }
+  .code-block .function { color: #3b82f6; }
+  .code-block .number { color: #f59e0b; }
+
+  /* Grid */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* Cards */
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .card-content {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.6;
+  }
+  .card-content code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #7c3aed;
+  }
+
+  /* Steps */
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .step-text {
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.5;
+  }
+  .step-text strong { color: #0f172a; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-red { background: #fef2f2; color: #dc2626; }
+  .badge-purple { background: #f3e8ff; color: #7c3aed; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="slide">
+  <div class="header">
+    <div class="team-badge">Coffee<br>Into Code</div>
+    <div class="header-title">Azure Complete Flow — BusSahayak</div>
+    <div class="sih-badge">
+      <svg class="sih-logo" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#f97316"/>
+        <text x="50" y="38" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">SMART</text>
+        <text x="50" y="50" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">INDIA</text>
+        <text x="50" y="62" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">HACKATHON</text>
+        <text x="50" y="78" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">2025</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 1: TRAIN -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">PHASE 1: TRAIN (One-Time Setup)</div>
+
+    <!-- Step 1.1 -->
+    <div class="sub-title">1.1 Audio File Formats for Training</div>
+    <table class="data-table">
+      <tr>
+        <th>Property</th>
+        <th>STT Training</th>
+        <th>TTS Training</th>
+      </tr>
+      <tr>
+        <td><strong>Format</strong></td>
+        <td><code>WAV</code> (PCM)</td>
+        <td><code>WAV</code> (PCM)</td>
+      </tr>
+      <tr>
+        <td><strong>Sample Rate</strong></td>
+        <td><code>16,000 Hz</code> (16kHz)</td>
+        <td><code>48,000 Hz</code> (48kHz)</td>
+      </tr>
+      <tr>
+        <td><strong>Bit Depth</strong></td>
+        <td><code>16-bit</code></td>
+        <td><code>16-bit</code></td>
+      </tr>
+      <tr>
+        <td><strong>Channels</strong></td>
+        <td><code>Mono</code> (1 channel)</td>
+        <td><code>Mono</code> (1 channel)</td>
+      </tr>
+      <tr>
+        <td><strong>Codec</strong></td>
+        <td><code>PCM</code> (uncompressed)</td>
+        <td><code>PCM</code> (uncompressed)</td>
+      </tr>
+      <tr>
+        <td><strong>Duration</strong></td>
+        <td>2-15 seconds per file</td>
+        <td>3-20 seconds per file</td>
+      </tr>
+      <tr>
+        <td><strong>Min Audio</strong></td>
+        <td>1 hour total</td>
+        <td>30 minutes total</td>
+      </tr>
+      <tr>
+        <td><strong>Recommended</strong></td>
+        <td>10+ hours</td>
+        <td>1+ hours</td>
+      </tr>
+      <tr>
+        <td><strong>Speakers</strong></td>
+        <td>10+ speakers (varied voices)</td>
+        <td>1 speaker (consistent voice)</td>
+      </tr>
+    </table>
+
+    <div class="sub-title">1.2 Audio Conversion Commands</div>
+    <div class="code-block">
+<span class="comment"># Convert M4A to WAV (16kHz, Mono, 16-bit) for STT</span>
+ffmpeg -i input.m4a -ar <span class="number">16000</span> -ac <span class="number">1</span> -sample_fmt s16 output_stt.wav
+
+<span class="comment"># Convert M4A to WAV (48kHz, Mono, 16-bit) for TTS</span>
+ffmpeg -i input.m4a -ar <span class="number">48000</span> -ac <span class="number">1</span> -sample_fmt s16 output_tts.wav
+
+<span class="comment"># Batch convert all M4A files in a folder</span>
+for f in *.m4a; do
+  ffmpeg -i "$f" -ar <span class="number">16000</span> -ac <span class="number">1</span> -sample_fmt s16 "${f%.m4a}_stt.wav"
+done
+
+<span class="comment"># Verify audio properties</span>
+ffprobe -v error -show_entries stream=sample_rate,channels,bits_per_sample,sample_fmt output.wav
+    </div>
+
+    <!-- Step 1.3 -->
+    <div class="sub-title">1.3 Transcript File Formats</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">TSV Format (for Azure Custom Speech)</div>
+        <div class="card-content">
+          <code>audio_001.wav</code> is the file name<br>
+          <code>Tab</code> separator between file and text<br>
+          <code>text</code> is the exact transcript<br><br>
+          <strong>File: transcripts.tsv</strong><br>
+          <code>audio_001.wav\tमुंबई से दिल्ली जाना है</code><br>
+          <code>audio_002.wav\tबस कितनी है</code><br>
+          <code>audio_003.wav\tAC बस चाहिए</code><br>
+          <code>audio_004.wav\tविंडो सीट दो</code><br>
+          <code>audio_005.wav\tनंबर एक बुक करो</code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">JSON Format (for API upload)</div>
+        <div class="card-content">
+          <strong>File: manifest.json</strong><br>
+          <code>[</code><br>
+          <code>&nbsp;&nbsp;{</code><br>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;"audioFileName": "audio_001.wav",</code><br>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;"text": "मुंबई से दिल्ली जाना है"</code><br>
+          <code>&nbsp;&nbsp;},</code><br>
+          <code>&nbsp;&nbsp;{</code><br>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;"audioFileName": "audio_002.wav",</code><br>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;"text": "बस कितनी है"</code><br>
+          <code>&nbsp;&nbsp;}</code><br>
+          <code>]</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1.4 -->
+    <div class="sub-title">1.4 Upload Audio Files to Azure Blob Storage</div>
+    <div class="code-block">
+<span class="comment"># Step 1: Create Azure Storage Account</span>
+az storage account create \
+  --name <span class="string">busesahayakstorage</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --location <span class="string">centralindia</span> \
+  --sku <span class="string">Standard_LRS</span>
+
+<span class="comment"># Step 2: Create Blob Container</span>
+az storage container create \
+  --name <span class="string">training-data</span> \
+  --account-name <span class="string">busesahayakstorage</span>
+
+<span class="comment"># Step 3: Upload audio files</span>
+az storage blob upload-batch \
+  --destination <span class="string">training-data/stt/audio</span> \
+  --source <span class="string">./training_data/audio/</span> \
+  --account-name <span class="string">busesahayakstorage</span> \
+  --pattern <span class="string">"*.wav"</span>
+
+<span class="comment"># Step 4: Upload transcript</span>
+az storage blob upload \
+  --container-name <span class="string">training-data</span> \
+  --name <span class="string">stt/transcripts.tsv</span> \
+  --file <span class="string">./training_data/transcripts.tsv</span> \
+  --account-name <span class="string">busesahayakstorage</span>
+
+<span class="comment"># Step 5: Verify upload</span>
+az storage blob list \
+  --container-name <span class="string">training-data</span> \
+  --account-name <span class="string">busesahayakstorage</span> \
+  --output <span class="string">table</span>
+    </div>
+
+    <!-- Step 1.5 -->
+    <div class="sub-title">1.5 Azure Blob Storage Structure</div>
+    <div class="code-block">
+<span class="comment"># BLOB CONTAINER STRUCTURE</span>
+
+training-data/
+├── stt/                              <span class="comment"># Speech-to-Text training</span>
+│   ├── audio/                        <span class="comment"># 16kHz WAV files</span>
+│   │   ├── audio_001.wav             <span class="comment"># 16kHz, Mono, 16-bit PCM</span>
+│   │   ├── audio_002.wav
+│   │   ├── audio_003.wav
+│   │   └── ... (100+ files)
+│   ├── transcripts.tsv               <span class="comment"># Tab-separated file+text</span>
+│   └── manifest.json                 <span class="comment"># Azure upload manifest</span>
+│
+├── tts/                              <span class="comment"># Text-to-Speech training</span>
+│   ├── audio/                        <span class="comment"># 48kHz WAV files</span>
+│   │   ├── voice_001.wav             <span class="comment"># 48kHz, Mono, 16-bit PCM</span>
+│   │   ├── voice_002.wav
+│   │   └── ... (50+ files)
+│   ├── transcripts.tsv
+│   └── manifest.json
+│
+├── models/                           <span class="comment"># Trained model files</span>
+│   ├── stt/
+│   │   └── busesahayak-hindi-v1/     <span class="comment"># Custom STT model</span>
+│   └── tts/
+│       └── busesahayak-voice-v1/     <span class="comment"># Custom TTS model</span>
+│
+└── user-data/                        <span class="comment"># Runtime user data</span>
+    ├── recordings/                   <span class="comment"># User voice recordings</span>
+    │   ├── user123/
+    │   │   ├── 2026-09-15_1030.wav
+    │   │   └── 2026-09-15_1045.wav
+    │   └── user456/
+    └── tickets/                      <span class="comment"># Generated ticket PDFs</span>
+        └── ZP_BUS_9876543.pdf
+    </div>
+
+    <!-- Step 1.6 -->
+    <div class="sub-title">1.6 Train STT Model (Azure Custom Speech)</div>
+    <div class="code-block">
+<span class="comment"># Create Cognitive Services Speech resource</span>
+az cognitiveservices account create \
+  --name <span class="string">BusSahayakSpeech</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --kind <span class="string">SpeechServices</span> \
+  --sku <span class="string">S0</span> \
+  --location <span class="string">centralindia</span>
+
+<span class="comment"># Create custom speech project</span>
+az cognitiveservices speech project create \
+  --name <span class="string">BusSahayak Hindi STT</span> \
+  --locale <span class="string">hi-IN</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Create dataset</span>
+az cognitiveservices speech dataset create \
+  --name <span class="string">BusSahayakHindiDataset</span> \
+  --locale <span class="string">hi-IN</span> \
+  --project-kind <span class="string">CustomSpeech</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Upload audio files to dataset</span>
+az cognitiveservices speech dataset file upload \
+  --dataset-id <span class="string">YOUR_DATASET_ID</span> \
+  --name <span class="string">audio_001.wav</span> \
+  --path <span class="string">./audio/audio_001.wav</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Upload transcript to dataset</span>
+az cognitiveservices speech dataset file upload \
+  --dataset-id <span class="string">YOUR_DATASET_ID</span> \
+  --name <span class="string">transcripts.tsv</span> \
+  --path <span class="string">./transcripts.tsv</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Train the model (takes 2-4 hours)</span>
+az cognitiveservices speech model create \
+  --name <span class="string">BusSahayak Hindi STT v1</span> \
+  --locale <span class="string">hi-IN</span> \
+  --project-kind <span class="string">CustomSpeech</span> \
+  --dataset-ids <span class="string">YOUR_DATASET_ID</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Check training status</span>
+az cognitiveservices speech model show \
+  --model-id <span class="string">YOUR_MODEL_ID</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+    </div>
+
+    <!-- Step 1.7 -->
+    <div class="sub-title">1.7 Train TTS Model (Azure Custom Voice)</div>
+    <div class="code-block">
+<span class="comment"># Go to Azure Custom Voice Portal</span>
+<span class="comment"># https://speech.azure.ai</span>
+<span class="comment">#</span>
+<span class="comment"># Steps:</span>
+<span class="comment"># 1. Click "Custom Voice"</span>
+<span class="comment"># 2. Create project: "BusSahayak Hindi TTS"</span>
+<span class="comment"># 3. Locale: Hindi (India) - hi-IN</span>
+<span class="comment"># 4. Gender: Female (or Male)</span>
+<span class="comment"># 5. Upload 48kHz WAV files</span>
+<span class="comment"># 6. Add transcripts for each audio file</span>
+<span class="comment"># 7. Click "Train" (takes 1-2 hours)</span>
+<span class="comment"># 8. Test with preview</span>
+<span class="comment"># 9. Deploy when satisfied</span>
+
+<span class="comment"># Voice names for TTS:</span>
+<span class="comment"># hi-IN-NeuralFemale (Aditi)</span>
+<span class="comment"># hi-IN-NeuralMale (Prabhat)</span>
+    </div>
+
+    <!-- Step 1.8 -->
+    <div class="sub-title">1.8 Deploy Trained Endpoints</div>
+    <div class="code-block">
+<span class="comment"># Deploy STT endpoint</span>
+az cognitiveservices speech endpoint create \
+  --name <span class="string">BusSahayakHindiSTTEndpoint</span> \
+  --model-id <span class="string">YOUR_STT_MODEL_ID</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Deploy TTS endpoint (via Azure Portal)</span>
+<span class="comment"># https://speech.azure.ai → Custom Voice → Deploy</span>
+
+<span class="comment"># Get endpoint URLs</span>
+az cognitiveservices speech endpoint list \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span> \
+  --output <span class="string">table</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 2: STORE -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">PHASE 2: STORE (Continuous)</div>
+
+    <div class="sub-title">2.1 Cosmos DB Setup (Step-by-Step)</div>
+    <div class="step-row">
+      <span class="step-num">1</span>
+      <div class="step-text">
+        <strong>Create Cosmos DB Account</strong><br>
+        <code>az cosmosdb create --name BusSahayakDB --resource-group BusSahayakRG --location centralindia --kind GlobalDocumentDB</code>
+      </div>
+    </div>
+    <div class="step-row">
+      <span class="step-num">2</span>
+      <div class="step-text">
+        <strong>Create Database</strong><br>
+        <code>az cosmosdb sql database create --account-name BusSahayakDB --name BusSahayakDatabase --resource-group BusSahayakRG</code>
+      </div>
+    </div>
+    <div class="step-row">
+      <span class="step-num">3</span>
+      <div class="step-text">
+        <strong>Create Containers</strong> (see below for all 5 containers)<br>
+        <code>az cosmosdb sql container create --account-name BusSahayakDB --database-name BusSahayakDatabase --name users --partition-key-path "/userId" --resource-group BusSahayakRG</code>
+      </div>
+    </div>
+
+    <div class="sub-title">2.2 Cosmos DB Containers & Data Formats</div>
+    <table class="data-table">
+      <tr>
+        <th>Container</th>
+        <th>Partition Key</th>
+        <th>Document Format (JSON)</th>
+      </tr>
+      <tr>
+        <td><strong>users</strong></td>
+        <td><code>/userId</code></td>
+        <td>
+          <code>{</code><br>
+          <code>&nbsp;"id": "user123",</code><br>
+          <code>&nbsp;"userId": "user123",</code><br>
+          <code>&nbsp;"name": "Rahul Kumar",</code><br>
+          <code>&nbsp;"phone": "+916350424121",</code><br>
+          <code>&nbsp;"language": "hi",</code><br>
+          <code>&nbsp;"preferences": {"busType": "AC", "seat": "window"},</code><br>
+          <code>&nbsp;"createdAt": "2026-09-15T10:30:00Z"</code><br>
+          <code>}</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>bookings</strong></td>
+        <td><code>/userId</code></td>
+        <td>
+          <code>{</code><br>
+          <code>&nbsp;"id": "booking123",</code><br>
+          <code>&nbsp;"bookingId": "ZP_BUS_9876543",</code><br>
+          <code>&nbsp;"userId": "user123",</code><br>
+          <code>&nbsp;"from": "Mumbai",</code><br>
+          <code>&nbsp;"to": "Delhi",</code><br>
+          <code>&nbsp;"bus": "VRL Travels",</code><br>
+          <code>&nbsp;"seat": "2L",</code><br>
+          <code>&nbsp;"fare": 800,</code><br>
+          <code>&nbsp;"status": "PENDING",</code><br>
+          <code>&nbsp;"boardingPoint": "Mumbai Central",</code><br>
+          <code>&nbsp;"departure": "2026-09-15T22:00:00Z",</code><br>
+          <code>&nbsp;"createdAt": "2026-09-15T10:35:00Z"</code><br>
+          <code>}</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>voice_logs</strong></td>
+        <td><code>/userId</code></td>
+        <td>
+          <code>{</code><br>
+          <code>&nbsp;"id": "log456",</code><br>
+          <code>&nbsp;"userId": "user123",</code><br>
+          <code>&nbsp;"sessionId": "session789",</code><br>
+          <code>&nbsp;"userText": "Mumbai se Delhi jaana hai",</code><br>
+          <code>&nbsp;"responseText": "3 bus mil gaye",</code><br>
+          <code>&nbsp;"language": "hi",</code><br>
+          <code>&nbsp;"intent": "search_buses",</code><br>
+          <code>&nbsp;"latencyMs": 320,</code><br>
+          <code>&nbsp;"timestamp": "2026-09-15T10:30:05Z"</code><br>
+          <code>}</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>buses</strong></td>
+        <td><code>/route</code></td>
+        <td>
+          <code>{</code><br>
+          <code>&nbsp;"id": "bus456",</code><br>
+          <code>&nbsp;"route": "Mumbai-Delhi",</code><br>
+          <code>&nbsp;"operator": "VRL Travels",</code><br>
+          <code>&nbsp;"busType": "AC Sleeper",</code><br>
+          <code>&nbsp;"departure": "22:00",</code><br>
+          <code>&nbsp;"arrival": "06:00",</code><br>
+          <code>&nbsp;"fare": 800,</code><br>
+          <code>&nbsp;"totalSeats": 40,</code><br>
+          <code>&nbsp;"availableSeats": 12</code><br>
+          <code>}</code>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>seat_locks</strong></td>
+        <td><code>/busId</code></td>
+        <td>
+          <code>{</code><br>
+          <code>&nbsp;"id": "lock789",</code><br>
+          <code>&nbsp;"busId": "bus456",</code><br>
+          <code>&nbsp;"seatId": "2L",</code><br>
+          <code>&nbsp;"userId": "user123",</code><br>
+          <code>&nbsp;"lockedAt": "2026-09-15T10:35:00Z",</code><br>
+          <code>&nbsp;"expiresAt": "2026-09-15T11:35:00Z",</code><br>
+          <code>&nbsp;"status": "LOCKED"</code><br>
+          <code>}</code>
+        </td>
+      </tr>
+    </table>
+
+    <div class="sub-title">2.3 Create All Cosmos DB Containers</div>
+    <div class="code-block">
+<span class="comment"># Container 1: users</span>
+az cosmosdb sql container create \
+  --account-name <span class="string">BusSahayakDB</span> \
+  --database-name <span class="string">BusSahayakDatabase</span> \
+  --name <span class="string">users</span> \
+  --partition-key-path <span class="string">"/userId"</span> \
+  --throughput <span class="number">400</span> \
+  --resource-group <span class="string">BusSahayakRG</span>
+
+<span class="comment"># Container 2: bookings</span>
+az cosmosdb sql container create \
+  --account-name <span class="string">BusSahayakDB</span> \
+  --database-name <span class="string">BusSahayakDatabase</span> \
+  --name <span class="string">bookings</span> \
+  --partition-key-path <span class="string">"/userId"</span> \
+  --throughput <span class="number">400</span> \
+  --resource-group <span class="string">BusSahayakRG</span>
+
+<span class="comment"># Container 3: voice_logs</span>
+az cosmosdb sql container create \
+  --account-name <span class="string">BusSahayakDB</span> \
+  --database-name <span class="string">BusSahayakDatabase</span> \
+  --name <span class="string">voice_logs</span> \
+  --partition-key-path <span class="string">"/userId"</span> \
+  --throughput <span class="number">400</span> \
+  --resource-group <span class="string">BusSahayakRG</span>
+
+<span class="comment"># Container 4: buses</span>
+az cosmosdb sql container create \
+  --account-name <span class="string">BusSahayakDB</span> \
+  --database-name <span class="string">BusSahayakDatabase</span> \
+  --name <span class="string">buses</span> \
+  --partition-key-path <span class="string">"/route"</span> \
+  --throughput <span class="number">400</span> \
+  --resource-group <span class="string">BusSahayakRG</span>
+
+<span class="comment"># Container 5: seat_locks</span>
+az cosmosdb sql container create \
+  --account-name <span class="string">BusSahayakDB</span> \
+  --database-name <span class="string">BusSahayakDatabase</span> \
+  --name <span class="string">seat_locks</span> \
+  --partition-key-path <span class="string">"/busId"</span> \
+  --throughput <span class="number">400</span> \
+  --resource-group <span class="string">BusSahayakRG</span>
+    </div>
+
+    <div class="sub-title">2.4 What Gets Stored Where</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title"><span class="badge badge-blue">Azure Blob</span></div>
+        <div class="card-content">
+          Audio files (.wav)<br>
+          Ticket PDFs (.pdf)<br>
+          Trained models (.onnx)<br>
+          Training data (.tsv)<br>
+          User recordings (.wav)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-purple">Cosmos DB</span></div>
+        <div class="card-content">
+          User profiles (JSON)<br>
+          Bookings (JSON)<br>
+          Voice logs (JSON)<br>
+          Bus schedules (JSON)<br>
+          Seat locks (JSON)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-green">Redis Cache</span></div>
+        <div class="card-content">
+          Active seat locks (3600s TTL)<br>
+          Session data<br>
+          Rate limiting counters<br>
+          Real-time availability<br>
+          Conversation context
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 3: DEPLOY -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">PHASE 3: DEPLOY (One-Time Setup)</div>
+
+    <div class="sub-title">3.1 Deploy STT Endpoint</div>
+    <div class="code-block">
+<span class="comment"># Deploy custom STT model as endpoint</span>
+az cognitiveservices speech endpoint create \
+  --name <span class="string">BusSahayakSTTEndpoint</span> \
+  --model-id <span class="string">YOUR_TRAINED_STT_MODEL_ID</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --account-name <span class="string">BusSahayakSpeech</span>
+
+<span class="comment"># Get endpoint details</span>
+<span class="comment"># URL: https://centralindia.stt.speech.microsoft.com/speech/recognition/custom/cognitiveservices/v1</span>
+<span class="comment"># Key: your-speech-subscription-key</span>
+<span class="comment"># Model ID: your-custom-model-id</span>
+    </div>
+
+    <div class="sub-title">3.2 Deploy TTS Endpoint</div>
+    <div class="code-block">
+<span class="comment"># Deploy custom voice via Azure Portal</span>
+<span class="comment"># 1. Go to https://speech.azure.ai</span>
+<span class="comment"># 2. Custom Voice → Your Project</span>
+<span class="comment"># 3. Click "Deploy" button</span>
+<span class="comment"># 4. Wait for deployment (5-10 minutes)</span>
+<span class="comment"># 5. Get endpoint URL and key</span>
+
+<span class="comment"># URL: https://centralindia.tts.speech.microsoft.com/cognitiveservices/v1</span>
+<span class="comment"># Voice Name: your-custom-voice-name</span>
+    </div>
+
+    <div class="sub-title">3.3 Deploy FastAPI to Azure App Service</div>
+    <div class="code-block">
+<span class="comment"># Create App Service Plan (Linux, Python)</span>
+az appservice plan create \
+  --name <span class="string">BusSahayakPlan</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --location <span class="string">centralindia</span> \
+  --is-linux \
+  --sku <span class="string">P1v2</span>
+
+<span class="comment"># Create Web App</span>
+az webapp create \
+  --name <span class="string">BusSahayakAPI</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --plan <span class="string">BusSahayakPlan</span> \
+  --runtime <span class="string">"PYTHON|3.11"</span>
+
+<span class="comment"># Set environment variables</span>
+az webapp config appsettings set \
+  --name <span class="string">BusSahayakAPI</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --settings \
+    SPEECH_KEY=<span class="string">your-speech-key</span> \
+    SPEECH_REGION=<span class="string">centralindia</span> \
+    COSMOS_ENDPOINT=<span class="string">https://busesahayakdb.documents.azure.com:443/</span> \
+    COSMOS_KEY=<span class="string">your-cosmos-key</span> \
+    REDIS_URL=<span class="string">your-redis-url</span>
+
+<span class="comment"># Deploy via Git</span>
+git remote add azure https://BusSahayakAPI.scm.azurewebsites.net/BusSahayakAPI.git
+git push azure main
+    </div>
+
+    <div class="sub-title">3.4 FastAPI Application Code</div>
+    <div class="code-block">
+<span class="comment"># main.py — FastAPI Application</span>
+
+<span class="keyword">from</span> fastapi <span class="keyword">import</span> FastAPI, UploadFile, File
+<span class="keyword">from</span> fastapi.responses <span class="keyword">import</span> JSONResponse, StreamingResponse
+<span class="keyword">import</span> requests, json, time, io
+
+app = FastAPI(title=<span class="string">"BusSahayak Azure API"</span>)
+
+<span class="comment"># Azure credentials (from environment variables)</span>
+SPEECH_KEY = os.environ[<span class="string">"SPEECH_KEY"</span>]
+SPEECH_REGION = os.environ[<span class="string">"SPEECH_REGION"</span>]
+COSMOS_ENDPOINT = os.environ[<span class="string">"COSMOS_ENDPOINT"</span>]
+COSMOS_KEY = os.environ[<span class="string">"COSMOS_KEY"</span>]
+
+<span class="comment"># ===== STT: Azure Custom Speech =====</span>
+<span class="keyword">def</span> <span class="function">speech_to_text</span>(audio_data):
+    url = <span class="string">f"https://{SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/custom/cognitiveservices/v1"</span>
+    headers = {
+        <span class="string">"Ocp-Apim-Subscription-Key"</span>: SPEECH_KEY,
+        <span class="string">"Content-Type"</span>: <span class="string">"audio/wav; codecs=audio/pcm; samplerate=16000"</span>
+    }
+    params = {<span class="string">"language"</span>: <span class="string">"hi-IN"</span>, <span class="string">"format"</span>: <span class="string">"detailed"</span>}
+    response = requests.post(url, headers=headers, params=params, data=audio_data)
+    result = response.json()
+    <span class="keyword">return</span> result[<span class="string">"DisplayText"</span>]
+
+<span class="comment"># ===== LLM: Azure OpenAI GPT-4 =====</span>
+<span class="keyword">def</span> <span class="function">process_with_llm</span>(text, language):
+    url = <span class="string">"https://your-openai.openai.azure.com/openai/deployments/gpt-4/chat/completions?api-version=2024-02-15-preview"</span>
+    headers = {<span class="string">"api-key"</span>: <span class="string">"your-openai-key"</span>, <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>}
+    system_prompt = <span class="string">"आप BusSahayak हैं। हिंदी में छोटे जवाब दें।"</span> <span class="keyword">if</span> language == <span class="string">"hi"</span> <span class="keyword">else</span> <span class="string">"You are BusSahayak. Reply in English briefly."</span>
+    data = {<span class="string">"messages"</span>: [{<span class="string">"role"</span>: <span class="string">"system"</span>, <span class="string">"content"</span>: system_prompt}, {<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: text}], <span class="string">"max_tokens"</span>: <span class="number">100</span>}
+    response = requests.post(url, headers=headers, json=data)
+    <span class="keyword">return</span> response.json()[<span class="string">"choices"</span>][<span class="number">0</span>][<span class="string">"message"</span>][<span class="string">"content"</span>]
+
+<span class="comment"># ===== TTS: Azure Custom Voice =====</span>
+<span class="keyword">def</span> <span class="function">text_to_speech</span>(text, language):
+    url = <span class="string">f"https://{SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1"</span>
+    headers = {<span class="string">"Ocp-Apim-Subscription-Key"</span>: SPEECH_KEY, <span class="string">"Content-Type"</span>: <span class="string">"application/ssml+xml"</span>, <span class="string">"X-Microsoft-OutputFormat"</span>: <span class="string">"riff-24khz-16bit-mono-pcm"</span>}
+    voice = <span class="string">"hi-IN-NeuralFemale"</span> <span class="keyword">if</span> language == <span class="string">"hi"</span> <span class="keyword">else</span> <span class="string">"en-US-NeuralFemale"</span>
+    ssml = <span class="string">f"&lt;speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='{language}'&gt;&lt;voice name='{voice}'&gt;{text}&lt;/voice&gt;&lt;/speak&gt;"</span>
+    response = requests.post(url, headers=headers, data=ssml)
+    <span class="keyword">return</span> response.content
+
+<span class="comment"># ===== Main Endpoint =====</span>
+<span class="keyword">@app</span>.post(<span class="string">"/voice"</span>)
+<span class="keyword">async def</span> <span class="function">process_voice</span>(audio: UploadFile = File(...)):
+    start = time.time()
+    audio_data = await audio.read()
+    user_text = speech_to_text(audio_data)
+    language = <span class="string">"hi"</span> <span class="keyword">if</span> any(ord(c) > <span class="number">0x0900</span> <span class="keyword">for</span> c <span class="keyword">in</span> user_text) <span class="keyword">else</span> <span class="string">"en"</span>
+    response_text = process_with_llm(user_text, language)
+    audio_response = text_to_speech(response_text, language)
+    latency = int((time.time() - start) * <span class="number">1000</span>)
+    <span class="keyword">return</span> JSONResponse(content={<span class="string">"user_text"</span>: user_text, <span class="string">"response_text"</span>: response_text, <span class="string">"latency_ms"</span>: latency})
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 4: SCALE -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">PHASE 4: SCALE (Automatic)</div>
+
+    <div class="sub-title">4.1 Azure Auto-Scale Configuration</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="badge badge-blue">App Service Auto-Scale</span></div>
+        <div class="card-content">
+          <strong>Rule 1: CPU > 70%</strong><br>
+          → Add 2 instances<br>
+          → Cooldown: 5 minutes<br><br>
+          <strong>Rule 2: CPU < 30%</strong><br>
+          → Remove 1 instance<br>
+          → Cooldown: 10 minutes<br><br>
+          <strong>Min instances:</strong> 2<br>
+          <strong>Max instances:</strong> 10
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge badge-green">AKS Horizontal Pod Autoscaler</span></div>
+        <div class="card-content">
+          <strong>Rule 1: CPU > 70%</strong><br>
+          → Scale pods 3 → 20<br>
+          → Cooldown: 5 minutes<br><br>
+          <strong>Rule 2: Memory > 80%</strong><br>
+          → Scale pods 3 → 20<br>
+          → Cooldown: 5 minutes<br><br>
+          <strong>Min pods:</strong> 3<br>
+          <strong>Max pods:</strong> 20
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">4.2 Load Balancer Setup</div>
+    <div class="code-block">
+<span class="comment"># Azure Application Gateway (Load Balancer)</span>
+az network application-gateway create \
+  --name <span class="string">BusSahayakGateway</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --sku <span class="string">Standard_v2</span> \
+  --capacity <span class="number">2</span> \
+  --frontend-port <span class="number">443</span> \
+  --http-settings-port <span class="number">80</span> \
+  --http-settings-protocol <span class="string">Http</span>
+
+<span class="comment"># Add backend pool (App Service instances)</span>
+az network application-gateway address-pool create \
+  --gateway-name <span class="string">BusSahayakGateway</span> \
+  --resource-group <span class="string">BusSahayakRG</span> \
+  --name <span class="string">BusSahayakBackendPool</span>
+    </div>
+
+    <div class="sub-title">4.3 Scaling Cost Estimates</div>
+    <table class="data-table">
+      <tr>
+        <th>Traffic</th>
+        <th>Instances</th>
+        <th>Monthly Cost</th>
+        <th>Latency</th>
+      </tr>
+      <tr>
+        <td>100 concurrent users</td>
+        <td>2</td>
+        <td>~₹5,000</td>
+        <td>&lt;500ms</td>
+      </tr>
+      <tr>
+        <td>1,000 concurrent users</td>
+        <td>5</td>
+        <td>~₹15,000</td>
+        <td>&lt;500ms</td>
+      </tr>
+      <tr>
+        <td>10,000 concurrent users</td>
+        <td>15</td>
+        <td>~₹50,000</td>
+        <td>&lt;500ms</td>
+      </tr>
+      <tr>
+        <td>100,000 concurrent users</td>
+        <td>50</td>
+        <td>~₹2,00,000</td>
+        <td>&lt;500ms</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 5: INTEGRATE -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">PHASE 5: INTEGRATE (Continuous)</div>
+
+    <div class="sub-title">5.1 Complete Request Flow</div>
+    <div class="flow-vertical">
+      <div class="flow-box box-blue">
+        <div class="flow-box-title">Step 1: User Speaks</div>
+        <div class="flow-box-content">
+          Blind user holds screen → Microphone activates → Records 16kHz PCM audio → Sends to Azure App Service via HTTPS
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+
+      <div class="flow-box box-purple">
+        <div class="flow-box-title">Step 2: Audio → Azure Custom STT</div>
+        <div class="flow-box-content">
+          FastAPI receives audio → Sends to <code>centralindia.stt.speech.microsoft.com</code> → Custom model transcribes → Returns Hindi/English text → <strong>Latency: 100-200ms</strong>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+
+      <div class="flow-box box-green">
+        <div class="flow-box-title">Step 3: Text → Azure OpenAI (GPT-4)</div>
+        <div class="flow-box-content">
+          FastAPI sends text to <code>your-openai.openai.azure.com</code> → GPT-4 processes intent → Generates response in same language → <strong>Latency: 200-300ms</strong>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+
+      <div class="flow-box box-amber">
+        <div class="flow-box-title">Step 4: Response → Azure Custom TTS</div>
+        <div class="flow-box-content">
+          FastAPI sends response text to <code>centralindia.tts.speech.microsoft.com</code> → Custom voice generates 24kHz PCM audio → <strong>Latency: 100-200ms</strong>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+
+      <div class="flow-box box-red">
+        <div class="flow-box-title">Step 5: Audio → User</div>
+        <div class="flow-box-content">
+          FastAPI returns audio to React Native app → Speaker plays response → Haptic vibration confirms → <strong>Total Latency: 400-600ms</strong>
+        </div>
+      </div>
+      <div class="flow-connector"></div>
+
+      <div class="flow-box box-teal">
+        <div class="flow-box-title">Step 6: Data → Cosmos DB + Redis</div>
+        <div class="flow-box-content">
+          Booking saved to Cosmos DB <code>bookings</code> container → Seat locked in Redis with 3600s TTL → Voice log saved to Cosmos DB <code>voice_logs</code> container → FCM push to manager app
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">5.2 Latency Breakdown</div>
+    <table class="data-table">
+      <tr>
+        <th>Step</th>
+        <th>Service</th>
+        <th>Latency</th>
+        <th>How to Optimize</th>
+      </tr>
+      <tr>
+        <td>Audio Capture</td>
+        <td>React Native</td>
+        <td>10-20ms</td>
+        <td>16kHz PCM, skip silence</td>
+      </tr>
+      <tr>
+        <td>HTTP Upload</td>
+        <td>HTTPS</td>
+        <td>20-50ms</td>
+        <td>CDN, edge locations</td>
+      </tr>
+      <tr>
+        <td>STT</td>
+        <td>Azure Custom Speech</td>
+        <td>100-200ms</td>
+        <td>Custom model (faster than base)</td>
+      </tr>
+      <tr>
+        <td>LLM</td>
+        <td>Azure OpenAI GPT-4</td>
+        <td>200-300ms</td>
+        <td>Shorter prompts, max_tokens=50</td>
+      </tr>
+      <tr>
+        <td>TTS</td>
+        <td>Azure Custom Voice</td>
+        <td>100-200ms</td>
+        <td>Custom voice (cached, faster)</td>
+      </tr>
+      <tr>
+        <td>Audio Download</td>
+        <td>HTTPS</td>
+        <td>20-50ms</td>
+        <td>CDN, edge locations</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td></td>
+        <td><strong>450-820ms</strong></td>
+        <td><strong>With optimization: &lt;500ms</strong></td>
+      </tr>
+    </table>
+
+    <div class="sub-title">5.3 Language Auto-Detection</div>
+    <div class="code-block">
+<span class="keyword">def</span> <span class="function">detect_language</span>(text):
+    <span class="comment"># Count Hindi characters (Devanagari: 0900-097F)</span>
+    hindi_chars = len([c <span class="keyword">for</span> c <span class="keyword">in</span> text <span class="keyword">if</span> <span class="number">0x0900</span> <= ord(c) <= <span class="number">0x097F</span>])
+    <span class="comment"># Count English characters</span>
+    english_chars = len([c <span class="keyword">for</span> c <span class="keyword">in</span> text <span class="keyword">if</span> c.isalpha() <span class="keyword">and</span> ord(c) < <span class="number">128</span>])
+    total = hindi_chars + english_chars
+    <span class="keyword">if</span> total == <span class="number">0</span>: <span class="keyword">return</span> <span class="string">"hi"</span>
+    <span class="keyword">if</span> hindi_chars / total > <span class="number">0.7</span>: <span class="keyword">return</span> <span class="string">"hi"</span>
+    <span class="keyword">if</span> english_chars / total > <span class="number">0.7</span>: <span class="keyword">return</span> <span class="string">"en"</span>
+    <span class="keyword">return</span> <span class="string">"hi"</span>  <span class="comment"># Hinglish → treat as Hindi</span>
+    </div>
+
+    <div class="sub-title">5.4 React Native Integration</div>
+    <div class="code-block">
+<span class="comment">// hooks/useAzureVoice.ts</span>
+
+<span class="keyword">import</span> { useRef, useState } <span class="keyword">from</span> <span class="string">'react'</span>;
+
+<span class="keyword">export function</span> <span class="function">useAzureVoice</span>() {
+  <span class="keyword">const</span> [isListening, setIsListening] = useState(false);
+  <span class="keyword">const</span> [response, setResponse] = useState(<span class="string">''</span>);
+  <span class="keyword">const</span> mediaRecorder = useRef(null);
+
+  <span class="keyword">const</span> <span class="function">startListening</span> = <span class="keyword">async</span> () => {
+    setIsListening(true);
+    <span class="keyword">const</span> stream = <span class="keyword">await</span> navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder.current = <span class="keyword">new</span> MediaRecorder(stream);
+    <span class="keyword">const</span> chunks = [];
+    mediaRecorder.current.ondataavailable = (e) => chunks.push(e.data);
+    mediaRecorder.current.onstop = <span class="keyword">async</span> () => {
+      <span class="keyword">const</span> audioBlob = <span class="keyword">new</span> Blob(chunks, { type: <span class="string">'audio/wav'</span> });
+      <span class="keyword">const</span> formData = <span class="keyword">new</span> FormData();
+      formData.append(<span class="string">'audio'</span>, audioBlob);
+      <span class="keyword">const</span> res = <span class="keyword">await</span> fetch(<span class="string">'https://BusSahayakAPI.azurewebsites.net/voice'</span>, { method: <span class="string">'POST'</span>, body: formData });
+      <span class="keyword">const</span> data = <span class="keyword">await</span> res.json();
+      setResponse(data.response_text);
+      setIsListening(false);
+    };
+    mediaRecorder.current.start();
+  };
+
+  <span class="keyword">const</span> <span class="function">stopListening</span> = () => {
+    mediaRecorder.current?.stop();
+  };
+
+  <span class="keyword">return</span> { isListening, response, startListening, stopListening };
+}
+    </div>
+
+    <div class="sub-title">5.5 Complete Azure Resource Map</div>
+    <div class="flow-vertical">
+      <div class="flow-box box-gray" style="max-width:100%;">
+        <div class="flow-box-title">BusSahayak Azure Resources</div>
+        <div class="flow-box-content">
+          <strong>Resource Group:</strong> BusSahayakRG (centralindia)<br><br>
+          <strong>1. Azure Speech Service</strong> (SpeechServices S0)<br>
+          &nbsp;&nbsp;├── Custom Speech Project → STT Model → STT Endpoint<br>
+          &nbsp;&nbsp;└── Custom Voice Project → TTS Model → TTS Endpoint<br><br>
+          <strong>2. Azure OpenAI</strong> (GPT-4 deployment)<br>
+          &nbsp;&nbsp;└── Chat Completions API<br><br>
+          <strong>3. Azure Cosmos DB</strong> (GlobalDocumentDB)<br>
+          &nbsp;&nbsp;├── BusSahayakDatabase<br>
+          &nbsp;&nbsp;│&nbsp;&nbsp;├── users (partition: /userId)<br>
+          &nbsp;&nbsp;│&nbsp;&nbsp;├── bookings (partition: /userId)<br>
+          &nbsp;&nbsp;│&nbsp;&nbsp;├── voice_logs (partition: /userId)<br>
+          &nbsp;&nbsp;│&nbsp;&nbsp;├── buses (partition: /route)<br>
+          &nbsp;&nbsp;│&nbsp;&nbsp;└── seat_locks (partition: /busId)<br><br>
+          <strong>4. Azure Blob Storage</strong> (Standard_LRS)<br>
+          &nbsp;&nbsp;├── training-data/ (STT + TTS training audio)<br>
+          &nbsp;&nbsp;├── models/ (trained model files)<br>
+          &nbsp;&nbsp;└── user-data/ (recordings + tickets)<br><br>
+          <strong>5. Azure Redis Cache</strong> (C1)<br>
+          &nbsp;&nbsp;└── Seat locks (3600s TTL), sessions, rate limits<br><br>
+          <strong>6. Azure App Service</strong> (P1v2 Linux)<br>
+          &nbsp;&nbsp;└── FastAPI backend (auto-scaled 2-10 instances)<br><br>
+          <strong>7. Azure Application Gateway</strong> (Standard_v2)<br>
+          &nbsp;&nbsp;└── Load balancer, SSL termination, WAF<br><br>
+          <strong>8. Azure Notification Hubs</strong><br>
+          &nbsp;&nbsp;└── FCM push to manager app
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SUMMARY -->
+<!-- ============================================ -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">QUICK REFERENCE — Complete Flow</div>
+
+    <table class="data-table">
+      <tr>
+        <th>Phase</th>
+        <th>What</th>
+        <th>Azure Service</th>
+        <th>Frequency</th>
+      </tr>
+      <tr>
+        <td><strong>1. TRAIN</strong></td>
+        <td>Upload 16kHz WAV + TSV transcripts</td>
+        <td>Azure Custom Speech / Custom Voice</td>
+        <td>One-time (retrain monthly)</td>
+      </tr>
+      <tr>
+        <td><strong>2. STORE</strong></td>
+        <td>Audio, users, bookings, logs, seats</td>
+        <td>Azure Blob + Cosmos DB + Redis</td>
+        <td>Continuous (every request)</td>
+      </tr>
+      <tr>
+        <td><strong>3. DEPLOY</strong></td>
+        <td>STT endpoint, TTS endpoint, FastAPI</td>
+        <td>Azure App Service + Speech</td>
+        <td>One-time (update monthly)</td>
+      </tr>
+      <tr>
+        <td><strong>4. SCALE</strong></td>
+        <td>Auto-scale 2-50 instances</td>
+        <td>App Service Auto-Scale + Gateway</td>
+        <td>Automatic (real-time)</td>
+      </tr>
+      <tr>
+        <td><strong>5. INTEGRATE</strong></td>
+        <td>User speaks → STT → LLM → TTS → response</td>
+        <td>Speech + OpenAI + FastAPI + React Native</td>
+        <td>Continuous (every voice command)</td>
+      </tr>
+    </table>
+
+    <div class="grid-3" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">Audio Formats</div>
+        <div class="card-content">
+          STT: <code>WAV 16kHz Mono 16-bit PCM</code><br>
+          TTS: <code>WAV 48kHz Mono 16-bit PCM</code><br>
+          Runtime: <code>WAV 24kHz Mono 16-bit PCM</code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Data Formats</div>
+        <div class="card-content">
+          Blob: <code>.wav .pdf .onnx .tsv</code><br>
+          Cosmos DB: <code>JSON documents</code><br>
+          Redis: <code>Key-Value pairs with TTL</code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Target Latency</div>
+        <div class="card-content">
+          STT: <code>100-200ms</code><br>
+          LLM: <code>200-300ms</code><br>
+          TTS: <code>100-200ms</code><br>
+          <strong>Total: <code>&lt;500ms</code></strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
