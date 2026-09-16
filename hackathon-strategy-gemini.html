@@ -397,23 +397,246 @@
       </div>
     </div>
 
-    <div class="sub-title">Hour-by-Hour Tasks</div>
-    <div class="data-table" style="font-size:13px;">
-      <tr><th style="width:70px;">Hours</th><th style="width:100px;">Phase</th><th>What To Build</th><th>Who</th></tr>
-      <tr><td><strong>0-3</strong></td><td><span class="badge badge-green">SETUP</span></td><td>Expo init, FastAPI init, Gemini API key, ZuelPay key, git repo, EAS config</td><td>ALL 6</td></tr>
-      <tr><td><strong>3-6</strong></td><td><span class="badge badge-blue">GEMINI</span></td><td>Gemini WebSocket server, system prompt, function declarations, audio streaming</td><td>Nitin + M3</td></tr>
-      <tr><td><strong>3-6</strong></td><td><span class="badge badge-purple">UI</span></td><td>Home screen (big MIC button), white theme, navigation, accessibility context</td><td>M1 + M4</td></tr>
-      <tr><td><strong>3-6</strong></td><td><span class="badge badge-amber">API</span></td><td>FastAPI endpoints, ZuelPay integration, bus search, seat availability</td><td>M2</td></tr>
-      <tr><td><strong>6-10</strong></td><td><span class="badge badge-blue">SCREENS</span></td><td>Search screen, Results screen with bus cards, voice readout</td><td>M1 + M4</td></tr>
-      <tr><td><strong>6-10</strong></td><td><span class="badge badge-green">FUNCTIONS</span></td><td>Gemini function calling: search_buses, get_seats, create_booking</td><td>Nitin + M3</td></tr>
-      <tr><td><strong>10-14</strong></td><td><span class="badge badge-purple">BOOKING</span></td><td>Seat selection, passenger details, booking confirmation, ticket</td><td>M1 + M2</td></tr>
-      <tr><td><strong>14-18</strong></td><td><span class="badge badge-amber">3 MODES</span></td><td>Mode 1 (Voice Only), Mode 2 (Dynamic Switch), Mode 3 (Dual)</td><td>M1 + M3</td></tr>
-      <tr><td><strong>14-18</strong></td><td><span class="badge badge-teal">MANAGER</span></td><td>Manager dashboard, tele-confirmation flow, FCM push</td><td>M4 + M2</td></tr>
-      <tr><td><strong>18-22</strong></td><td><span class="badge badge-red">POLISH</span></td><td>Animations, haptics, error handling, loading states, barge-in</td><td>M1 + M4</td></tr>
-      <tr><td><strong>22-26</strong></td><td><span class="badge badge-green">TEST</span></td><td>Real device testing, accessibility audit, bug fixes</td><td>ALL 6</td></tr>
-      <tr><td><strong>26-30</strong></td><td><span class="badge badge-blue">DEPLOY</span></td><td>EAS build APK, Vercel deploy, demo video recording</td><td>Nitin + M5</td></tr>
-      <tr><td><strong>30-33</strong></td><td><span class="badge badge-purple">PRESENT</span></td><td>Final PPT, pitch script, demo flow, Q&A prep</td><td>M4 + ALL</td></tr>
-      <tr><td><strong>33-36</strong></td><td><span class="badge badge-amber">BACKUP</span></td><td>Backup demo, edge cases, final checks</td><td>ALL 6</td></tr>
+    <div class="sub-title">Hour-by-Hour Tasks (Big Cards)</div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#dcfce7;color:#16a34a;">0-3 HOURS</div>
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:22px;">SETUP</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Project init, repo, configs<br>
+          <strong>Tasks:</strong><br>
+          - Expo init + dependencies<br>
+          - FastAPI init<br>
+          - Gemini API key setup<br>
+          - ZuelPay API key<br>
+          - Git repo + EAS config<br>
+          <strong>Who:</strong> ALL 6 members<br>
+          <strong>Deliverable:</strong> App runs on phone
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-badge" style="background:#d2e3fc;color:#1a73e8;">3-6 HOURS</div>
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:22px;">GEMINI ENGINE</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Voice engine setup<br>
+          <strong>Tasks:</strong><br>
+          - WebSocket server<br>
+          - System prompt design<br>
+          - Function declarations<br>
+          - Audio streaming<br>
+          <strong>Who:</strong> Nitin + M3<br>
+          <strong>Deliverable:</strong> Gemini responds to voice
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">3-6 HOURS</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:22px;">UI SHELL</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> App shell + navigation<br>
+          <strong>Tasks:</strong><br>
+          - Home screen (big MIC)<br>
+          - White theme<br>
+          - Navigation flow<br>
+          - Accessibility context<br>
+          <strong>Who:</strong> M1 + M4<br>
+          <strong>Deliverable:</strong> App navigates
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-badge" style="background:#fef3c7;color:#d97706;">3-6 HOURS</div>
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:22px;">BACKEND API</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> FastAPI + ZuelPay<br>
+          <strong>Tasks:</strong><br>
+          - FastAPI endpoints<br>
+          - ZuelPay integration<br>
+          - Bus search API<br>
+          - Seat availability<br>
+          <strong>Who:</strong> M2<br>
+          <strong>Deliverable:</strong> API responds to requests
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#fff);">
+        <div class="mega-card-badge" style="background:#dbeafe;color:#1d4ed8;">6-10 HOURS</div>
+        <div class="mega-card-header" style="color:#1d4ed8;">
+          <span style="font-size:22px;">SCREENS</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Search + Results<br>
+          <strong>Tasks:</strong><br>
+          - Search screen<br>
+          - Results with bus cards<br>
+          - Voice readout<br>
+          - City chips<br>
+          <strong>Who:</strong> M1 + M4<br>
+          <strong>Deliverable:</strong> Search works end-to-end
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#ceead6;color:#137333;">6-10 HOURS</div>
+        <div class="mega-card-header" style="color:#137333;">
+          <span style="font-size:22px;">FUNCTIONS</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Gemini function calling<br>
+          <strong>Tasks:</strong><br>
+          - search_buses function<br>
+          - get_seats function<br>
+          - create_booking function<br>
+          - Response handling<br>
+          <strong>Who:</strong> Nitin + M3<br>
+          <strong>Deliverable:</strong> Auto API calls work
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">10-14 HOURS</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:22px;">BOOKING FLOW</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Complete booking<br>
+          <strong>Tasks:</strong><br>
+          - Seat selection<br>
+          - Passenger details<br>
+          - Booking confirmation<br>
+          - Ticket generation<br>
+          <strong>Who:</strong> M1 + M2<br>
+          <strong>Deliverable:</strong> Booking works end-to-end
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-badge" style="background:#fef3c7;color:#d97706;">14-18 HOURS</div>
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:22px;">3 MODES</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Operating modes<br>
+          <strong>Tasks:</strong><br>
+          - Mode 1: Voice Only<br>
+          - Mode 2: Dynamic Switch<br>
+          - Mode 3: Dual Combined<br>
+          - Mode toggle<br>
+          <strong>Who:</strong> M1 + M3<br>
+          <strong>Deliverable:</strong> 3 modes work
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#14b8a6;background:linear-gradient(135deg,#f0fdfa,#fff);">
+        <div class="mega-card-badge" style="background:#ccfbf1;color:#0d9488;">14-18 HOURS</div>
+        <div class="mega-card-header" style="color:#0d9488;">
+          <span style="font-size:22px;">MANAGER DASH</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Manager dashboard<br>
+          <strong>Tasks:</strong><br>
+          - Web dashboard<br>
+          - Tele-confirmation<br>
+          - FCM push<br>
+          - One-tap confirm<br>
+          <strong>Who:</strong> M4 + M2<br>
+          <strong>Deliverable:</strong> Manager flow works
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-badge" style="background:#fef2f2;color:#dc2626;">18-22 HOURS</div>
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:22px;">POLISH</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> UX polish<br>
+          <strong>Tasks:</strong><br>
+          - Animations<br>
+          - Haptic feedback<br>
+          - Error handling<br>
+          - Loading states<br>
+          <strong>Who:</strong> M1 + M4<br>
+          <strong>Deliverable:</strong> Smooth experience
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#ceead6;color:#137333;">22-26 HOURS</div>
+        <div class="mega-card-header" style="color:#137333;">
+          <span style="font-size:22px;">TEST</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Testing + fixes<br>
+          <strong>Tasks:</strong><br>
+          - Real device testing<br>
+          - Accessibility audit<br>
+          - Bug fixes<br>
+          - Screen reader test<br>
+          <strong>Who:</strong> ALL 6<br>
+          <strong>Deliverable:</strong> No crashes
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#fff);">
+        <div class="mega-card-badge" style="background:#dbeafe;color:#1d4ed8;">26-30 HOURS</div>
+        <div class="mega-card-header" style="color:#1d4ed8;">
+          <span style="font-size:22px;">DEPLOY</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Build + deploy<br>
+          <strong>Tasks:</strong><br>
+          - EAS build APK<br>
+          - Vercel deploy<br>
+          - Demo video<br>
+          - Live URL<br>
+          <strong>Who:</strong> Nitin + M5<br>
+          <strong>Deliverable:</strong> Live demo ready
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="max-width:900px;margin:0 auto;">
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">30-33 HOURS</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:22px;">PRESENT</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Pitch prep<br>
+          <strong>Tasks:</strong><br>
+          - Final PPT<br>
+          - Pitch script<br>
+          - Demo flow<br>
+          - Q&A prep<br>
+          <strong>Who:</strong> M4 + ALL<br>
+          <strong>Deliverable:</strong> Presentation ready
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#1e293b;background:linear-gradient(135deg,#f8fafc,#fff);">
+        <div class="mega-card-badge" style="background:#e2e8f0;color:#475569;">33-36 HOURS</div>
+        <div class="mega-card-header" style="color:#0f172a;">
+          <span style="font-size:22px;">BACKUP</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> Final checks<br>
+          <strong>Tasks:</strong><br>
+          - Backup demo video<br>
+          - Edge cases<br>
+          - Final checks<br>
+          - Last fixes<br>
+          <strong>Who:</strong> ALL 6<br>
+          <strong>Deliverable:</strong> Ready to present
+        </div>
+      </div>
     </div>
   </div>
 </div>

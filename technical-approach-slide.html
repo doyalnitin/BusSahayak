@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Approach — BusSahayak</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #ffffff;
+    padding: 32px;
+    color: #1e293b;
+  }
+
+  .slide {
+    width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    margin-bottom: 28px;
+  }
+  .team-badge {
+    background: #1e293b;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .header-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+  .sih-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .sih-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Tech Cards Row */
+  .tech-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .tech-card {
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 2px solid;
+  }
+  .tech-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .tech-card-sub {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .tech-rn { background: #eff6ff; border-color: #3b82f6; }
+  .tech-rn .tech-card-title { color: #1d4ed8; }
+
+  .tech-gemini { background: #faf5ff; border-color: #a855f7; }
+  .tech-gemini .tech-card-title { color: #7c3aed; }
+
+  .tech-python { background: #f0fdf4; border-color: #22c55e; }
+  .tech-python .tech-card-title { color: #16a34a; }
+
+  .tech-aws { background: #fff7ed; border-color: #f97316; }
+  .tech-aws .tech-card-title { color: #ea580c; }
+
+  .tech-redis { background: #fef2f2; border-color: #ef4444; }
+  .tech-redis .tech-card-title { color: #dc2626; }
+
+  .tech-deploy { background: #f0fdf4; border-color: #22c55e; }
+  .tech-deploy .tech-card-title { color: #16a34a; }
+
+  /* Detail Cards */
+  .detail-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .detail-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 10px;
+    color: #475569;
+    line-height: 1.6;
+  }
+  .detail-card strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  /* System Flow */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+  }
+  .flow-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .flow-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+  }
+  .flow-sub {
+    font-size: 10px;
+    color: #64748b;
+    text-align: center;
+    margin-top: 2px;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: #cbd5e1;
+    margin: 0 4px;
+    margin-bottom: 20px;
+  }
+
+  .num-blue { background: #2563eb; }
+  .num-purple { background: #7c3aed; }
+  .num-green { background: #16a34a; }
+  .num-amber { background: #d97706; }
+  .num-red { background: #ef4444; }
+  .num-teal { background: #0d9488; }
+
+  /* Bottom Row */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .bottom-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .bottom-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  /* Speed Comparison */
+  .speed-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .speed-box {
+    flex: 1;
+    text-align: center;
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .speed-num {
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .speed-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .speed-red { background: #fef2f2; }
+  .speed-red .speed-num { color: #dc2626; }
+  .speed-green { background: #f0fdf4; }
+  .speed-green .speed-num { color: #16a34a; }
+
+  /* AI Engine */
+  .ai-list {
+    list-style: none;
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.8;
+  }
+  .ai-list li::before {
+    content: '✓';
+    color: #16a34a;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+
+  /* Competitive */
+  .comp-list {
+    list-style: none;
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.8;
+  }
+  .comp-list li { display: flex; align-items: center; gap: 6px; }
+  .comp-yes { color: #16a34a; font-weight: 700; }
+  .comp-no { color: #dc2626; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="team-badge">Coffee<br>Into Code</div>
+    <div class="header-title">TECHNICAL APPROACH</div>
+    <div class="sih-badge">
+      <svg class="sih-logo" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#f97316"/>
+        <text x="50" y="38" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">SMART</text>
+        <text x="50" y="50" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">INDIA</text>
+        <text x="50" y="62" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">HACKATHON</text>
+        <text x="50" y="78" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">2025</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Tech Cards -->
+  <div class="tech-row">
+    <div class="tech-card tech-rn">
+      <div class="tech-card-title">React Native</div>
+      <div class="tech-card-sub">Expo SDK 52<br>Web + Mobile</div>
+    </div>
+    <div class="tech-card tech-gemini">
+      <div class="tech-card-title">Voice AI — Google Gemini<br>Multimodal Live API</div>
+      <div class="tech-card-sub">Audio Streaming, Latency<br>Function Calling, Multilingual</div>
+    </div>
+    <div class="tech-card tech-python">
+      <div class="tech-card-title">Backend — Python<br>FastAPI + Asyncio</div>
+      <div class="tech-card-sub">WebSocket Server, Auth Middleware<br>ZuelPay Integration</div>
+    </div>
+    <div class="tech-card tech-aws">
+      <div class="tech-card-title">AWS</div>
+      <div class="tech-card-sub">Compute, Cache, Database<br>Storage, Push, CDN</div>
+    </div>
+    <div class="tech-card tech-redis">
+      <div class="tech-card-title">Redis Cache &<br>PostgreSQL</div>
+      <div class="tech-card-sub">Seat Locking, TTL<br>Data Persistence</div>
+    </div>
+    <div class="tech-card tech-deploy">
+      <div class="tech-card-title">Cloud Deploy</div>
+      <div class="tech-card-sub">Live Prototype</div>
+    </div>
+  </div>
+
+  <!-- Detail Cards -->
+  <div class="detail-row">
+    <div class="detail-card">
+      <strong>Expo SDK 52</strong><br>
+      Cross-platform (Web + Android + iOS). Native accessibility APIs: TalkBack, VoiceOver. Touch Shield for gesture control.
+    </div>
+    <div class="detail-card">
+      <strong>Audio Pipeline</strong><br>
+      16kHz PCM input → 24kHz PCM output. Bi-directional WebSocket. Barge-in support. <500ms latency.
+    </div>
+    <div class="detail-card">
+      <strong>WebSocket Server</strong><br>
+      FastAPI async endpoints. JWT auth + rate limiting. Redis seat locking (3600s TTL). ZuelPay REST API.
+    </div>
+    <div class="detail-card">
+      <strong>Cloud Services</strong><br>
+      Elastic Beanstalk / Cloud Run (compute). ElastiCache (Redis). RDS (PostgreSQL). S3 (storage). FCM (push).
+    </div>
+    <div class="detail-card">
+      <strong>Redis Cache</strong><br>
+      Seat locking with 3600s TTL. Atomic SET/GET operations. Prevents double-booking. Auto-expire unconfirmed seats.
+    </div>
+    <div class="detail-card">
+      <strong>Deployment</strong><br>
+      Vercel (web). EAS Build (mobile). Auto-scaling. CI/CD pipeline.
+    </div>
+  </div>
+
+  <!-- System Flow -->
+  <div class="section-title">System Flow</div>
+  <div class="flow-row">
+    <div class="flow-step">
+      <div class="flow-num num-blue">1</div>
+      <div class="flow-label">User Speaks</div>
+      <div class="flow-sub">"Delhi to Jaipur"</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num num-purple">2</div>
+      <div class="flow-label">AI Extracts</div>
+      <div class="flow-sub">City, Date, Time, Type</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num num-green">3</div>
+      <div class="flow-label">Buses Found</div>
+      <div class="flow-sub">ZuelPay API | Real Options</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num num-amber">4</div>
+      <div class="flow-label">Seat Locked</div>
+      <div class="flow-sub">60-min TTL</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num num-red">5</div>
+      <div class="flow-label">Driver Calls</div>
+      <div class="flow-sub">Tele-Confirmation</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-num num-teal">6</div>
+      <div class="flow-label">Ticket Issued</div>
+      <div class="flow-sub">PDF + SMS</div>
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-row">
+
+    <!-- Speed Comparison -->
+    <div class="bottom-card">
+      <div class="bottom-card-title">Booking Speed Comparison</div>
+      <div class="speed-row">
+        <div class="speed-box speed-red">
+          <div class="speed-num">6.5 min</div>
+          <div class="speed-label">Screen Reader</div>
+        </div>
+        <div class="speed-box speed-green">
+          <div class="speed-num">1.2 min</div>
+          <div class="speed-label">BusSahayak</div>
+        </div>
+      </div>
+      <div style="text-align:center; font-size:12px; color:#16a34a; font-weight:700;">82% Faster with Voice AI</div>
+    </div>
+
+    <!-- Conversational AI -->
+    <div class="bottom-card">
+      <div class="bottom-card-title">Conversational AI Engine</div>
+      <ul class="ai-list">
+        <li>40+ Indian cities recognized</li>
+        <li>Hindi + English mixed input</li>
+        <li>Date/time extraction | Bus type preferences</li>
+        <li>Guided: Search > Select > Seat > Confirm</li>
+      </ul>
+    </div>
+
+    <!-- Competitive Advantage -->
+    <div class="bottom-card">
+      <div class="bottom-card-title">Competitive Advantage</div>
+      <ul class="comp-list">
+        <li><span class="comp-no">Other app ✗</span> Voice First: <span class="comp-yes">Our App ✓</span></li>
+        <li><span class="comp-no">Other app ✗</span> Blind Accessibility: <span class="comp-yes">Our App ✓</span></li>
+        <li><span class="comp-no">Other app ✗</span> Tele-Confirmation: <span class="comp-yes">60-Min TTL ✓</span></li>
+        <li><span class="comp-no">Other app ✗</span> Government Subsidy: <span class="comp-yes">Our App ✓</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
