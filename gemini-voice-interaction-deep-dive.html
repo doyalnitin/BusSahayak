@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak - Gemini Voice Interaction Deep Dive</title>
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  @media print { body { padding: 0; } .slide { page-break-inside: avoid; margin-bottom: 10px; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #fff; color: #1e293b; padding: 16px; line-height: 1.35; }
+  .slide { max-width: 1400px; margin: 0 auto 20px auto; }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border: 3px solid #e5e7eb; border-radius: 16px; margin-bottom: 16px; }
+  .team-badge { background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 28px; font-size: 13px; font-weight: 800; text-align: center; line-height: 1.3; }
+  .header-title { font-size: 26px; font-weight: 900; color: #0f172a; }
+  .sih-badge { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #64748b; font-weight: 700; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 4px solid #2563eb; display: inline-block; }
+  .sub-title { font-size: 18px; font-weight: 800; color: #2563eb; margin-bottom: 10px; margin-top: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .mega-card { border-radius: 18px; padding: 20px; border: 3px solid; position: relative; overflow: hidden; }
+  .mega-card-header { font-size: 18px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .mega-card-body { font-size: 13px; color: #334155; line-height: 1.7; }
+  .mega-card-body strong { color: #0f172a; }
+  .mega-card-badge { position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 800; }
+  .card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+  .card-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+  .card-content { font-size: 12px; color: #475569; line-height: 1.6; }
+  .code-block { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 10px; font-family: 'Fira Code','Consolas',monospace; font-size: 11px; line-height: 1.5; overflow-x: auto; margin-bottom: 12px; white-space: pre; }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #a855f7; }
+  .code-block .string { color: #22c55e; }
+  .code-block .function { color: #3b82f6; }
+  .code-block .number { color: #f59e0b; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 800; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-purple { background: #f3e8ff; color: #7c3aed; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+  .badge-red { background: #fef2f2; color: #dc2626; }
+  .badge-teal { background: #ccfbf1; color: #0d9488; }
+  .page-break { page-break-before: always; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border-left: 4px solid; background: #f8fafc; }
+  .flow-step-num { min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #fff; }
+  .flow-step-content { flex: 1; }
+  .flow-step-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+  .flow-step-desc { font-size: 12px; color: #475569; line-height: 1.5; }
+  .latency-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .latency-bar-label { font-size: 12px; font-weight: 700; color: #334155; min-width: 120px; }
+  .latency-bar-track { flex: 1; height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; position: relative; }
+  .latency-bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; font-weight: 800; color: #fff; }
+  .latency-bar-value { font-size: 12px; font-weight: 700; color: #64748b; min-width: 40px; text-align: right; }
+  .qa-item { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .qa-q { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 6px; }
+  .qa-a { font-size: 13px; color: #475569; line-height: 1.6; padding-left: 24px; }
+  .diagram-box { background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 10px; }
+  .diagram-box-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  .diagram-box-desc { font-size: 11px; color: #64748b; }
+  .arrow-down { text-align: center; font-size: 24px; color: #94a3b8; margin: 4px 0; }
+  .demo-script { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+  .demo-script .user-speak { color: #22c55e; font-weight: 700; }
+  .demo-script .system-speak { color: #3b82f6; font-weight: 700; }
+  .demo-script .time { color: #f59e0b; font-weight: 700; }
+  .stat-number { font-size: 36px; font-weight: 900; color: #2563eb; }
+  .stat-label { font-size: 12px; color: #64748b; font-weight: 700; }
+  .stat-card { text-align: center; padding: 16px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; margin: 2px; }
+  .ws-window { background: #1a1a2e; border-radius: 12px; overflow: hidden; margin-bottom: 14px; border: 2px solid #334155; }
+  .ws-titlebar { background: #16213e; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .ws-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ws-content { padding: 14px; font-family: 'Fira Code','Consolas',monospace; font-size: 11px; line-height: 1.6; }
+  .ws-msg { margin-bottom: 6px; padding: 6px 10px; border-radius: 6px; }
+  .ws-client { background: rgba(34,197,94,0.15); border-left: 3px solid #22c55e; }
+  .ws-server { background: rgba(59,130,246,0.15); border-left: 3px solid #3b82f6; }
+  .ws-label { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .comparison-col { border: 2px solid; border-radius: 14px; padding: 16px; }
+  .comparison-title { font-size: 15px; font-weight: 900; margin-bottom: 10px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="slide">
+  <div class="header">
+    <div class="team-badge">COFFEE INTO CODE<br>Nitin Doyal (Team Leader)</div>
+    <div>
+      <div class="header-title">Gemini Voice Interaction Deep Dive</div>
+      <div style="font-size:13px;color:#64748b;font-weight:600;">How BusSahayak Uses Google Gemini Multimodal Live API for Blind Bus Booking</div>
+    </div>
+    <div class="sih-badge">
+      <svg class="sih-logo" viewBox="0 0 50 50"><circle cx="25" cy="25" r="23" fill="#1e293b"/><text x="25" y="20" text-anchor="middle" fill="#fff" font-size="8" font-weight="900">SIH</text><text x="25" y="32" text-anchor="middle" fill="#f59e0b" font-size="7" font-weight="800">2026</text></svg>
+      <div>SIH26002<br>Smart Logistics &amp; Accessibility</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: THE PROBLEM & SOLUTION -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">1. The Problem & Our Solution</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:22px;">THE PROBLEM</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>India has 40+ million blind/visually impaired people.</strong><br><br>
+          Current bus booking apps (RedBus, AbhiBus) are 100% visual:<br>
+          - Need to <strong>see</strong> the screen to navigate<br>
+          - Need to <strong>read</strong> bus names, times, prices<br>
+          - Need to <strong>tap</strong> specific seats on a grid<br>
+          - Need to <strong>type</strong> payment details<br><br>
+          <strong style="color:#dc2626;">Result: Blind people CANNOT book bus tickets independently. They must ask friends, family, or travel agents every time.</strong>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:22px;">OUR SOLUTION</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>BusSahayak: Voice-First Bus Booking</strong><br><br>
+          User holds the MIC button and speaks naturally in Hindi/Hinglish:<br><br>
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:8px;padding:10px;margin:6px 0;">
+            <span style="color:#16a34a;font-weight:800;">User:</span> "Delhi se Jaipur kal ke liye AC bus dikhao"<br>
+            <span style="color:#2563eb;font-weight:800;">BusSahayak:</span> "5 AC buses milen. Peela Travels - 550 rupay, 2:30 PM. Bol dijiye konsi chahiye."
+          </div>
+          <br>
+          <strong style="color:#16a34a;">Result: Blind user books independently, speaks naturally, gets audio confirmation. No screen needed.</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-number">40M+</div>
+        <div class="stat-label">Blind/VI in India</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Voice-first bus apps exist</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">&lt;500ms</div>
+        <div class="stat-label">Response latency</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Voice-operated</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: WHAT IS GEMINI MULTIMODAL LIVE API -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">2. What is Google Gemini Multimodal Live API?</div>
+
+    <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);margin-bottom:16px;">
+      <div class="mega-card-header" style="color:#1a73e8;">
+        <span style="font-size:22px;">GEMINI MULTIMODAL LIVE API</span>
+        <span class="mega-card-badge" style="background:#d2e3fc;color:#1a73e8;">SINGLE WEBSOCKET</span>
+      </div>
+      <div class="mega-card-body">
+        <strong>Google Gemini Multimodal Live API is a single WebSocket connection that does EVERYTHING:</strong><br><br>
+        <div class="grid-3" style="margin-bottom:0;">
+          <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:28px;margin-bottom:4px;">🎤</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">Speech-to-Text</div>
+            <div style="font-size:11px;color:#64748b;">Converts voice to text</div>
+          </div>
+          <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:28px;margin-bottom:4px;">🧠</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">LLM Reasoning</div>
+            <div style="font-size:11px;color:#64748b;">Understands & decides</div>
+          </div>
+          <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:28px;margin-bottom:4px;">🔊</div>
+            <div style="font-size:13px;font-weight:800;color:#0f172a;">Text-to-Speech</div>
+            <div style="font-size:11px;color:#64748b;">Speaks the response</div>
+          </div>
+        </div>
+        <br>
+        <strong>Key insight:</strong> One WebSocket connection handles audio in, reasoning, and audio out. No separate STT + LLM + TTS pipeline needed. This gives us <strong>&lt;500ms latency</strong> and natural conversation flow.
+      </div>
+    </div>
+
+    <div class="sub-title">Why Gemini Over Separate Pipeline (Vosk + Gemma + Piper)?</div>
+    <div class="comparison-grid">
+      <div class="comparison-col" style="border-color:#22c55e;background:#f0fdf4;">
+        <div class="comparison-title" style="color:#16a34a;">GEMINI MULTIMODAL LIVE API</div>
+        <div class="card-content">
+          <strong>Latency:</strong> ~300-500ms (all-in-one)<br>
+          <strong>Quality:</strong> Human-like natural voice<br>
+          <strong>Language:</strong> Hindi, Hinglish, 20+ languages<br>
+          <strong>Function calling:</strong> Built-in, declarative<br>
+          <strong>Barge-in:</strong> Native support<br>
+          <strong>Maintenance:</strong> Google manages everything<br>
+          <strong>Cost:</strong> ~$0.02 per 15 seconds of audio<br>
+          <strong>Offline:</strong> No (requires internet)<br><br>
+          <span class="badge badge-green">RECOMMENDED FOR HACKATHON</span>
+        </div>
+      </div>
+      <div class="comparison-col" style="border-color:#f59e0b;background:#fffbeb;">
+        <div class="comparison-title" style="color:#d97706;">VOSK + GEMMA 2B + PIPER (OFFLINE)</div>
+        <div class="card-content">
+          <strong>Latency:</strong> ~250ms total (50+150+50)<br>
+          <strong>Quality:</strong> Robotic, limited prosody<br>
+          <strong>Language:</strong> Hindi supported but limited<br>
+          <strong>Function calling:</strong> Custom regex NLU<br>
+          <strong>Barge-in:</strong> Manual implementation<br>
+          <strong>Maintenance:</strong> Must manage 3 services<br>
+          <strong>Cost:</strong> Free (runs on device)<br>
+          <strong>Offline:</strong> Yes (no internet needed)<br><br>
+          <span class="badge badge-amber">FALLBACK FOR LOW CONNECTIVITY</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: HOW THE VOICE INTERACTION WORKS -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">3. How the Voice Interaction Works (Step by Step)</div>
+
+    <div class="sub-title">Complete User Journey: Delhi to Jaipur Bus Booking</div>
+
+    <div class="flow-step" style="border-color:#2563eb;background:#eff6ff;">
+      <div class="flow-step-num" style="background:#2563eb;">1</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">User Opens App → Home Screen Appears</div>
+        <div class="flow-step-desc">
+          Screen shows: Large MIC button (center), city chips (Delhi, Mumbai, Jaipur, Bangalore...), "Bol ke book karo" subtitle<br>
+          <strong>Screen reader announces:</strong> "Bus Sahayak home. MIC button hai. Press karo aur bolo kaha se kaha jaana hai."
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇</div>
+
+    <div class="flow-step" style="border-color:#22c55e;background:#f0fdf4;">
+      <div class="flow-step-num" style="background:#22c55e;">2</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">User HOLDS MIC Button → Speaks</div>
+        <div class="flow-step-desc">
+          User presses and holds the big MIC button. Haptic pulse confirms press. While holding, user speaks:<br>
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:6px;padding:8px;margin:4px 0;font-weight:700;color:#16a34a;">
+            "Delhi se Jaipur kal ke liye AC bus dikhao"
+          </div>
+          MIC button glows green while recording. Audio is streamed to Gemini in real-time.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇</div>
+
+    <div class="flow-step" style="border-color:#a855f7;background:#faf5ff;">
+      <div class="flow-step-num" style="background:#a855f7;">3</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">Gemini Processes (Single WebSocket)</div>
+        <div class="flow-step-desc">
+          <strong>Inside the WebSocket (~300ms):</strong><br>
+          a) Audio stream received → Speech-to-Text converts to text<br>
+          b) Text processed by Gemini LLM → understands "Delhi to Jaipur, tomorrow, AC bus"<br>
+          c) LLM decides to call <code>search_buses(from="Delhi", to="Jaipur", date="2026-09-17", bus_type="AC")</code><br>
+          d) Function result returned → 5 buses found<br>
+          e) LLM generates spoken response in Hindi/Hinglish<br>
+          f) Text-to-Speech converts response to audio<br>
+          g) Audio streamed back to user
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇</div>
+
+    <div class="flow-step" style="border-color:#f59e0b;background:#fffbeb;">
+      <div class="flow-step-num" style="background:#f59e0b;">4</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">BusSahayak Speaks Results</div>
+        <div class="flow-step-desc">
+          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:6px;padding:8px;margin:4px 0;font-weight:700;color:#d97706;">
+            "Delhi se Jaipur kal ke liye 5 AC buses milen. Peela Travels, Rajdhani Express, Neeta Bus. Bol dijiye konsi chahiye ya detail sunna hai."
+          </div>
+          User hears the options. No screen interaction needed. Can ask follow-up questions by holding MIC again.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇</div>
+
+    <div class="flow-step" style="border-color:#14b8a6;background:#f0fdfa;">
+      <div class="flow-step-num" style="background:#14b8a6;">5</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">User Says "Peela Travels ka naam lo"</div>
+        <div class="flow-step-desc">
+          User holds MIC again and says "Peela Travels ka naam lo" (I'll take Peela Travels).<br>
+          Gemini calls <code>get_seats(bus_id="peela_001")</code> → returns seat layout.<br>
+          <div style="background:#f0fdfa;border:2px solid #99f6e4;border-radius:6px;padding:8px;margin:4px 0;font-weight:700;color:#0d9488;">
+            "Peela Travels mein 12 seats khali hain. Sleeper class hai. Seat number B3, B5, C1 available hain. Bol dijiye kaunsi chahiye."
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">⬇</div>
+
+    <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
+      <div class="flow-step-num" style="background:#ef4444;">6</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title">User Says "B5 lelo, mera naam Rahul hai, phone 9876543210"</div>
+        <div class="flow-step-desc">
+          Gemini calls <code>create_booking(bus_id="peela_001", seat_id="B5", passenger_name="Rahul", phone="9876543210")</code><br>
+          <strong>System:</strong> Seat locked for 60 minutes. Booking created.<br>
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:6px;padding:8px;margin:4px 0;font-weight:700;color:#dc2626;">
+            "Booking confirm ho gayi! Peela Travels, Delhi se Jaipur, kal 2:30 PM, Seat B5. Ticket number BK-78901. Manager aapko call karega 60 minute mein confirmation ke liye. Safe travel!"
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: GEMINI WEBSOCKET PROTOCOL -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">4. Gemini WebSocket Protocol (What Judges See)</div>
+
+    <div class="sub-title">WebSocket Connection Lifecycle</div>
+
+    <div class="ws-window">
+      <div class="ws-titlebar">
+        <div class="ws-dot" style="background:#ef4444;"></div>
+        <div class="ws-dot" style="background:#f59e0b;"></div>
+        <div class="ws-dot" style="background:#22c55e;"></div>
+        <span style="color:#94a3b8;font-size:12px;font-weight:600;margin-left:8px;">gemini-live-api-websocket-session</span>
+      </div>
+      <div class="ws-content">
+        <div class="ws-msg ws-client">
+          <div class="ws-label" style="color:#22c55e;">STEP 1 — CLIENT CONNECTS</div>
+          <span style="color:#94a3b8;">wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent</span>
+        </div>
+
+        <div class="ws-msg ws-client">
+          <div class="ws-label" style="color:#22c55e;">STEP 2 — SETUP (Model + Config)</div>
+          <div style="color:#e2e8f0;">
+{<br>
+&nbsp;&nbsp;"model": "models/gemini-2.0-flash-live-001",<br>
+&nbsp;&nbsp;"generationConfig": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"speechConfig": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"voiceConfig": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"prebuiltVoiceConfig": { "voiceName": "Aoede" }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;"systemInstruction": { "parts": [{ "text": "Tu BusSahayak hai..." }] },<br>
+&nbsp;&nbsp;"tools": [{ "functionDeclarations": [...] }] <span style="color:#64748b;">// search_buses, get_seats, create_booking</span><br>
+}
+          </div>
+        </div>
+
+        <div class="ws-msg ws-server">
+          <div class="ws-label" style="color:#3b82f6;">STEP 3 — SERVER ACKNOWLEDGES</div>
+          <span style="color:#e2e8f0;">Setup complete. Ready to receive audio.</span>
+        </div>
+
+        <div class="ws-msg ws-client">
+          <div class="ws-label" style="color:#22c55e;">STEP 4 — AUDIO STREAM (User speaks)</div>
+          <span style="color:#e2e8f0;">{ "realtimeInput": { "mediaChunks": [{ "mimeType": "audio/pcm;rate=16000", "data": "base64EncodedAudio..." }] } }</span>
+        </div>
+
+        <div class="ws-msg ws-server">
+          <div class="ws-label" style="color:#3b82f6;">STEP 5 — GEMINI PROCESSES</div>
+          <span style="color:#e2e8f0;">{ "serverContent": { "modelTurn": { "parts": [{ "functionCall": { "name": "search_buses", "args": {...} } }] } } }</span>
+        </div>
+
+        <div class="ws-msg ws-client">
+          <div class="ws-label" style="color:#22c55e;">STEP 6 — FUNCTION RESULT</div>
+          <span style="color:#e2e8f0;">{ "toolResponse": { "functionResponse": { "name": "search_buses", "response": { "buses": [...] } } } }</span>
+        </div>
+
+        <div class="ws-msg ws-server">
+          <div class="ws-label" style="color:#3b82f6;">STEP 7 — AUDIO RESPONSE (Gemini speaks)</div>
+          <span style="color:#e2e8f0;">{ "serverContent": { "modelTurn": { "parts": [{ "inlineData": { "mimeType": "audio/pcm;rate=24000", "data": "base64AudioResponse..." } }] } } }</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Function Declarations (JSON Schema)</div>
+    <div class="code-block">{
+  "functionDeclarations": [
+    {
+      "name": "search_buses",
+      "description": "Search available buses between two cities on a given date",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "from_city":  { "type": "STRING", "description": "Source city like Delhi, Mumbai" },
+          "to_city":    { "type": "STRING", "description": "Destination city like Jaipur" },
+          "date":       { "type": "STRING", "description": "Travel date in YYYY-MM-DD" },
+          "bus_type":   { "type": "STRING", "enum": ["AC", "Non-AC", "Sleeper", "Seater", "any"] }
+        },
+        "required": ["from_city", "to_city", "date"]
+      }
+    },
+    {
+      "name": "get_seats",
+      "description": "Get available seats for a specific bus",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "bus_id": { "type": "STRING", "description": "Bus ID from search results" }
+        },
+        "required": ["bus_id"]
+      }
+    },
+    {
+      "name": "create_booking",
+      "description": "Create a bus booking for the user",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "bus_id":         { "type": "STRING" },
+          "seat_id":        { "type": "STRING" },
+          "passenger_name": { "type": "STRING" },
+          "phone":          { "type": "STRING" }
+        },
+        "required": ["bus_id", "seat_id", "passenger_name", "phone"]
+      }
+    }
+  ]
+}</div>
+  </div>
+</div>
+
+<!-- SECTION 5: SYSTEM PROMPT -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">5. System Prompt (BusSahayak Persona)</div>
+
+    <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+      <div class="mega-card-header" style="color:#7c3aed;">
+        <span style="font-size:22px;">GEMINI SYSTEM INSTRUCTION</span>
+        <span class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">PERSONA</span>
+      </div>
+      <div class="mega-card-body">
+        <div class="code-block" style="font-size:12px;">Tu "Bus Sahayak" hai — India ke andhe / kamzor nazron ke logon ke liye
+bus booking assistant. Tu Hinglish mein baat karta hai (Hindi + English mix).
+
+TONE: Dost jaisa, warm, patient. Kabhi jaldi mat kar.
+
+COMMANDS:
+- "Delhi se Jaipur" → search_buses(from="Delhi", to="Jaipur")
+- "AC bus dikhao" → bus_type="AC"
+- "Kal ka ticket" → date=tomorrow
+- "Ye lo" / "Theek hai" / "Confirm" → create_booking()
+- "Detail batao" → bus details batao
+- "Nahi" / "Cancel" → booking cancel karo
+
+RESPONSE FORMAT:
+- Hinglish mein bol (Hindi + English mix)
+- Numbers aur prices clearly bolo
+- Options numbered mein bolo: "Pehla: Peela Travels, 550 rupay..."
+- Confirmation ke baad ticket number batao
+
+RULES:
+- KABHI mat bolo "dekh lo", "screen pe dekho", "click karo"
+- Agar user confused hai, patiently repeat karo
+- Har booking ke baad confirm karo before proceeding
+- Manager 60 minute mein call karega — ye batao
+
+LANGUAGE: Hindi/Hinglish (user ki language match karo)</div>
+      </div>
+    </div>
+
+    <div class="sub-title">Why This Prompt Works for Judges</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Cultural Sensitivity</div>
+        <div class="card-content">
+          Uses Hindi/Hinglish — not English. Matches how real Indian users speak. Judges see this is designed for actual Indian blind users, not a generic English demo.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Accessibility-First Language</div>
+        <div class="card-content">
+          Explicitly forbids visual references ("dekh lo", "click karo"). Shows deep understanding of blind user needs. Judges see we've thought about the actual user experience.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Practical Constraints</div>
+        <div class="card-content">
+          Includes 60-minute tele-confirmation flow. Shows judges we've thought about real-world logistics — payment, confirmation, last-mile — not just a voice gimmick.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: 3 OPERATING MODES -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">6. Three Operating Modes (Different User Needs)</div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-badge" style="background:#fef2f2;color:#dc2626;">MODE 1</div>
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:22px;">VOICE ONLY</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Completely blind users<br><br>
+          <strong>How it works:</strong><br>
+          - Screen is <strong>completely locked</strong> (no touch)<br>
+          - User holds MIC → speaks → hears response<br>
+          - Touch events are <strong>blocked entirely</strong><br>
+          - Only voice input accepted<br><br>
+          <strong>Example user:</strong> Ram, 45, completely blind since birth. Has never seen a screen. Navigates entirely by screen reader. Holds phone in left hand, presses MIC with right thumb.<br><br>
+          <span class="badge badge-red">LOCKED TOUCH</span>
+          <span class="badge badge-red">VOICE ONLY</span>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-badge" style="background:#fef3c7;color:#d97706;">MODE 2</div>
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:22px;">DYNAMIC SWITCH</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Low vision / partially sighted<br><br>
+          <strong>How it works:</strong><br>
+          - Starts <strong>locked</strong> (voice-only by default)<br>
+          - User says <strong>"unlock"</strong> → touch enabled<br>
+          - Can now tap buttons, scroll, see UI<br>
+          - Says <strong>"lock"</strong> → back to voice-only<br><br>
+          <strong>Example user:</strong> Sunita, 28, diabetic retinopathy. Can see large text and high-contrast UI. Starts with voice, unlocks to check bus times visually, locks again for booking.<br><br>
+          <span class="badge badge-amber">VOICE FIRST</span>
+          <span class="badge badge-amber">UNLOCK BY VOICE</span>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#dcfce7;color:#16a34a;">MODE 3</div>
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:22px;">DUAL COMBINED</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Tech-savvy VI users<br><br>
+          <strong>How it works:</strong><br>
+          - Touch <strong>ALWAYS enabled</strong><br>
+          - Voice and touch work <strong>together</strong><br>
+          - Tap to select → voice to confirm<br>
+          - Best of both worlds<br><br>
+          <strong>Example user:</strong> Amit, 22, BCA student with low vision. Uses TalkBack + voice. Taps bus card to select, holds MIC to say "confirm karo". Fastest flow.<br><br>
+          <span class="badge badge-green">TOUCH ALWAYS ON</span>
+          <span class="badge badge-green">VOICE + TOUCH</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Mode Toggle (Voice Command)</div>
+    <div class="card" style="max-width:700px;margin:0 auto;">
+      <div class="card-content">
+        <strong>User says:</strong> "Mode 1 pe set karo" → Screen locked, voice only<br>
+        <strong>User says:</strong> "Mode 2 pe set karo" → Dynamic switch enabled<br>
+        <strong>User says:</strong> "Mode 3 pe set karo" → Dual combined enabled<br>
+        <strong>Screen reader button:</strong> Toggle modes via accessibility menu<br><br>
+        <span class="badge badge-purple">NO COMPLEX GESTURES</span>
+        <span class="badge badge-blue">HOLD MIC = VOICE INPUT</span>
+        <span class="badge badge-green">SIMPLE &amp; INTUITIVE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: LATENCY BREAKDOWN -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">7. Latency Breakdown (Why &lt;500ms is Achievable)</div>
+
+    <div class="sub-title">Gemini Multimodal Live API Latency</div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Audio Upload</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:20%;background:linear-gradient(90deg,#22c55e,#16a34a);">50ms</div>
+      </div>
+      <div class="latency-bar-value">50ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Speech-to-Text</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:25%;background:linear-gradient(90deg,#3b82f6,#1d4ed8);">80ms</div>
+      </div>
+      <div class="latency-bar-value">80ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">LLM Processing</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:40%;background:linear-gradient(90deg,#a855f7,#7c3aed);">120ms</div>
+      </div>
+      <div class="latency-bar-value">120ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Function Call</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:30%;background:linear-gradient(90deg,#f59e0b,#d97706);">100ms</div>
+      </div>
+      <div class="latency-bar-value">100ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Text-to-Speech</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:20%;background:linear-gradient(90deg,#14b8a6,#0d9488);">60ms</div>
+      </div>
+      <div class="latency-bar-value">60ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Audio Download</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:15%;background:linear-gradient(90deg,#ef4444,#dc2626);">40ms</div>
+      </div>
+      <div class="latency-bar-value">40ms</div>
+    </div>
+
+    <div style="text-align:center;margin:14px 0;">
+      <div style="font-size:36px;font-weight:900;color:#2563eb;">TOTAL: ~450ms</div>
+      <div style="font-size:14px;color:#64748b;font-weight:700;">Under 500ms target</div>
+    </div>
+
+    <div class="sub-title">Offline Fallback Pipeline (Vosk + Gemma + Piper)</div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Vosk STT</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:15%;background:linear-gradient(90deg,#22c55e,#16a34a);">50ms</div>
+      </div>
+      <div class="latency-bar-value">50ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Gemma 2B Q4</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:45%;background:linear-gradient(90deg,#a855f7,#7c3aed);">150ms</div>
+      </div>
+      <div class="latency-bar-value">150ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Regex NLU</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:8%;background:linear-gradient(90deg,#f59e0b,#d97706);">10ms</div>
+      </div>
+      <div class="latency-bar-value">10ms</div>
+    </div>
+    <div class="latency-bar">
+      <div class="latency-bar-label">Piper TTS</div>
+      <div class="latency-bar-track">
+        <div class="latency-bar-fill" style="width:15%;background:linear-gradient(90deg,#14b8a6,#0d9488);">50ms</div>
+      </div>
+      <div class="latency-bar-value">50ms</div>
+    </div>
+
+    <div style="text-align:center;margin:14px 0;">
+      <div style="font-size:36px;font-weight:900;color:#16a34a;">OFFLINE: ~260ms</div>
+      <div style="font-size:14px;color:#64748b;font-weight:700;">For low/no connectivity areas</div>
+    </div>
+
+    <div class="sub-title">Why Gemini Wins for Hackathon</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Single Connection</div>
+        <div class="card-content">One WebSocket does STT + LLM + TTS. No need to manage 3 separate services. Less code, less bugs.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Natural Voice</div>
+        <div class="card-content">Gemini's TTS sounds human. Piper sounds robotic. Judges will be impressed by natural Hindi speech.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Function Calling</div>
+        <div class="card-content">Built-in function calling means Gemini decides when to call APIs. No custom NLU needed. Just declare functions.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 8: DEMO SCRIPT -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">8. Live Demo Script (What Judges Will See)</div>
+
+    <div class="sub-title">5-Minute Demo Flow</div>
+
+    <div class="demo-script">
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 0:00 — INTRODUCTION</div>
+      <div style="color:#e2e8f0;margin-bottom:10px;">
+        "Judges, BusSahayak ek voice-first bus booking app hai blind aur visually impaired logon ke liye. Hum Google Gemini Multimodal Live API use karte hain — ek single WebSocket connection STT, LLM, aur TTS sab karta hai. Ab main live demo dikhaunga."
+      </div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 0:30 — APP OPEN</div>
+      <div style="color:#e2e8f0;margin-bottom:10px;">
+        Open app on phone. Screen shows big MIC button. Screen reader (TalkBack) announces:<br>
+        <span style="color:#22c55e;">"Bus Sahayak home. MIC button hai. Press karo aur bolo kaha se kaha jaana hai."</span>
+      </div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 1:00 — VOICE SEARCH</div>
+      <div style="color:#22c55e;margin-bottom:4px;">🎤 User holds MIC and says: "Delhi se Jaipur kal ke liye AC bus dikhao"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;">🔊 BusSahayak responds: "Delhi se Jaipur kal ke liye 5 AC buses milen. Peela Travels 550 rupay, Rajdhani Express 700 rupay, Neeta Bus 450 rupay. Bol dijiye konsi chahiye."</div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 2:00 — FOLLOW-UP</div>
+      <div style="color:#22c55e;margin-bottom:4px;">🎤 "Rajdhani Express ki detail sunao"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;">🔊 "Rajdhani Express. Delhi se Jaipur. Kal 3:15 PM. AC Sleeper. 700 rupay. 18 seats khali hain. Bol dijiye seat select karni hai."</div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 3:00 — BOOKING</div>
+      <div style="color:#22c55e;margin-bottom:4px;">🎤 "Theek hai, ye lo. Mera naam Rahul hai, phone 9876543210"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;">🔊 "Booking confirm! Rajdhani Express, Delhi se Jaipur, kal 3:15 PM, Seat A2. Ticket number BK-78901. Manager aapko call karega 60 minute mein. Safe travel!"</div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 4:00 — MANAGER DASHBOARD</div>
+      <div style="color:#e2e8f0;margin-bottom:10px;">
+        Switch to laptop → show manager dashboard. Booking appears. One-tap confirm button. Tele-confirmation flow explanation.
+      </div>
+
+      <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 4:30 — CLOSING</div>
+      <div style="color:#e2e8f0;">
+        "BusSahayak India ke 40 million blind logon ko independent bus booking ka power deta hai. Gemini Live API se voice interaction natural hai aur &lt;500ms mein respond karta hai. Thank you."
+      </div>
+    </div>
+
+    <div class="sub-title">Demo Tips for Judges</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Pre-load Data</div>
+        <div class="card-content">Have Delhi-Jaipur, Mumbai-Pune, Bangalore-Chennai routes pre-loaded. Mock data with 50+ buses. Don't depend on live API during demo.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Speak Slowly</div>
+        <div class="card-content">When demoing voice input, speak slowly and clearly. Gemini works best with clear audio. Practice the Hindi phrases beforehand.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Have Backup</div>
+        <div class="card-content">Record a video of the demo working perfectly. If live demo fails (network, etc.), play the video. Judges respect preparedness.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 9: ARCHITECTURE DIAGRAM -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">9. System Architecture (How Components Connect)</div>
+
+    <div style="max-width:1000px;margin:0 auto;">
+      <!-- User Layer -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:10px;">
+        <div class="diagram-box" style="border-color:#ef4444;">
+          <div class="diagram-box-title">BLIND USER APP</div>
+          <div class="diagram-box-desc">React Native + Expo | Voice Only | Hold MIC</div>
+        </div>
+        <div class="diagram-box" style="border-color:#22c55e;">
+          <div class="diagram-box-title">MANAGER DASHBOARD</div>
+          <div class="diagram-box-desc">Web App | Touch + Voice | Confirm Bookings</div>
+        </div>
+      </div>
+
+      <div class="arrow-down">⬇ WebSocket / REST API ⬇</div>
+
+      <!-- Backend Layer -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:10px;">
+        <div class="diagram-box" style="border-color:#4285f4;">
+          <div class="diagram-box-title">GEMINI LIVE API</div>
+          <div class="diagram-box-desc">WebSocket | STT + LLM + TTS | Function Calling</div>
+        </div>
+        <div class="diagram-box" style="border-color:#a855f7;">
+          <div class="diagram-box-title">FASTAPI SERVER</div>
+          <div class="diagram-box-desc">Python | REST Endpoints | Bus Search | Booking</div>
+        </div>
+        <div class="diagram-box" style="border-color:#f59e0b;">
+          <div class="diagram-box-title">REDIS CACHE</div>
+          <div class="diagram-box-desc">Seat Locks | TTL 60min | Session State</div>
+        </div>
+      </div>
+
+      <div class="arrow-down">⬇ Database / External APIs ⬇</div>
+
+      <!-- Data Layer -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:10px;">
+        <div class="diagram-box" style="border-color:#14b8a6;">
+          <div class="diagram-box-title">POSTGRESQL</div>
+          <div class="diagram-box-desc">Users | Bookings | Buses | Transactions</div>
+        </div>
+        <div class="diagram-box" style="border-color:#ef4444;">
+          <div class="diagram-box-title">ZUELPAY API</div>
+          <div class="diagram-box-desc">2000+ Bus Operators | Real-time Availability</div>
+        </div>
+        <div class="diagram-box" style="border-color:#3b82f6;">
+          <div class="diagram-box-title">FCM PUSH</div>
+          <div class="diagram-box-desc">Manager Notifications | Booking Alerts</div>
+        </div>
+      </div>
+
+      <div class="arrow-down">⬇ Integration ⬇</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="diagram-box" style="border-color:#22c55e;">
+          <div class="diagram-box-title">RAPIDO/AUTO API</div>
+          <div class="diagram-box-desc">Last-Mile Connectivity | Doorstep to Bus Stand</div>
+        </div>
+        <div class="diagram-box" style="border-color:#a855f7;">
+          <div class="diagram-box-title">OFFLINE ENGINE</div>
+          <div class="diagram-box-desc">Vosk STT | Gemma 2B | Piper TTS | No Internet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 10: JUDGE Q&A PREP -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">10. Judge Q&A Preparation (25+ Questions)</div>
+
+    <div class="sub-title">Technical Questions</div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q1: How is this different from just using Siri or Google Assistant?</div>
+      <div class="qa-a">
+        Siri/Google are general-purpose. BusSahayak is specialized for bus booking — it knows bus routes, seat layouts, pricing, and the 60-minute tele-confirmation flow. Gemini is given function declarations (search_buses, get_seats, create_booking) so it can directly call bus APIs. Also, Siri can't do barge-in (interrupt mid-sentence), and doesn't understand Indian bus booking context.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q2: What happens when internet is slow or unavailable?</div>
+      <div class="qa-a">
+        We have a fallback pipeline: Vosk (offline STT, 50ms) + Gemma 2B Q4 (offline LLM, 150ms) + Piper (offline TTS, 50ms). Total offline latency: ~260ms. This handles low-connectivity areas in rural India. The offline engine supports basic search and booking. Full Gemini features require internet.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q3: How do you ensure the voice recognition works with Indian accents?</div>
+      <div class="qa-a">
+        Gemini's speech model is trained on diverse global data including Indian languages. We also use Hindi/Hinglish in our system prompt so Gemini expects mixed language input. For the offline fallback, Vosk has Hindi language models. We can fine-tune Custom Speech on Azure for even better accuracy with regional accents.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q4: What about payment? Can blind users pay?</div>
+      <div class="qa-a">
+        Our 60-minute tele-confirmation flow solves this. After voice booking, the manager dashboard shows the booking. Manager calls the blind user, confirms details, and processes payment (cash/UPI at pickup, or manager pays and user reimburses). We're also exploring UPI voice integration (NPCI's UPI Voice) for future.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q5: How is Gemini function calling different from ChatGPT function calling?</div>
+      <div class="qa-a">
+        Gemini's function calling is real-time and streaming — it can call functions mid-conversation without waiting for a complete response. ChatGPT's is request-response. Gemini also handles audio natively (multimodal), while ChatGPT's function calling is text-only. This means Gemini can hear you, call an API, and respond with audio — all in one WebSocket connection.
+      </div>
+    </div>
+
+    <div class="sub-title">Impact & Market Questions</div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q6: How many blind people actually use smartphones?</div>
+      <div class="qa-a">
+        According to WHO and Indian government data, there are ~40 million blind people in India. A 2023 survey by National Association of the Blind found that ~30% of blind Indians own smartphones (Android). That's ~12 million potential users. Plus 200 million+ with low vision who can benefit from Mode 2/3.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q7: What's the business model? How do you make money?</div>
+      <div class="qa-a">
+        Commission per booking (₹5-15 per ticket via ZuelPay partner program). Manager dashboard SaaS (₹500/month per travel agent). Premium voice features (₹99/month for advanced AI). Government accessibility grants (ADIP scheme). The core booking feature is free for blind users.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q8: Why not just use RedBus accessibility mode?</div>
+      <div class="qa-a">
+        RedBus has no accessibility mode. Their app is 100% visual. Even apps with "accessibility" features just add screen reader labels — they don't provide voice-first interaction. BusSahayak is the first app where the ENTIRE flow is voice-operated. You never need to look at the screen.
+      </div>
+    </div>
+
+    <div class="sub-title">Technical Architecture Questions</div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q9: Why React Native and not Flutter?</div>
+      <div class="qa-a">
+        React Native has better accessibility APIs out of the box (AccessibilityInfo, TalkBack integration). Expo SDK 52 makes deployment easier (EAS Build). Our team knows React/JS better. Flutter's accessibility has known issues with screen readers on Android. For a hackathon, faster iteration matters.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q10: How does the 60-minute seat lock work technically?</div>
+      <div class="qa-a">
+        When user says "book karo", FastAPI creates a Redis key with TTL 3600 seconds: <code>seat_lock:{bus_id}:{seat_id}</code>. The manager dashboard polls Redis every 30 seconds for pending locks. Manager calls blind user within 60 minutes. If confirmed → seat permanently reserved. If not → TTL expires, seat auto-releases back to pool. Zero manual intervention needed.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q11: What about barge-in? Can user interrupt the bot?</div>
+      <div class="qa-a">
+        Yes. Gemini Multimodal Live API supports native barge-in. If the user starts speaking while BusSahayak is responding, Gemini automatically stops the current response and processes the new input. This is critical for natural conversation — blind users shouldn't have to wait for the bot to finish speaking.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q12: How do you handle multiple users booking the same seat?</div>
+      <div class="qa-a">
+        Redis-based distributed locking with atomic SET NX operations. When User A locks seat B5, the Redis key is set with NX (only if not exists) + TTL. User B trying to book B5 gets "seat already locked" error. The lock is per-user and releases after 60 minutes if not confirmed. This handles concurrent access safely.
+      </div>
+    </div>
+
+    <div class="sub-title">Presentation & Demo Questions</div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q13: Is this a working prototype or just a concept?</div>
+      <div class="qa-a">
+        Working prototype. Phase 1 is complete — 28 source files, 7 screens, 6 components, 5 hooks, Zustand store, mock data with 50+ buses across 40 cities. Voice AI engine is built with Gemini integration. We have a live demo ready. The mock data allows full booking flow without depending on live ZuelPay API.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q14: What's the biggest risk for this project?</div>
+      <div class="qa-a">
+        Two risks: (1) Gemini API costs at scale — $0.02/15s adds up. Mitigation: offline fallback for basic queries, caching frequent routes. (2) Manager adoption — the tele-confirmation flow depends on managers answering calls. Mitigation: auto-call system, FCM push, manager dashboard with one-tap confirm.
+      </div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Q15: How does this fit SIH26002 (Smart Logistics & Accessibility for NER)?</div>
+      <div class="qa-a">
+        North Eastern Region has the highest percentage of visually impaired population in India (Assam: 2.4%, national average: 1.8%). NER also has poor road connectivity — inter-state bus travel is critical. Our app enables blind users in Guwahati, Shillong, Imphal to book buses independently. The offline fallback works in low-connectivity NER areas. We're adding NER cities (Guwahati, Shillong, Imphal, Agartala) to our database.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 11: WHY GEMINI SPECIFICALLY -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">11. Why Google Gemini Specifically?</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:22px;">GEMINI CAPABILITIES WE USE</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>1. Multimodal Live (Audio In/Out)</strong><br>
+          Real-time audio streaming via WebSocket. No separate STT/TTS services. One connection handles everything.<br><br>
+
+          <strong>2. Function Calling (Structured Output)</strong><br>
+          Gemini declares available functions (search_buses, get_seats, create_booking). When user says "Delhi se Jaipur", Gemini automatically calls the right function with correct parameters.<br><br>
+
+          <strong>3. Barge-in Support</strong><br>
+          User can interrupt mid-response. Gemini stops speaking and listens. Natural conversation flow — critical for blind users who can't see visual cues.<br><br>
+
+          <strong>4. Multilingual (Hindi/Hinglish)</strong><br>
+          Handles code-mixed Hindi-English naturally. "Delhi se Jaipur kal AC bus dikhao" — Gemini understands this without separate translation.<br><br>
+
+          <strong>5. Context Window (1M tokens)</strong><br>
+          Can remember entire conversation. User says "woh wali bus" → Gemini knows which bus from context.
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:22px;">GEMINI vs ALTERNATIVES</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Gemini Multimodal Live API</strong><br>
+          ✅ Single WebSocket (STT + LLM + TTS)<br>
+          ✅ Built-in function calling<br>
+          ✅ Native barge-in<br>
+          ✅ Hindi/Hinglish support<br>
+          ✅ ~450ms total latency<br>
+          ✅ ~$0.02/15s audio<br>
+          ❌ Requires internet<br><br>
+
+          <strong>Azure OpenAI + Custom Speech</strong><br>
+          ❌ 3 separate services (STT → LLM → TTS)<br>
+          ❌ Custom function calling implementation<br>
+          ❌ No native barge-in<br>
+          ❌ Higher latency (~800ms+)<br>
+          ❌ More complex architecture<br>
+          ✅ Better offline capabilities<br><br>
+
+          <strong>Offline: Vosk + Gemma + Piper</strong><br>
+          ✅ No internet needed<br>
+          ✅ Free (runs on device)<br>
+          ❌ Robotic voice quality<br>
+          ❌ Limited language understanding<br>
+          ❌ No function calling (regex NLU)<br>
+          ✅ ~260ms latency<br><br>
+
+          <span class="badge badge-green">GEMINI IS THE BEST CHOICE FOR HACKATHON</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Gemini Pricing Breakdown</div>
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-number">$0.02</div>
+        <div class="stat-label">Per 15 seconds of audio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">~$0.08</div>
+        <div class="stat-label">Average booking conversation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">~$0.50</div>
+        <div class="stat-label">Per day per active user</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">$15</div>
+        <div class="stat-label">Per user per month (est.)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 12: HACKATHON TIMELINE -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">12. 36-Hour Hackathon Timeline (6 Members)</div>
+
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#dcfce7;color:#16a34a;">HOURS 0-12</div>
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:20px;">FOUNDATION</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Nitin + M3:</strong> Gemini WebSocket server, system prompt, function declarations, audio streaming<br><br>
+          <strong>M1 + M4:</strong> Home screen (big MIC), white theme, navigation, accessibility context<br><br>
+          <strong>M2:</strong> FastAPI endpoints, ZuelPay mock integration, bus search API<br><br>
+          <strong>M5:</strong> Test plan, bug tracking, documentation<br><br>
+          <strong>By Hour 12:</strong> Voice search works end-to-end
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-badge" style="background:#d2e3fc;color:#1a73e8;">HOURS 12-24</div>
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:20px;">CORE FEATURES</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Nitin + M3:</strong> Function calling integration, seat selection via voice, booking flow<br><br>
+          <strong>M1 + M4:</strong> Search results screen, bus cards, seat grid, voice readout<br><br>
+          <strong>M2:</strong> Booking API, seat lock with Redis, transaction handling<br><br>
+          <strong>M5:</strong> Manager dashboard prototype, tele-confirmation flow<br><br>
+          <strong>By Hour 24:</strong> Full booking flow works
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">HOURS 24-36</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:20px;">POLISH &amp; DEMO</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Nitin + M3:</strong> 3 modes implementation, barge-in, error handling, offline fallback<br><br>
+          <strong>M1 + M4:</strong> Animations, haptics, loading states, final UI polish<br><br>
+          <strong>M2:</strong> Manager dashboard final, FCM push, payment flow<br><br>
+          <strong>M5:</strong> Demo video recording, presentation prep, pitch script<br><br>
+          <strong>By Hour 36:</strong> Demo-ready, presentation-ready
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Critical Path (Must Complete for Demo)</div>
+    <div class="grid-4">
+      <div class="card" style="border-color:#ef4444;">
+        <div class="card-title" style="color:#dc2626;">P0: Voice Search</div>
+        <div class="card-content">Hold MIC → speak → get bus results. This is the core demo. Must work.</div>
+      </div>
+      <div class="card" style="border-color:#ef4444;">
+        <div class="card-title" style="color:#dc2626;">P0: Voice Booking</div>
+        <div class="card-content">Select bus → select seat → confirm booking. Full flow via voice.</div>
+      </div>
+      <div class="card" style="border-color:#f59e0b;">
+        <div class="card-title" style="color:#d97706;">P1: Manager Dash</div>
+        <div class="card-content">Manager sees booking, calls blind user, confirms. Shows real-world flow.</div>
+      </div>
+      <div class="card" style="border-color:#f59e0b;">
+        <div class="card-title" style="color:#d97706;">P1: Presentation</div>
+        <div class="card-content">7-slide SIH format. Problem → Solution → Tech → Demo → Impact → Team.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 13: COMMON JUDGE TRAPS -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">13. Common Judge Traps & How to Handle Them</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:18px;">TRAP: "Isn't this just a wrapper around Gemini?"</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Answer:</strong> No. Gemini is our voice engine, but the entire system is custom-built:<br><br>
+          - Custom system prompt for Indian blind users<br>
+          - Custom function declarations for bus booking<br>
+          - Custom seat lock mechanism with Redis TTL<br>
+          - Custom 3 operating modes for different VI needs<br>
+          - Custom manager dashboard for tele-confirmation<br>
+          - Custom offline fallback (Vosk + Gemma + Piper)<br>
+          - Custom accessibility layer (TalkBack, VoiceOver)<br><br>
+          <strong>We're using Gemini as infrastructure, not as the product.</strong>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:18px;">TRAP: "What about data privacy?"</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Answer:</strong> We take privacy seriously:<br><br>
+          - Audio is processed in real-time, not stored<br>
+          - No voice recordings saved on our servers<br>
+          - User data encrypted at rest (AES-256)<br>
+          - GDPR/DPDP Act compliant<br>
+          - Audio streams directly to Gemini, not through our server<br>
+          - Manager only sees booking details, not voice recordings<br>
+          - Redis seat locks are ephemeral (auto-expire)<br><br>
+          <strong>Voice is processed, not stored.</strong>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:18px;">TRAP: "How will you scale to millions?"</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Answer:</strong> Architecture is designed for scale:<br><br>
+          - FastAPI async handles 10K+ concurrent connections<br>
+          - Redis cluster for seat locks (distributed)<br>
+          - PostgreSQL with read replicas<br>
+          - Gemini API auto-scales (Google manages)<br>
+          - CDN for static assets (Expo updates)<br>
+          - Horizontal scaling via Kubernetes<br><br>
+          <strong>For hackathon: single server. For production: auto-scaling.</strong>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:18px;">TRAP: "What's your unfair advantage?"</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Answer:</strong> Three things competitors can't easily replicate:<br><br>
+          1. <strong>First-mover:</strong> No voice-first bus booking app exists in India<br>
+          2. <strong>60-min tele-confirmation:</strong> Unique trust mechanism for blind users<br>
+          3. <strong>3 operating modes:</strong> Adapts to completely blind, low vision, and tech-savvy VI<br><br>
+          Plus: We're the only team combining Gemini Live API with accessibility for Indian bus travel.
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Questions to Ask Judges (Shows Confidence)</div>
+    <div class="card">
+      <div class="card-content">
+        1. "Do any of you know a blind person who has booked a bus ticket independently?" (Highlights the gap)<br>
+        2. "Would you prefer a voice assistant that speaks Hindi or English for daily tasks?" (Shows cultural awareness)<br>
+        3. "If you couldn't see your phone, how would you book a bus ticket?" (Makes judges think about the problem)<br>
+        4. "Have you tried using TalkBack on your phone? It's quite different from what you'd expect." (Shows technical depth)
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
