@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusSahayak - Gemini Voice Interaction Deep Dive</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   @page { size: A4 landscape; margin: 8mm; }
   @media print { body { padding: 0; } .slide { page-break-inside: avoid; margin-bottom: 10px; } }
@@ -169,17 +170,17 @@
         <strong>Google Gemini Multimodal Live API is a single WebSocket connection that does EVERYTHING:</strong><br><br>
         <div class="grid-3" style="margin-bottom:0;">
           <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:28px;margin-bottom:4px;">🎤</div>
+            <div style="font-size:28px;margin-bottom:4px;color:#2563eb;"><i class="fas fa-microphone"></i></div>
             <div style="font-size:13px;font-weight:800;color:#0f172a;">Speech-to-Text</div>
             <div style="font-size:11px;color:#64748b;">Converts voice to text</div>
           </div>
           <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:28px;margin-bottom:4px;">🧠</div>
+            <div style="font-size:28px;margin-bottom:4px;color:#a855f7;"><i class="fas fa-brain"></i></div>
             <div style="font-size:13px;font-weight:800;color:#0f172a;">LLM Reasoning</div>
             <div style="font-size:11px;color:#64748b;">Understands & decides</div>
           </div>
           <div style="background:#fff;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:28px;margin-bottom:4px;">🔊</div>
+            <div style="font-size:28px;margin-bottom:4px;color:#22c55e;"><i class="fas fa-volume-up"></i></div>
             <div style="font-size:13px;font-weight:800;color:#0f172a;">Text-to-Speech</div>
             <div style="font-size:11px;color:#64748b;">Speaks the response</div>
           </div>
@@ -241,7 +242,7 @@
       </div>
     </div>
 
-    <div class="arrow-down">⬇</div>
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
 
     <div class="flow-step" style="border-color:#22c55e;background:#f0fdf4;">
       <div class="flow-step-num" style="background:#22c55e;">2</div>
@@ -257,7 +258,7 @@
       </div>
     </div>
 
-    <div class="arrow-down">⬇</div>
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
 
     <div class="flow-step" style="border-color:#a855f7;background:#faf5ff;">
       <div class="flow-step-num" style="background:#a855f7;">3</div>
@@ -276,7 +277,7 @@
       </div>
     </div>
 
-    <div class="arrow-down">⬇</div>
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
 
     <div class="flow-step" style="border-color:#f59e0b;background:#fffbeb;">
       <div class="flow-step-num" style="background:#f59e0b;">4</div>
@@ -291,7 +292,7 @@
       </div>
     </div>
 
-    <div class="arrow-down">⬇</div>
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
 
     <div class="flow-step" style="border-color:#14b8a6;background:#f0fdfa;">
       <div class="flow-step-num" style="background:#14b8a6;">5</div>
@@ -307,7 +308,7 @@
       </div>
     </div>
 
-    <div class="arrow-down">⬇</div>
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
 
     <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
       <div class="flow-step-num" style="background:#ef4444;">6</div>
@@ -704,16 +705,16 @@ LANGUAGE: Hindi/Hinglish (user ki language match karo)</div>
       </div>
 
       <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 1:00 — VOICE SEARCH</div>
-      <div style="color:#22c55e;margin-bottom:4px;">🎤 User holds MIC and says: "Delhi se Jaipur kal ke liye AC bus dikhao"</div>
-      <div style="color:#3b82f6;margin-bottom:10px;">🔊 BusSahayak responds: "Delhi se Jaipur kal ke liye 5 AC buses milen. Peela Travels 550 rupay, Rajdhani Express 700 rupay, Neeta Bus 450 rupay. Bol dijiye konsi chahiye."</div>
+      <div style="color:#22c55e;margin-bottom:4px;"><i class="fas fa-microphone"></i> User holds MIC and says: "Delhi se Jaipur kal ke liye AC bus dikhao"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;"><i class="fas fa-volume-up"></i> BusSahayak responds: "Delhi se Jaipur kal ke liye 5 AC buses milen. Peela Travels 550 rupay, Rajdhani Express 700 rupay, Neeta Bus 450 rupay. Bol dijiye konsi chahiye."</div>
 
       <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 2:00 — FOLLOW-UP</div>
-      <div style="color:#22c55e;margin-bottom:4px;">🎤 "Rajdhani Express ki detail sunao"</div>
-      <div style="color:#3b82f6;margin-bottom:10px;">🔊 "Rajdhani Express. Delhi se Jaipur. Kal 3:15 PM. AC Sleeper. 700 rupay. 18 seats khali hain. Bol dijiye seat select karni hai."</div>
+      <div style="color:#22c55e;margin-bottom:4px;"><i class="fas fa-microphone"></i> "Rajdhani Express ki detail sunao"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;"><i class="fas fa-volume-up"></i> "Rajdhani Express. Delhi se Jaipur. Kal 3:15 PM. AC Sleeper. 700 rupay. 18 seats khali hain. Bol dijiye seat select karni hai."</div>
 
       <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 3:00 — BOOKING</div>
-      <div style="color:#22c55e;margin-bottom:4px;">🎤 "Theek hai, ye lo. Mera naam Rahul hai, phone 9876543210"</div>
-      <div style="color:#3b82f6;margin-bottom:10px;">🔊 "Booking confirm! Rajdhani Express, Delhi se Jaipur, kal 3:15 PM, Seat A2. Ticket number BK-78901. Manager aapko call karega 60 minute mein. Safe travel!"</div>
+      <div style="color:#22c55e;margin-bottom:4px;"><i class="fas fa-microphone"></i> "Theek hai, ye lo. Mera naam Rahul hai, phone 9876543210"</div>
+      <div style="color:#3b82f6;margin-bottom:10px;"><i class="fas fa-volume-up"></i> "Booking confirm! Rajdhani Express, Delhi se Jaipur, kal 3:15 PM, Seat A2. Ticket number BK-78901. Manager aapko call karega 60 minute mein. Safe travel!"</div>
 
       <div style="color:#94a3b8;font-size:12px;font-weight:700;margin-bottom:8px;">MINUTE 4:00 — MANAGER DASHBOARD</div>
       <div style="color:#e2e8f0;margin-bottom:10px;">
@@ -762,7 +763,7 @@ LANGUAGE: Hindi/Hinglish (user ki language match karo)</div>
         </div>
       </div>
 
-      <div class="arrow-down">⬇ WebSocket / REST API ⬇</div>
+      <div class="arrow-down"><i class="fas fa-arrow-down"></i> WebSocket / REST API <i class="fas fa-arrow-down"></i></div>
 
       <!-- Backend Layer -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:10px;">
@@ -780,7 +781,7 @@ LANGUAGE: Hindi/Hinglish (user ki language match karo)</div>
         </div>
       </div>
 
-      <div class="arrow-down">⬇ Database / External APIs ⬇</div>
+      <div class="arrow-down"><i class="fas fa-arrow-down"></i> Database / External APIs <i class="fas fa-arrow-down"></i></div>
 
       <!-- Data Layer -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:10px;">
@@ -798,7 +799,7 @@ LANGUAGE: Hindi/Hinglish (user ki language match karo)</div>
         </div>
       </div>
 
-      <div class="arrow-down">⬇ Integration ⬇</div>
+      <div class="arrow-down"><i class="fas fa-arrow-down"></i> Integration <i class="fas fa-arrow-down"></i></div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="diagram-box" style="border-color:#22c55e;">
