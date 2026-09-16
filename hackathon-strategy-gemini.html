@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak - 36H Hackathon Strategy Gemini Live API</title>
+<style>
+  @page { size: A4 landscape; margin: 10mm; }
+  @media print { body { padding: 0; } .slide { page-break-inside: avoid; margin-bottom: 12px; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #fff; color: #1e293b; padding: 20px; line-height: 1.4; }
+  .slide { max-width: 1400px; margin: 0 auto 28px auto; }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border: 3px solid #e5e7eb; border-radius: 16px; margin-bottom: 20px; }
+  .team-badge { background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 28px; font-size: 14px; font-weight: 800; text-align: center; line-height: 1.3; }
+  .header-title { font-size: 28px; font-weight: 900; color: #0f172a; }
+  .sih-badge { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #64748b; font-weight: 700; }
+  .sih-logo { width: 50px; height: 50px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 26px; font-weight: 900; color: #0f172a; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 4px solid #2563eb; display: inline-block; }
+  .sub-title { font-size: 20px; font-weight: 800; color: #2563eb; margin-bottom: 12px; margin-top: 18px; }
+  .data-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; margin-bottom: 16px; font-size: 14px; }
+  .data-table th { background: #1e293b; color: #fff; padding: 14px 18px; font-weight: 800; text-align: left; }
+  .data-table td { padding: 12px 18px; border-bottom: 2px solid #f1f5f9; }
+  .data-table tr:nth-child(even) td { background: #f8fafc; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 18px; }
+  .card-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+  .card-content { font-size: 13px; color: #475569; line-height: 1.6; }
+  .card-content code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #7c3aed; }
+  .code-block { background: #0f172a; color: #e2e8f0; padding: 18px; border-radius: 12px; font-family: 'Fira Code', 'Consolas', monospace; font-size: 12px; line-height: 1.5; overflow-x: auto; margin-bottom: 16px; white-space: pre; }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #a855f7; }
+  .code-block .string { color: #22c55e; }
+  .code-block .function { color: #3b82f6; }
+  .code-block .number { color: #f59e0b; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 800; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-purple { background: #f3e8ff; color: #7c3aed; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+  .badge-red { background: #fef2f2; color: #dc2626; }
+  .badge-teal { background: #ccfbf1; color: #0d9488; }
+  .page-break { page-break-before: always; }
+  .mega-card { border-radius: 20px; padding: 24px; border: 3px solid; position: relative; overflow: hidden; }
+  .mega-card-header { font-size: 20px; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .mega-card-body { font-size: 14px; color: #334155; line-height: 1.8; }
+  .mega-card-body strong { color: #0f172a; }
+  .mega-card-badge { position: absolute; top: 16px; right: 16px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+  .mega-card-time { font-size: 28px; font-weight: 900; margin-top: 12px; }
+  .flow-horiz { display: flex; align-items: center; gap: 0; margin: 16px 0; flex-wrap: wrap; justify-content: center; }
+  .flow-node { padding: 14px 20px; border-radius: 14px; text-align: center; min-width: 130px; border: 3px solid; flex-shrink: 0; }
+  .flow-node-title { font-size: 14px; font-weight: 800; }
+  .flow-node-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .flow-arrow { font-size: 24px; color: #94a3b8; margin: 0 4px; flex-shrink: 0; }
+  .flow-vert { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .flow-vbox { width: 100%; max-width: 900px; border-radius: 16px; padding: 18px 24px; border: 3px solid; display: flex; align-items: center; gap: 16px; }
+  .flow-vbox-icon { font-size: 32px; flex-shrink: 0; }
+  .flow-vbox-content { flex: 1; }
+  .flow-vbox-title { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+  .flow-vbox-desc { font-size: 13px; color: #475569; }
+  .flow-vbox-time { font-size: 14px; font-weight: 800; flex-shrink: 0; padding: 6px 14px; border-radius: 10px; background: rgba(0,0,0,0.05); }
+  .flow-varrow { width: 4px; height: 20px; background: #cbd5e1; }
+  .h-bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .h-bar-row { display: flex; align-items: center; gap: 12px; }
+  .h-bar-label { width: 180px; font-size: 14px; font-weight: 700; color: #334155; text-align: right; flex-shrink: 0; }
+  .h-bar-track { flex: 1; height: 36px; background: #f1f5f9; border-radius: 8px; overflow: hidden; }
+  .h-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding-left: 12px; font-size: 13px; font-weight: 800; color: #fff; }
+  .h-bar-value { font-size: 14px; font-weight: 800; width: 80px; text-align: right; flex-shrink: 0; }
+  .checklist { list-style: none; }
+  .checklist li { padding: 6px 0; font-size: 13px; color: #334155; display: flex; align-items: center; gap: 8px; }
+  .checklist li::before { content: ""; width: 16px; height: 16px; border: 2px solid #22c55e; border-radius: 4px; background: #22c55e; flex-shrink: 0; }
+  .gantt { display: flex; flex-direction: column; gap: 4px; }
+  .gantt-row { display: flex; align-items: center; height: 36px; }
+  .gantt-label { width: 120px; font-size: 12px; font-weight: 700; color: #334155; text-align: right; padding-right: 12px; flex-shrink: 0; }
+  .gantt-track { flex: 1; height: 100%; position: relative; background: #f8fafc; border-radius: 6px; }
+  .gantt-bar { position: absolute; height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; font-size: 10px; font-weight: 700; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="slide">
+  <div class="header">
+    <div class="team-badge">Coffee<br>Into Code</div>
+    <div class="header-title">36-Hour Hackathon Strategy - Gemini Live API</div>
+    <div class="sih-badge">
+      <svg class="sih-logo" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#f97316"/>
+        <text x="50" y="38" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">SMART</text>
+        <text x="50" y="50" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">INDIA</text>
+        <text x="50" y="62" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">HACKATHON</text>
+        <text x="50" y="78" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">2025</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: THE CORE IDEA -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">1. THE CORE IDEA - Hold Mic, Speak, Done</div>
+
+    <div class="sub-title">How User Interacts (Super Simple)</div>
+    <div class="flow-horiz" style="margin:20px 0;">
+      <div class="flow-node" style="background:#dcfce7;border-color:#22c55e;color:#16a34a;min-width:180px;padding:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">MIC</div>
+        <div class="flow-node-title" style="font-size:18px;">HOLD TO SPEAK</div>
+        <div class="flow-node-sub">Press and hold big MIC button</div>
+      </div>
+      <div class="flow-arrow" style="font-size:32px;">-></div>
+      <div class="flow-node" style="background:#e8f0fe;border-color:#4285f4;color:#1a73e8;min-width:220px;padding:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">GEMINI</div>
+        <div class="flow-node-title" style="font-size:18px;">SPEAK YOUR REQUEST</div>
+        <div class="flow-node-sub">"Mumbai se Delhi jana hai kal"</div>
+      </div>
+      <div class="flow-arrow" style="font-size:32px;">-></div>
+      <div class="flow-node" style="background:#fef3c7;border-color:#f59e0b;color:#d97706;min-width:180px;padding:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">BUS</div>
+        <div class="flow-node-title" style="font-size:18px;">GET RESULTS</div>
+        <div class="flow-node-sub">"3 bus mil gaye"</div>
+      </div>
+      <div class="flow-arrow" style="font-size:32px;">-></div>
+      <div class="flow-node" style="background:#f3e8ff;border-color:#a855f7;color:#7c3aed;min-width:180px;padding:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">BOOK</div>
+        <div class="flow-node-title" style="font-size:18px;">HOLD + SAY</div>
+        <div class="flow-node-sub">"Number 1 book karo"</div>
+      </div>
+      <div class="flow-arrow" style="font-size:32px;">-></div>
+      <div class="flow-node" style="background:#dcfce7;border-color:#22c55e;color:#16a34a;min-width:180px;padding:24px;">
+        <div style="font-size:40px;margin-bottom:8px;">DONE</div>
+        <div class="flow-node-title" style="font-size:18px;">TICKET READY</div>
+        <div class="flow-node-sub">Booking confirm ho gayi!</div>
+      </div>
+    </div>
+
+    <div class="sub-title">3 Operating Modes (From Presentation)</div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-badge" style="background:#fef2f2;color:#dc2626;">MODE 1</div>
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:22px;">Voice Only</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Completely Blind Users<br>
+          <strong>Touch:</strong> LOCKED (no touch needed)<br>
+          <strong>Input:</strong> Hold MIC -> Speak only<br>
+          <strong>Audio:</strong> 24kHz Native PCM<br>
+          <strong>Feedback:</strong> Voice + Haptics<br><br>
+          <strong>Flow:</strong><br>
+          Hold MIC -> "Mumbai se Delhi" -> Release -> Gemini responds -> Hold again -> "Number 1 book karo" -> Done
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-badge" style="background:#fef3c7;color:#d97706;">MODE 2</div>
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:22px;">Dynamic Switch</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Low Vision Users<br>
+          <strong>Starts:</strong> Locked (like Mode 1)<br>
+          <strong>Unlocks:</strong> Via voice command<br>
+          <strong>Visual:</strong> Large picture buttons<br><br>
+          <strong>Flow:</strong><br>
+          Starts locked -> User says " unlock" -> Touch unlocks -> Can use big buttons OR voice -> Toggle anytime
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">MODE 3</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:22px;">Dual Combined</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>For:</strong> Voice + Touch Together<br>
+          <strong>Tap:</strong> Triggers TTS readout<br>
+          <strong>Hold:</strong> Triggers MIC input<br>
+          <strong>Always:</strong> Active visuals<br><br>
+          <strong>Flow:</strong><br>
+          Tap bus card -> "VRL Travels, 800 rupaye" -> Hold MIC -> "Book karo" -> Done
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Voice Demo (From Presentation)</div>
+    <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);max-width:800px;margin:0 auto;">
+      <div class="mega-card-header" style="color:#1a73e8;">
+        <span style="font-size:20px;">Jodhpur to Jaisalmer - Full Conversation</span>
+      </div>
+      <div class="mega-card-body" style="font-size:16px;line-height:2.2;">
+        <strong>You:</strong> "I want to go Jodhpur to Jaisalmer today"<br>
+        <strong>App:</strong> "Buses found! What time do you prefer?"<br>
+        <strong>You:</strong> "8 AM, AC bus"<br>
+        <strong>App:</strong> "3 AC buses. Option 1: Royal Travels Rs.450. Book?"<br>
+        <strong>You:</strong> "Yes, book option 1"<br>
+        <strong>App:</strong> "Seat W3 locked for 60 min. Driver will call."
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: GEMINI LIVE API AS VOICE ENGINE + LLM -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">2. GEMINI LIVE API - Voice Engine + LLM (One Model)</div>
+
+    <div class="sub-title">Why Gemini Live API is Perfect for BusSahayak</div>
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:20px;">What Gemini Does (All-in-One)</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>1. STT (Speech to Text)</strong><br>
+          Understands Hindi, English, Hinglish natively<br>
+          No separate STT model needed<br><br>
+          <strong>2. LLM (Language Understanding)</strong><br>
+          Extracts cities, dates, preferences from speech<br>
+          Understands context, emotion, tone<br><br>
+          <strong>3. TTS (Text to Speech)</strong><br>
+          Generates natural Hindi audio response<br>
+          No separate TTS model needed<br><br>
+          <strong>4. Function Calling</strong><br>
+          Auto-calls ZuelPay API for bus search<br>
+          Auto-books tickets via function calls
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#34a853;background:linear-gradient(135deg,#e6f4ea,#fff);">
+        <div class="mega-card-header" style="color:#137333;">
+          <span style="font-size:20px;">Key Advantages</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Barge-In:</strong> User can interrupt anytime<br>
+          "Sorry ruko, Delhi nahi, Jaipur jana hai"<br><br>
+          <strong>Multi-Turn Memory:</strong> Remembers context<br>
+          "Ussi bus mein do seat de do" (remembers which bus)<br><br>
+          <strong>29 Languages:</strong> Hindi + English + Hinglish<br>
+          No language switching needed<br><br>
+          <strong>Streaming:</strong> Response starts playing instantly<br>
+          User hears first sentence while rest generates<br><br>
+          <strong>Latency:</strong> 300-500ms total<br>
+          Well under 500ms target
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Architecture - Simple 3-Layer</div>
+    <div class="arch-diagram" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:24px;">
+      <div class="arch-row">
+        <div class="arch-node" style="background:#dcfce7;border-color:#22c55e;color:#16a34a;">
+          React Native App<br><span class="arch-sub">Hold MIC -> Record Audio -> Stream</span>
+        </div>
+      </div>
+      <div class="arch-arrow">v</div>
+      <div class="arch-row" style="gap:40px;">
+        <div class="arch-node" style="background:#e8f0fe;border-color:#4285f4;color:#1a73e8;min-width:300px;padding:20px;">
+          <div style="font-size:20px;font-weight:900;">Google Gemini Multimodal Live API</div>
+          <span class="arch-sub">WebSocket | STT + LLM + TTS | Function Calling</span>
+        </div>
+      </div>
+      <div class="arch-arrow">v</div>
+      <div class="arch-row" style="gap:30px;">
+        <div class="arch-node" style="background:#fffbeb;border-color:#f59e0b;color:#d97706;">
+          ZuelPay API<br><span class="arch-sub">Search | Seats | Book</span>
+        </div>
+        <div class="arch-node" style="background:#fef2f2;border-color:#ef4444;color:#dc2626;">
+          FastAPI Backend<br><span class="arch-sub">Auth | Data | Redis</span>
+        </div>
+        <div class="arch-node" style="background:#f0fdf4;border-color:#22c55e;color:#16a34a;">
+          PostgreSQL + Redis<br><span class="arch-sub">Bookings | Seat Locks</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Conversation Flow with Function Calling</div>
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:18px;">User Holds MIC & Says</span>
+        </div>
+        <div class="mega-card-body" style="font-size:18px;font-style:italic;">
+          "Mumbai se Delhi jana hai kal subah"
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:18px;">Gemini Auto-Calls Function</span>
+        </div>
+        <div class="mega-card-body">
+          <code>search_buses(from="Mumbai", to="Delhi", date="tomorrow", time="morning")</code>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:18px;">API Returns Bus Data</span>
+        </div>
+        <div class="mega-card-body">
+          <code>[{"bus":"VRL Travels","time":"06:00","fare":800,"seats":12}, ...]</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:18px;">Gemini Speaks Response</span>
+        </div>
+        <div class="mega-card-body" style="font-size:16px;font-style:italic;">
+          "Aapke liye 3 bus mil gaye. Pehla VRL Travels, 6 baje, 800 rupaye. Book karna hai?"
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: 36 HOUR PLAN FOR 6 MEMBERS -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">3. 36-HOUR PLAN - 6 Members (Gemini Strategy)</div>
+
+    <div class="sub-title">Gantt Chart - Who Works On What</div>
+    <div class="gantt">
+      <div style="display:flex;padding-left:120px;margin-bottom:6px;">
+        <div style="flex:1;display:flex;justify-content:space-between;">
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">0h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">4h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">8h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">12h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">16h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">20h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">24h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">28h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">32h</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:600;">36h</span>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">Nitin (Lead)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:8%;background:#22c55e;">SETUP</div>
+          <div class="gantt-bar" style="left:8%;width:25%;background:#4285f4;">GEMINI</div>
+          <div class="gantt-bar" style="left:33%;width:17%;background:#f59e0b;">API</div>
+          <div class="gantt-bar" style="left:50%;width:22%;background:#a855f7;">INTEG</div>
+          <div class="gantt-bar" style="left:83%;width:17%;background:#8b5cf6;">DEPLOY</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">M1 (Frontend)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:8%;background:#22c55e;">SETUP</div>
+          <div class="gantt-bar" style="left:8%;width:25%;background:#3b82f6;">SCREENS</div>
+          <div class="gantt-bar" style="left:33%;width:17%;background:#a855f7;">BOOK</div>
+          <div class="gantt-bar" style="left:50%;width:17%;background:#f59e0b;">MODES</div>
+          <div class="gantt-bar" style="left:67%;width:17%;background:#ef4444;">POLISH</div>
+          <div class="gantt-bar" style="left:84%;width:16%;background:#14b8a6;">FIX</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">M2 (Backend)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:8%;background:#22c55e;">SETUP</div>
+          <div class="gantt-bar" style="left:8%;width:17%;background:#a855f7;">FASTAPI</div>
+          <div class="gantt-bar" style="left:25%;width:17%;background:#f59e0b;">ZUELPAY</div>
+          <div class="gantt-bar" style="left:42%;width:17%;background:#3b82f6;">DB</div>
+          <div class="gantt-bar" style="left:59%;width:17%;background:#ef4444;">REDIS</div>
+          <div class="gantt-bar" style="left:76%;width:12%;background:#14b8a6;">TEST</div>
+          <div class="gantt-bar" style="left:88%;width:12%;background:#8b5cf6;">BUILD</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">M3 (Voice AI)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:8%;width:33%;background:#4285f4;">GEMINI SETUP</div>
+          <div class="gantt-bar" style="left:42%;width:22%;background:#f59e0b;">FUNCTIONS</div>
+          <div class="gantt-bar" style="left:64%;width:17%;background:#22c55e;">TEST</div>
+          <div class="gantt-bar" style="left:81%;width:19%;background:#14b8a6;">FIX</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">M4 (UI/UX)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:8%;background:#22c55e;">DESIGN</div>
+          <div class="gantt-bar" style="left:8%;width:17%;background:#ef4444;">COMPONENTS</div>
+          <div class="gantt-bar" style="left:25%;width:17%;background:#a855f7;">MGR DASH</div>
+          <div class="gantt-bar" style="left:42%;width:25%;background:#f59e0b;">ANIMATE</div>
+          <div class="gantt-bar" style="left:67%;width:33%;background:#3b82f6;">PPT</div>
+        </div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-label">M5 (QA)</div>
+        <div class="gantt-track">
+          <div class="gantt-bar" style="left:0%;width:8%;background:#22c55e;">SETUP</div>
+          <div class="gantt-bar" style="left:42%;width:22%;background:#ef4444;">TEST</div>
+          <div class="gantt-bar" style="left:64%;width:17%;background:#f59e0b;">A11Y</div>
+          <div class="gantt-bar" style="left:81%;width:11%;background:#a855f7;">VIDEO</div>
+          <div class="gantt-bar" style="left:92%;width:8%;background:#14b8a6;">FINAL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Hour-by-Hour Tasks</div>
+    <div class="data-table" style="font-size:13px;">
+      <tr><th style="width:70px;">Hours</th><th style="width:100px;">Phase</th><th>What To Build</th><th>Who</th></tr>
+      <tr><td><strong>0-3</strong></td><td><span class="badge badge-green">SETUP</span></td><td>Expo init, FastAPI init, Gemini API key, ZuelPay key, git repo, EAS config</td><td>ALL 6</td></tr>
+      <tr><td><strong>3-6</strong></td><td><span class="badge badge-blue">GEMINI</span></td><td>Gemini WebSocket server, system prompt, function declarations, audio streaming</td><td>Nitin + M3</td></tr>
+      <tr><td><strong>3-6</strong></td><td><span class="badge badge-purple">UI</span></td><td>Home screen (big MIC button), white theme, navigation, accessibility context</td><td>M1 + M4</td></tr>
+      <tr><td><strong>3-6</strong></td><td><span class="badge badge-amber">API</span></td><td>FastAPI endpoints, ZuelPay integration, bus search, seat availability</td><td>M2</td></tr>
+      <tr><td><strong>6-10</strong></td><td><span class="badge badge-blue">SCREENS</span></td><td>Search screen, Results screen with bus cards, voice readout</td><td>M1 + M4</td></tr>
+      <tr><td><strong>6-10</strong></td><td><span class="badge badge-green">FUNCTIONS</span></td><td>Gemini function calling: search_buses, get_seats, create_booking</td><td>Nitin + M3</td></tr>
+      <tr><td><strong>10-14</strong></td><td><span class="badge badge-purple">BOOKING</span></td><td>Seat selection, passenger details, booking confirmation, ticket</td><td>M1 + M2</td></tr>
+      <tr><td><strong>14-18</strong></td><td><span class="badge badge-amber">3 MODES</span></td><td>Mode 1 (Voice Only), Mode 2 (Dynamic Switch), Mode 3 (Dual)</td><td>M1 + M3</td></tr>
+      <tr><td><strong>14-18</strong></td><td><span class="badge badge-teal">MANAGER</span></td><td>Manager dashboard, tele-confirmation flow, FCM push</td><td>M4 + M2</td></tr>
+      <tr><td><strong>18-22</strong></td><td><span class="badge badge-red">POLISH</span></td><td>Animations, haptics, error handling, loading states, barge-in</td><td>M1 + M4</td></tr>
+      <tr><td><strong>22-26</strong></td><td><span class="badge badge-green">TEST</span></td><td>Real device testing, accessibility audit, bug fixes</td><td>ALL 6</td></tr>
+      <tr><td><strong>26-30</strong></td><td><span class="badge badge-blue">DEPLOY</span></td><td>EAS build APK, Vercel deploy, demo video recording</td><td>Nitin + M5</td></tr>
+      <tr><td><strong>30-33</strong></td><td><span class="badge badge-purple">PRESENT</span></td><td>Final PPT, pitch script, demo flow, Q&A prep</td><td>M4 + ALL</td></tr>
+      <tr><td><strong>33-36</strong></td><td><span class="badge badge-amber">BACKUP</span></td><td>Backup demo, edge cases, final checks</td><td>ALL 6</td></tr>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: WHAT TO BUILD - PRIORITY -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">4. WHAT TO BUILD - Priority Cards</div>
+
+    <div class="sub-title">MUST HAVE (Build First - 14 Hours)</div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-badge" style="background:#d2e3fc;color:#1a73e8;">P0 - 6h</div>
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <span style="font-size:20px;">Gemini Voice Engine</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>What:</strong> WebSocket to Gemini Live API<br>
+          <strong>System Prompt:</strong> BusSahayak persona<br>
+          <strong>Functions:</strong> search_buses, create_booking<br>
+          <strong>Audio:</strong> Stream MIC -> Gemini -> Speaker<br>
+          <strong>Barge-in:</strong> Interrupt anytime<br><br>
+          <strong>Files:</strong><br>
+          <code>services/geminiVoice.ts</code><br>
+          <code>hooks/useGeminiVoice.ts</code><br>
+          <code>main.py (FastAPI)</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-badge" style="background:#ceead6;color:#137333;">P0 - 4h</div>
+        <div class="mega-card-header" style="color:#137333;">
+          <span style="font-size:20px;">Home + Search Screen</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Home:</strong> Big MIC button (center)<br>
+          <strong>Voice:</strong> "Namaskar! Bolo kahan jaana hai"<br>
+          <strong>Search:</strong> Auto-populate from voice<br>
+          <strong>Cities:</strong> Popular chips + voice input<br><br>
+          <strong>Files:</strong><br>
+          <code>app/home.tsx</code><br>
+          <code>app/search.tsx</code><br>
+          <code>components/VoiceButton.tsx</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-badge" style="background:#f3e8ff;color:#7c3aed;">P0 - 4h</div>
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:20px;">Results + Booking</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Results:</strong> Bus list with voice readout<br>
+          <strong>Voice:</strong> "3 bus mil gaye"<br>
+          <strong>Select:</strong> "Number 1 book karo"<br>
+          <strong>Book:</strong> Confirm with haptic<br><br>
+          <strong>Files:</strong><br>
+          <code>app/results.tsx</code><br>
+          <code>app/booking.tsx</code><br>
+          <code>components/BusCard.tsx</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">SHOULD HAVE (Build If Time - 12 Hours)</div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-badge" style="background:#fef3c7;color:#d97706;">P1 - 4h</div>
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:20px;">3 Operating Modes</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Mode 1:</strong> Voice Only (touch locked)<br>
+          <strong>Mode 2:</strong> Dynamic Switch<br>
+          <strong>Mode 3:</strong> Dual Combined<br>
+          <strong>Toggle:</strong> Via voice or settings<br><br>
+          <strong>Files:</strong><br>
+          <code>contexts/ModeContext.tsx</code><br>
+          <code>app/settings.tsx</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#14b8a6;background:linear-gradient(135deg,#f0fdfa,#fff);">
+        <div class="mega-card-badge" style="background:#ccfbf1;color:#0d9488;">P1 - 4h</div>
+        <div class="mega-card-header" style="color:#0d9488;">
+          <span style="font-size:20px;">Manager Dashboard</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Web app:</strong> For driver/manager<br>
+          <strong>See:</strong> Pending bookings<br>
+          <strong>Action:</strong> One-tap confirm/call<br>
+          <strong>Push:</strong> FCM notification<br><br>
+          <strong>Files:</strong><br>
+          <code>manager/index.html</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-badge" style="background:#fef2f2;color:#dc2626;">P1 - 4h</div>
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:20px;">Seat + Ticket</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Seat:</strong> Visual grid + voice select<br>
+          <strong>Ticket:</strong> PDF with QR code<br>
+          <strong>SMS:</strong> Booking confirmation<br>
+          <strong>History:</strong> Past bookings<br><br>
+          <strong>Files:</strong><br>
+          <code>app/seat-selection.tsx</code><br>
+          <code>app/tickets.tsx</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Gemini Function Definitions (The Magic)</div>
+    <div class="code-block"><span class="comment"># Gemini Function Declarations - This is what makes it smart</span>
+
+TOOLS = [{
+    <span class="string">"function_declarations"</span>: [
+        {
+            <span class="string">"name"</span>: <span class="string">"search_buses"</span>,
+            <span class="string">"description"</span>: <span class="string">"Search buses between two Indian cities"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"type"</span>: <span class="string">"OBJECT"</span>,
+                <span class="string">"properties"</span>: {
+                    <span class="string">"from_city"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>, <span class="string">"description"</span>: <span class="string">"Source city like Mumbai, Delhi, Jodhpur"</span>},
+                    <span class="string">"to_city"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>, <span class="string">"description"</span>: <span class="string">"Destination city"</span>},
+                    <span class="string">"date"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>, <span class="string">"description"</span>: <span class="string">"Travel date: today, tomorrow, or YYYY-MM-DD"</span>},
+                    <span class="string">"bus_type"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>, <span class="string">"description"</span>: <span class="string">"AC, Non-AC, Sleeper, Seater"</span>}
+                },
+                <span class="string">"required"</span>: [<span class="string">"from_city"</span>, <span class="string">"to_city"</span>]
+            }
+        },
+        {
+            <span class="string">"name"</span>: <span class="string">"get_seats"</span>,
+            <span class="string">"description"</span>: <span class="string">"Get available seats for a specific bus"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"type"</span>: <span class="string">"OBJECT"</span>,
+                <span class="string">"properties"</span>: {
+                    <span class="string">"bus_id"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>, <span class="string">"description"</span>: <span class="string">"Bus ID from search results"</span>}
+                },
+                <span class="string">"required"</span>: [<span class="string">"bus_id"</span>]
+            }
+        },
+        {
+            <span class="string">"name"</span>: <span class="string">"create_booking"</span>,
+            <span class="string">"description"</span>: <span class="string">"Book a bus ticket after user confirms"</span>,
+            <span class="string">"parameters"</span>: {
+                <span class="string">"type"</span>: <span class="string">"OBJECT"</span>,
+                <span class="string">"properties"</span>: {
+                    <span class="string">"bus_id"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>},
+                    <span class="string">"seat_id"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>},
+                    <span class="string">"passenger_name"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>},
+                    <span class="string">"phone"</span>: {<span class="string">"type"</span>: <span class="string">"STRING"</span>}
+                },
+                <span class="string">"required"</span>: [<span class="string">"bus_id"</span>, <span class="string">"seat_id"</span>, <span class="string">"passenger_name"</span>, <span class="string">"phone"</span>]
+            }
+        }
+    ]
+}]</div>
+  </div>
+</div>
+
+<!-- SECTION 5: GEMINI SYSTEM PROMPT -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">5. GEMINI SYSTEM PROMPT - The Brain</div>
+
+    <div class="sub-title">Complete System Prompt for BusSahayak</div>
+    <div class="code-block"><span class="comment"># system_prompt.txt - Give this to Gemini</span>
+
+<span class="string">You are BusSahayak, a voice-first bus booking assistant for blind and visually
+impaired users in India. You speak like a helpful Indian friend.
+
+PERSONALITY:
+- Speak in Hindi-English mix (Hinglish) naturally
+- Be warm, patient, and encouraging
+- Use simple words a blind person understands
+- Never say "dekh lo" or "click karo" - always use voice
+- Confirm every important action before proceeding
+- Read out numbered lists for options
+
+FLOW:
+1. User holds mic and says where they want to go
+2. You extract: source city, destination, date, bus preference
+3. Call search_buses function
+4. Read out results as numbered list: "Pehla bus..., Doosra bus..."
+5. Ask: "Kaunsa chahiye? Number bolo."
+6. User says number -> call get_seats
+7. Read available seats: "Window seat W3 available hai"
+8. Ask for passenger name and phone
+9. Confirm: "Rahul Kumar, Mumbai se Delhi, kal, VRL Travels. Book karoon?"
+10. User says "haan" -> call create_booking
+11. Confirm: "Booking ho gayi! Seat W3 lock hai 60 minute ke liye. Driver call karega."
+
+RULES:
+- Always confirm before booking
+- If user is confused, repeat slowly
+- If user says wrong city, ask "Aap Mumbai bol rahe ho ya Delhi?"
+- Handle interruptions naturally ("Haan, bolo?")
+- Never skip confirmation step
+- Always mention 60-minute lock and driver will call</span></div>
+
+    <div class="sub-title">How Gemini Processes Each Step</div>
+    <div class="flow-vert">
+      <div class="flow-vbox" style="background:#e8f0fe;border-color:#4285f4;">
+        <div class="flow-vbox-icon">1</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#1a73e8;">User Holds MIC</div>
+          <div class="flow-vbox-desc">App starts recording. Audio streams to Gemini via WebSocket. No separate STT needed.</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#d2e3fc;color:#1a73e8;">0ms</div>
+      </div>
+      <div class="flow-varrow"></div>
+      <div class="flow-vbox" style="background:#f0fdf4;border-color:#22c55e;">
+        <div class="flow-vbox-icon">2</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#16a34a;">Gemini Understands</div>
+          <div class="flow-vbox-desc">"Mumbai se Delhi jana hai kal" -> Extracts: from=Mumbai, to=Delhi, date=tomorrow</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#ceead6;color:#137333;">150ms</div>
+      </div>
+      <div class="flow-varrow"></div>
+      <div class="flow-vbox" style="background:#fffbeb;border-color:#f59e0b;">
+        <div class="flow-vbox-icon">3</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#d97706;">Function Call</div>
+          <div class="flow-vbox-desc">Gemini auto-calls: search_buses(from="Mumbai", to="Delhi", date="tomorrow")</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#fef3c7;color:#d97706;">100ms</div>
+      </div>
+      <div class="flow-varrow"></div>
+      <div class="flow-vbox" style="background:#fef2f2;border-color:#ef4444;">
+        <div class="flow-vbox-icon">4</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#dc2626;">API Returns Data</div>
+          <div class="flow-vbox-desc">ZuelPay returns 3 buses. Data sent back to Gemini as function response.</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#fef2f2;color:#dc2626;">200ms</div>
+      </div>
+      <div class="flow-varrow"></div>
+      <div class="flow-vbox" style="background:#faf5ff;border-color:#a855f7;">
+        <div class="flow-vbox-icon">5</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#7c3aed;">Audio Response</div>
+          <div class="flow-vbox-desc">Gemini generates: "Aapke liye 3 bus mil gaye. Pehla VRL Travels, 6 baje, 800 rupaye..."</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#f3e8ff;color:#7c3aed;">200ms</div>
+      </div>
+      <div class="flow-varrow"></div>
+      <div class="flow-vbox" style="background:#dcfce7;border-color:#22c55e;">
+        <div class="flow-vbox-icon">6</div>
+        <div class="flow-vbox-content">
+          <div class="flow-vbox-title" style="color:#16a34a;">User Holds MIC Again</div>
+          <div class="flow-vbox-desc">"Number 1 book karo" -> Gemini calls create_booking -> Done!</div>
+        </div>
+        <div class="flow-vbox-time" style="background:#ceead6;color:#137333;">300ms</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: TEAM ROLES + RISK -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">6. TEAM ROLES + RISK MITIGATION</div>
+
+    <div class="sub-title">6 Team Members - Role Assignment</div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <span style="font-size:18px;">Nitin - Team Lead</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> Gemini + Architecture<br>
+          <strong>Tasks:</strong><br>
+          - Gemini WebSocket server<br>
+          - System prompt design<br>
+          - Function declarations<br>
+          - FastAPI + ZuelPay integration<br>
+          - EAS Build & Deploy<br>
+          <strong>Hours:</strong> 0-33 (full)
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#fff);">
+        <div class="mega-card-header" style="color:#1d4ed8;">
+          <span style="font-size:18px;">M1 - Frontend Lead</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> React Native Screens<br>
+          <strong>Tasks:</strong><br>
+          - Home screen (big MIC)<br>
+          - Search, Results, Booking<br>
+          - 3 Mode switching<br>
+          - Gesture system<br>
+          - Accessibility labels<br>
+          <strong>Hours:</strong> 0-30
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:18px;">M2 - Backend Lead</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> FastAPI + Database<br>
+          <strong>Tasks:</strong><br>
+          - FastAPI endpoints<br>
+          - ZuelPay API integration<br>
+          - PostgreSQL schema<br>
+          - Redis seat locking<br>
+          - Booking CRUD<br>
+          <strong>Hours:</strong> 0-28
+        </div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:18px;">M3 - Voice AI Lead</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> Gemini Integration<br>
+          <strong>Tasks:</strong><br>
+          - Gemini WebSocket client<br>
+          - Audio streaming logic<br>
+          - Function call handlers<br>
+          - Response generator<br>
+          - Barge-in handling<br>
+          <strong>Hours:</strong> 3-30
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:18px;">M4 - UI/UX Lead</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> Design + Dashboard<br>
+          <strong>Tasks:</strong><br>
+          - Design system (colors)<br>
+          - Component library<br>
+          - Manager dashboard<br>
+          - Animations + haptics<br>
+          - PPT design<br>
+          <strong>Hours:</strong> 0-33
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#14b8a6;background:linear-gradient(135deg,#f0fdfa,#fff);">
+        <div class="mega-card-header" style="color:#0d9488;">
+          <span style="font-size:18px;">M5 - QA & Deploy</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Focus:</strong> Testing + Demo<br>
+          <strong>Tasks:</strong><br>
+          - Testing all flows<br>
+          - Accessibility audit<br>
+          - Demo video recording<br>
+          - Bug reporting<br>
+          - Final checks<br>
+          <strong>Hours:</strong> 14-36
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Risk Mitigation</div>
+    <div class="grid-3">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <span style="font-size:16px;">Gemini API Down</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Fix:</strong> Fallback to Vosk + Gemma + Piper<br>
+          <strong>Time:</strong> 0h (pre-built offline stack)<br>
+          <strong>Files:</strong> <code>services/offlineVoice.ts</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-header" style="color:#d97706;">
+          <span style="font-size:16px;">ZuelPay API Slow</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Fix:</strong> Use mock data (50+ buses)<br>
+          <strong>Time:</strong> 0h (pre-built)<br>
+          <strong>Files:</strong> <code>data/mockBuses.ts</code>
+        </div>
+      </div>
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <span style="font-size:16px;">Audio Streaming Issue</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Fix:</strong> Use text input + TTS fallback<br>
+          <strong>Time:</strong> 1h<br>
+          <strong>Files:</strong> <code>components/TextInput.tsx</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Key Numbers</div>
+    <div class="grid-4">
+      <div class="card" style="text-align:center;border:3px solid #4285f4;">
+        <div class="card-title" style="font-size:32px;color:#1a73e8;">300ms</div>
+        <div class="card-content">Gemini Latency</div>
+      </div>
+      <div class="card" style="text-align:center;border:3px solid #22c55e;">
+        <div class="card-title" style="font-size:32px;color:#16a34a;">3</div>
+        <div class="card-content">Operating Modes</div>
+      </div>
+      <div class="card" style="text-align:center;border:3px solid #a855f7;">
+        <div class="card-title" style="font-size:32px;color:#7c3aed;">3</div>
+        <div class="card-content">Function Calls</div>
+      </div>
+      <div class="card" style="text-align:center;border:3px solid #f59e0b;">
+        <div class="card-title" style="font-size:32px;color:#d97706;">36h</div>
+        <div class="card-content">Total Time</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
