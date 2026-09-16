@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak - AI Seat Matrix Selection</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  @media print { body { padding: 0; } .slide { page-break-inside: avoid; margin-bottom: 10px; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #fff; color: #1e293b; padding: 16px; line-height: 1.35; }
+  .slide { max-width: 1400px; margin: 0 auto 20px auto; }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border: 3px solid #e5e7eb; border-radius: 16px; margin-bottom: 16px; }
+  .team-badge { background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 28px; font-size: 13px; font-weight: 800; text-align: center; line-height: 1.3; }
+  .header-title { font-size: 26px; font-weight: 900; color: #0f172a; }
+  .sih-badge { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #64748b; font-weight: 700; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 4px solid #2563eb; display: inline-block; }
+  .sub-title { font-size: 18px; font-weight: 800; color: #2563eb; margin-bottom: 10px; margin-top: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .mega-card { border-radius: 18px; padding: 20px; border: 3px solid; position: relative; overflow: hidden; }
+  .mega-card-header { font-size: 18px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .mega-card-body { font-size: 13px; color: #334155; line-height: 1.7; }
+  .mega-card-body strong { color: #0f172a; }
+  .mega-card-badge { position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 800; }
+  .card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+  .card-title { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+  .card-content { font-size: 12px; color: #475569; line-height: 1.6; }
+  .code-block { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 10px; font-family: 'Fira Code','Consolas',monospace; font-size: 11px; line-height: 1.5; overflow-x: auto; margin-bottom: 12px; white-space: pre; }
+  .code-block .comment { color: #64748b; }
+  .code-block .keyword { color: #a855f7; }
+  .code-block .string { color: #22c55e; }
+  .code-block .function { color: #3b82f6; }
+  .code-block .number { color: #f59e0b; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 800; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-purple { background: #f3e8ff; color: #7c3aed; }
+  .badge-amber { background: #fef3c7; color: #d97706; }
+  .badge-red { background: #fef2f2; color: #dc2626; }
+  .badge-teal { background: #ccfbf1; color: #0d9488; }
+  .page-break { page-break-before: always; }
+  .flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; border-left: 4px solid; background: #f8fafc; }
+  .flow-step-num { min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: #fff; }
+  .flow-step-content { flex: 1; }
+  .flow-step-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+  .flow-step-desc { font-size: 12px; color: #475569; line-height: 1.5; }
+  .arrow-down { text-align: center; font-size: 24px; color: #94a3b8; margin: 4px 0; }
+  .ws-window { background: #1a1a2e; border-radius: 12px; overflow: hidden; margin-bottom: 14px; border: 2px solid #334155; }
+  .ws-titlebar { background: #16213e; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .ws-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ws-content { padding: 14px; font-family: 'Fira Code','Consolas',monospace; font-size: 11px; line-height: 1.6; }
+  .ws-msg { margin-bottom: 6px; padding: 6px 10px; border-radius: 6px; }
+  .ws-client { background: rgba(34,197,94,0.15); border-left: 3px solid #22c55e; }
+  .ws-server { background: rgba(59,130,246,0.15); border-left: 3px solid #3b82f6; }
+  .ws-label { font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .seat-matrix { display: grid; gap: 4px; justify-content: center; margin: 10px 0; }
+  .seat { width: 52px; height: 52px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; border: 2px solid; cursor: default; }
+  .seat-id { font-size: 11px; font-weight: 900; }
+  .seat-type { font-size: 8px; font-weight: 600; opacity: 0.7; }
+  .seat-available { background: #dcfce7; border-color: #22c55e; color: #16a34a; }
+  .seat-locked { background: #fef3c7; border-color: #f59e0b; color: #d97706; }
+  .seat-booked { background: #fecaca; border-color: #ef4444; color: #dc2626; }
+  .seat-selected { background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; }
+  .seat-driver { background: #1e293b; border-color: #0f172a; color: #fff; }
+  .seat-aisle { background: transparent; border: none; }
+  .diagram-box { background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 10px; }
+  .diagram-box-title { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  .diagram-box-desc { font-size: 11px; color: #64748b; }
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 3px; background: #e2e8f0; border-radius: 2px; }
+  .timeline-item { position: relative; margin-bottom: 14px; padding-left: 16px; }
+  .timeline-item-title { font-size: 13px; font-weight: 800; color: #0f172a; }
+  .timeline-item-desc { font-size: 12px; color: #475569; line-height: 1.5; }
+  .voice-bubble { background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 12px; padding: 12px 16px; margin: 6px 0; }
+  .voice-bubble-system { background: #eff6ff; border: 2px solid #bfdbfe; }
+  .voice-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .comparison-col { border: 2px solid; border-radius: 14px; padding: 16px; }
+  .comparison-title { font-size: 15px; font-weight: 900; margin-bottom: 10px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="slide">
+  <div class="header">
+    <div class="team-badge">COFFEE INTO CODE<br>Nitin Doyal (Team Leader)</div>
+    <div>
+      <div class="header-title">AI Seat Matrix Selection</div>
+      <div style="font-size:13px;color:#64748b;font-weight:600;">How the AI Selects, Reads, and Manages the Seat Matrix Using All Systems</div>
+    </div>
+    <div class="sih-badge">
+      <svg viewBox="0 0 50 50" width="50" height="50"><circle cx="25" cy="25" r="23" fill="#1e293b"/><text x="25" y="20" text-anchor="middle" fill="#fff" font-size="8" font-weight="900">SIH</text><text x="25" y="32" text-anchor="middle" fill="#f59e0b" font-size="7" font-weight="800">2026</text></svg>
+      <div>SIH26002<br>Smart Logistics &amp; Accessibility</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: THE PROBLEM -->
+<div class="slide">
+  <div class="section">
+    <div class="section-title">1. The Problem: How Does a Blind User Select a Seat?</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <i class="fas fa-eye-slash" style="font-size:20px;"></i>
+          <span>WHAT SIGHTED USERS SEE</span>
+        </div>
+        <div class="mega-card-body">
+          <div class="seat-matrix" style="grid-template-columns:repeat(5,52px);">
+            <div class="seat seat-driver" style="grid-column:span 2;"><span class="seat-id"><i class="fas fa-steering-wheel"></i></span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-available"><span class="seat-id">A1</span><span class="seat-type">Window</span></div>
+            <div class="seat seat-available"><span class="seat-id">A2</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-available"><span class="seat-id">A3</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-available"><span class="seat-id">A4</span><span class="seat-type">Aisle</span></div>
+            <div class="seat seat-booked"><span class="seat-id">B1</span><span class="seat-type">Window</span></div>
+            <div class="seat seat-available"><span class="seat-id">B2</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-locked"><span class="seat-id">B3</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-available"><span class="seat-id">B4</span><span class="seat-type">Aisle</span></div>
+            <div class="seat seat-available"><span class="seat-id">C1</span><span class="seat-type">Window</span></div>
+            <div class="seat seat-available"><span class="seat-id">C2</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-booked"><span class="seat-id">C3</span><span class="seat-type">Middle</span></div>
+            <div class="seat seat-available"><span class="seat-id">C4</span><span class="seat-type">Aisle</span></div>
+          </div>
+          <div style="font-size:11px;margin-top:6px;">
+            <span class="seat-available" style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;"></span> Available
+            <span class="seat-locked" style="display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 8px;vertical-align:middle;"></span> Locked
+            <span class="seat-booked" style="display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 8px;vertical-align:middle;"></span> Booked
+            <span class="seat-driver" style="display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 8px;vertical-align:middle;"></span> Driver
+          </div>
+          <br>
+          <strong>Sighted user taps A1 → selects it → confirms. Done in 3 seconds.</strong>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <i class="fas fa-headphones" style="font-size:20px;"></i>
+          <span>WHAT BLIND USERS NEED</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Blind user cannot see the matrix. They need:</strong><br><br>
+
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:6px 0;">
+            <div class="voice-label" style="color:#7c3aed;"><i class="fas fa-robot"></i> AI Must Speak:</div>
+            <div style="font-size:12px;color:#334155;line-height:1.6;">
+              "Peela Travels mein 11 seats khali hain. Seater bus hai, 2+2 layout hai.<br><br>
+              <strong>Row A:</strong> A1 Window khali, A2 Middle khali, A3 Middle khali, A4 Aisle khali<br>
+              <strong>Row B:</strong> B1 Window BOOKED hai, B2 Middle khali, B3 Middle LOCKED hai, B4 Aisle khali<br>
+              <strong>Row C:</strong> C1 Window khali, C2 Middle khali, C3 Middle BOOKED hai, C4 Aisle khali<br><br>
+              Bol dijiye kaunsi seat chahiye — jaise 'A1 lelo' ya 'window seat do'."
+            </div>
+          </div>
+
+          <strong>Key challenge:</strong><br>
+          - Matrix has <strong>position</strong> (window/middle/aisle)<br>
+          - Matrix has <strong>status</strong> (available/locked/booked)<br>
+          - Matrix has <strong>layout</strong> (2+2 seater or 2+1 sleeper)<br>
+          - AI must convert visual grid → spoken words<br>
+          - User selects by saying seat ID OR position type
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: DATA FLOW OVERVIEW -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">2. Data Flow: ZuelPay → PostgreSQL → FastAPI → Gemini → User</div>
+
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px;">
+        <div class="diagram-box" style="border-color:#f59e0b;margin-bottom:0;">
+          <div style="font-size:22px;color:#f59e0b;margin-bottom:4px;"><i class="fas fa-bus"></i></div>
+          <div class="diagram-box-title">ZUELPAY</div>
+          <div class="diagram-box-desc">Raw seat data<br>2000+ operators</div>
+        </div>
+        <div class="diagram-box" style="border-color:#a855f7;margin-bottom:0;">
+          <div style="font-size:22px;color:#a855f7;margin-bottom:4px;"><i class="fas fa-database"></i></div>
+          <div class="diagram-box-title">POSTGRESQL</div>
+          <div class="diagram-box-desc">Cached seat matrix<br>Booking records</div>
+        </div>
+        <div class="diagram-box" style="border-color:#ef4444;margin-bottom:0;">
+          <div style="font-size:22px;color:#ef4444;margin-bottom:4px;"><i class="fas fa-database"></i></div>
+          <div class="diagram-box-title">REDIS</div>
+          <div class="diagram-box-desc">Live seat locks<br>Real-time status</div>
+        </div>
+        <div class="diagram-box" style="border-color:#a855f7;margin-bottom:0;">
+          <div style="font-size:22px;color:#a855f7;margin-bottom:4px;"><i class="fas fa-server"></i></div>
+          <div class="diagram-box-title">FASTAPI</div>
+          <div class="diagram-box-desc">Merges all data<br>Transforms for voice</div>
+        </div>
+        <div class="diagram-box" style="border-color:#4285f4;margin-bottom:0;">
+          <div style="font-size:22px;color:#4285f4;margin-bottom:4px;"><i class="fas fa-brain"></i></div>
+          <div class="diagram-box-title">GEMINI</div>
+          <div class="diagram-box-desc">Speaks seat matrix<br>in Hindi/Hinglish</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin:6px 0;"><i class="fas fa-arrow-down" style="font-size:18px;color:#94a3b8;"></i></div>
+
+      <div class="ws-window">
+        <div class="ws-titlebar">
+          <div class="ws-dot" style="background:#ef4444;"></div>
+          <div class="ws-dot" style="background:#f59e0b;"></div>
+          <div class="ws-dot" style="background:#22c55e;"></div>
+          <span style="color:#94a3b8;font-size:12px;font-weight:600;margin-left:8px;">complete-seat-matrix-flow.txt</span>
+        </div>
+        <div class="ws-content" style="font-size:12px;">
+<div style="color:#f59e0b;"><strong>STEP 1 — ZUELPAY:</strong> User says "Peela Travels ki seat dikhao"</div>
+<div style="color:#e2e8f0;">FastAPI calls: <span style="color:#3b82f6;">GET /api/zuelpay/buses/peela_001/seats</span></div>
+<div style="color:#e2e8f0;">Returns: Raw seat array with id, status, type, position</div>
+
+<div style="color:#a855f7;margin-top:8px;"><strong>STEP 2 — POSTGRESQL:</strong> Cache + get booking history</div>
+<div style="color:#e2e8f0;">FastAPI calls: <span style="color:#3b82f6;">SELECT * FROM seat_cache WHERE bus_id='peela_001'</span></div>
+<div style="color:#e2e8f0;">Returns: Cached seat layout (refreshed every 5 min)</div>
+
+<div style="color:#ef4444;margin-top:8px;"><strong>STEP 3 — REDIS:</strong> Get live lock status</div>
+<div style="color:#e2e8f0;">FastAPI calls: <span style="color:#3b82f6;">KEYS seat_lock:peela_001:*</span></div>
+<div style="color:#e2e8f0;">Returns: Which seats are currently locked by other users</div>
+
+<div style="color:#a855f7;margin-top:8px;"><strong>STEP 4 — FASTAPI:</strong> Merge all data into voice-ready format</div>
+<div style="color:#e2e8f0;">Merges: ZuelPay (base) + PostgreSQL (cache) + Redis (locks) → Unified seat matrix</div>
+
+<div style="color:#4285f4;margin-top:8px;"><strong>STEP 5 — GEMINI:</strong> Receives merged data → speaks to user</div>
+<div style="color:#e2e8f0;">Gemini function call returns: Voice-ready seat list with positions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: ZUELPAY RAW DATA -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">3. ZuelPay API — Raw Seat Matrix Data</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fff);">
+        <div class="mega-card-header" style="color:#d97706;">
+          <i class="fas fa-bus" style="font-size:20px;"></i>
+          <span>ZUELPAY SEAT API RESPONSE</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>API Call:</strong>
+          <div style="background:#f1f5f9;border:2px solid #e2e8f0;border-radius:8px;padding:8px;margin:6px 0;font-family:monospace;font-size:11px;">
+            GET https://api.zuelpay.com/v2/buses/peela_001/seats<br>
+            Authorization: Bearer zp_live_xxxxx
+          </div>
+
+          <strong>Raw Response:</strong>
+          <div class="code-block" style="font-size:10px;">{
+  "bus_id": "peela_001",
+  "operator": "Peela Travels",
+  "bus_type": "seater",
+  "layout": "2+2",
+  "total_seats": 40,
+  "available_seats": 11,
+  "departure_time": "14:30",
+  "price": 550.00,
+  "seats": [
+    {
+      "id": "A1",
+      "row": "A",
+      "position": "window",
+      "side": "left",
+      "status": "available",
+      "type": "seater",
+      "price": 550.00,
+      "features": ["ac", "charging_point"]
+    },
+    {
+      "id": "A2",
+      "row": "A",
+      "position": "middle",
+      "side": "left",
+      "status": "available",
+      "type": "seater",
+      "price": 550.00
+    },
+    {
+      "id": "B1",
+      "row": "B",
+      "position": "window",
+      "side": "left",
+      "status": "booked",
+      "type": "seater",
+      "price": 550.00
+    },
+    {
+      "id": "B3",
+      "row": "B",
+      "position": "middle",
+      "side": "right",
+      "status": "available",
+      "type": "seater",
+      "price": 550.00
+    }
+  ]
+}</div>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#3b82f6;background:linear-gradient(135deg,#eff6ff,#fff);">
+        <div class="mega-card-header" style="color:#1d4ed8;">
+          <i class="fas fa-layer-group" style="font-size:20px;"></i>
+          <span>SEAT DATA FIELDS</span>
+        </div>
+        <div class="mega-card-body">
+          <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#1d4ed8;"><i class="fas fa-tag"></i> id:</strong> Seat identifier — "A1", "B3", "C4"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-columns"></i> row:</strong> Row letter — "A", "B", "C" (front to back)<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-arrows-alt-h"></i> position:</strong> "window" / "middle" / "aisle"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-hand-point-left"></i> side:</strong> "left" / "right" (of bus)<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-circle"></i> status:</strong> "available" / "booked" / "locked"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-couch"></i> type:</strong> "seater" / "sleeper"<br>
+            <strong style="color:#1d4ed8;"><i class="fas fa-rupee-sign"></i> price:</strong> Ticket price for this seat
+          </div>
+
+          <strong>Two Bus Layout Types:</strong>
+
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-chair"></i> SEATER (2+2 Layout):</strong>
+            <div style="font-family:monospace;font-size:11px;margin-top:4px;color:#334155;">
+              [A1][A2] &nbsp;&nbsp; [A3][A4]<br>
+              [B1][B2] &nbsp;&nbsp; [B3][B4]<br>
+              [C1][C2] &nbsp;&nbsp; [C3][C4]<br>
+              <span style="color:#64748b;">2 seats left + aisle + 2 seats right</span>
+            </div>
+          </div>
+
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#7c3aed;"><i class="fas fa-bed"></i> SLEEPER (2+1 Layout):</strong>
+            <div style="font-family:monospace;font-size:11px;margin-top:4px;color:#334155;">
+              [A1][A2] &nbsp;&nbsp;&nbsp;&nbsp; [A3]<br>
+              [B1][B2] &nbsp;&nbsp;&nbsp;&nbsp; [B3]<br>
+              [C1][C2] &nbsp;&nbsp;&nbsp;&nbsp; [C3]<br>
+              <span style="color:#64748b;">2 berths left + aisle + 1 berth right</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: POSTGRESQL CACHING -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">4. PostgreSQL — Seat Matrix Caching & Storage</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#a855f7;background:linear-gradient(135deg,#faf5ff,#fff);">
+        <div class="mega-card-header" style="color:#7c3aed;">
+          <i class="fas fa-database" style="font-size:20px;"></i>
+          <span>SEAT_CACHE TABLE</span>
+        </div>
+        <div class="mega-card-body">
+          <div class="code-block" style="font-size:11px;"><span class="comment">-- Cache ZuelPay seat data (refresh every 5 min)</span>
+<span class="keyword">CREATE TABLE</span> <span class="function">seat_cache</span> (
+  id            <span class="keyword">UUID PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  bus_id        <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+  seat_id       <span class="keyword">VARCHAR</span>(<span class="number">10</span>) <span class="keyword">NOT NULL</span>,
+  row_letter    <span class="keyword">VARCHAR</span>(<span class="number">5</span>),
+  position      <span class="keyword">VARCHAR</span>(<span class="number">20</span>),  <span class="comment">-- window/middle/aisle</span>
+  side          <span class="keyword">VARCHAR</span>(<span class="number">10</span>),   <span class="comment">-- left/right</span>
+  seat_type     <span class="keyword">VARCHAR</span>(<span class="number">20</span>),  <span class="comment">-- seater/sleeper</span>
+  base_status   <span class="keyword">VARCHAR</span>(<span class="number">20</span>),  <span class="comment">-- from ZuelPay</span>
+  price         <span class="keyword">DECIMAL</span>(<span class="number">10,2</span>),
+  features      <span class="keyword">JSONB</span>,
+  last_synced   <span class="keyword">TIMESTAMPTZ DEFAULT</span> NOW(),
+  <span class="keyword">UNIQUE</span>(bus_id, seat_id)
+);
+
+<span class="comment">-- Index for fast lookups</span>
+<span class="keyword">CREATE INDEX</span> idx_seat_cache_bus 
+  <span class="keyword">ON</span> seat_cache(bus_id);
+
+<span class="comment">-- Booking records (permanent)</span>
+<span class="keyword">CREATE TABLE</span> <span class="function">bookings</span> (
+  id            <span class="keyword">UUID PRIMARY KEY</span>,
+  bus_id        <span class="keyword">VARCHAR</span>(<span class="number">50</span>),
+  seat_id       <span class="keyword">VARCHAR</span>(<span class="number">10</span>),
+  passenger_name <span class="keyword">VARCHAR</span>(<span class="number">100</span>),
+  phone         <span class="keyword">VARCHAR</span>(<span class="number">15</span>),
+  status        <span class="keyword">VARCHAR</span>(<span class="number">20</span>),  <span class="comment">-- locked/confirmed/expired</span>
+  created_at    <span class="keyword">TIMESTAMPTZ DEFAULT</span> NOW()
+);</div>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <i class="fas fa-sync-alt" style="font-size:20px;"></i>
+          <span>CACHE REFRESH STRATEGY</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Why cache ZuelPay data?</strong><br>
+          - ZuelPay API has rate limits (100 req/min)<br>
+          - Seat layout changes slowly (every few minutes)<br>
+          - Caching reduces API calls by 90%<br><br>
+
+          <div class="code-block" style="font-size:11px;"><span class="comment"># Background job: Sync seat cache every 5 minutes</span>
+<span class="keyword">async def</span> <span class="function">sync_seat_cache</span>(bus_id: str):
+    <span class="comment"># 1. Fetch fresh data from ZuelPay</span>
+    zuelpay_data = <span class="keyword">await</span> zuelpay.<span class="function">get_seats</span>(bus_id)
+    
+    <span class="comment"># 2. Upsert into PostgreSQL cache</span>
+    <span class="keyword">for</span> seat <span class="keyword">in</span> zuelpay_data[<span class="string">"seats"</span>]:
+        <span class="keyword">await</span> db.<span class="function">execute</span>(<span class="string">"""
+            INSERT INTO seat_cache 
+            (bus_id, seat_id, row_letter, position, 
+             side, seat_type, base_status, price)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+            ON CONFLICT (bus_id, seat_id) 
+            DO UPDATE SET 
+              base_status = EXCLUDED.base_status,
+              last_synced = NOW()
+        """</span>, bus_id, seat[<span class="string">"id"</span>], 
+           seat[<span class="string">"row"</span>], seat[<span class="string">"position"</span>],
+           seat[<span class="string">"side"</span>], seat[<span class="string">"type"</span>],
+           seat[<span class="string">"status"</span>], seat[<span class="string">"price"</span>])</div>
+
+          <strong>Refresh triggers:</strong><br>
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:8px;padding:8px;margin:6px 0;font-size:12px;">
+            <i class="fas fa-clock" style="color:#22c55e;"></i> <strong>Periodic:</strong> Every 5 minutes via cron job<br>
+            <i class="fas fa-bolt" style="color:#f59e0b;"></i> <strong>On-demand:</strong> When user requests seats<br>
+            <i class="fas fa-redo" style="color:#3b82f6;"></i> <strong>Stale:</strong> If last_synced > 5 min, refresh first
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">SQL Query: Get Full Seat Matrix for a Bus</div>
+    <div class="code-block" style="font-size:12px;"><span class="comment">-- Get all seats with live status (cached ZuelPay + Redis locks + PostgreSQL bookings)</span>
+<span class="keyword">SELECT</span> 
+  sc.seat_id,
+  sc.row_letter,
+  sc.position,
+  sc.side,
+  sc.seat_type,
+  sc.price,
+  <span class="keyword">CASE</span>
+    <span class="keyword">WHEN</span> b.status = <span class="string">'confirmed'</span> <span class="keyword">THEN</span> <span class="string">'booked'</span>
+    <span class="keyword">WHEN</span> b.status = <span class="string">'locked'</span> <span class="keyword">THEN</span> <span class="string">'locked'</span>
+    <span class="keyword">WHEN</span> sc.base_status = <span class="string">'booked'</span> <span class="keyword">THEN</span> <span class="string">'booked'</span>
+    <span class="keyword">ELSE</span> <span class="string">'available'</span>
+  <span class="keyword">END AS</span> live_status
+<span class="keyword">FROM</span> seat_cache sc
+<span class="keyword">LEFT JOIN</span> bookings b 
+  <span class="keyword">ON</span> sc.bus_id = b.bus_id 
+  <span class="keyword">AND</span> sc.seat_id = b.seat_id
+  <span class="keyword">AND</span> b.status <span class="keyword">IN</span> (<span class="string">'locked'</span>, <span class="string">'confirmed'</span>)
+<span class="keyword">WHERE</span> sc.bus_id = <span class="string">'peela_001'</span>
+<span class="keyword">ORDER BY</span> sc.row_letter, sc.seat_id;</div>
+  </div>
+</div>
+
+<!-- SECTION 5: REDIS LIVE STATUS -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">5. Redis — Real-Time Seat Lock Status</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#ef4444;background:linear-gradient(135deg,#fef2f2,#fff);">
+        <div class="mega-card-header" style="color:#dc2626;">
+          <i class="fas fa-lock" style="font-size:20px;"></i>
+          <span>REDIS KEYS FOR SEAT LOCKS</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>Key Pattern:</strong>
+          <div style="background:#f1f5f9;border:2px solid #e2e8f0;border-radius:8px;padding:8px;margin:6px 0;font-family:monospace;font-size:12px;">
+            seat_lock:{bus_id}:{seat_id}
+          </div>
+
+          <strong>Example keys:</strong>
+          <div class="code-block" style="font-size:11px;"><span class="comment"># Currently locked seats for Peela Travels</span>
+seat_lock:peela_001:B3 → {
+  "user_id": "user_rahul",
+  "passenger_name": "Rahul",
+  "phone": "9876543210",
+  "locked_at": "2026-09-16T10:30:00Z",
+  "expires_at": "2026-09-16T11:30:00Z"
+}
+<span class="comment"># TTL: 3600 seconds (60 minutes)</span>
+
+seat_lock:peela_001:A4 → {
+  "user_id": "user_sunita",
+  "passenger_name": "Sunita",
+  "phone": "9123456780",
+  "locked_at": "2026-09-16T10:25:00Z",
+  "expires_at": "2026-09-16T11:25:00Z"
+}
+<span class="comment"># This one expired already (auto-deleted by Redis)</span></div>
+
+          <strong>FastAPI checks locks:</strong>
+          <div class="code-block" style="font-size:11px;"><span class="comment"># Get all locked seats for a bus</span>
+locked_seats = <span class="keyword">await</span> redis.<span class="function">keys</span>(
+    <span class="string">"seat_lock:peela_001:*"</span>
+)
+<span class="comment"># Returns: ["seat_lock:peela_001:B3"]</span>
+<span class="comment"># B4 lock expired → auto-deleted by Redis</span></div>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#eff6ff,#fff);">
+        <div class="mega-card-header" style="color:#1d4ed8;">
+          <i class="fas fa-layer-group" style="font-size:20px;"></i>
+          <span>THREE DATA SOURCES MERGED</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>FastAPI merges 3 sources into 1 unified matrix:</strong>
+
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#16a34a;"><i class="fas fa-bus"></i> Source 1: ZuelPay (via PostgreSQL cache)</strong>
+            <div style="font-size:11px;color:#475569;margin-top:4px;">
+              A1: available, A2: available, A3: available, A4: available<br>
+              B1: booked, B2: available, B3: available, B4: available<br>
+              C1: available, C2: available, C3: booked, C4: available
+            </div>
+          </div>
+
+          <div style="background:#fef2f2;border:2px solid #fecaca;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#dc2626;"><i class="fas fa-database"></i> Source 2: PostgreSQL bookings</strong>
+            <div style="font-size:11px;color:#475569;margin-top:4px;">
+              B1: confirmed (booked by user_ankit)<br>
+              C3: confirmed (booked by user_priya)
+            </div>
+          </div>
+
+          <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#1d4ed8;"><i class="fas fa-database"></i> Source 3: Redis locks</strong>
+            <div style="font-size:11px;color:#475569;margin-top:4px;">
+              B3: locked by user_rahul (expires in 45 min)
+            </div>
+          </div>
+
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:8px 0;">
+            <strong style="color:#7c3aed;"><i class="fas fa-check-double"></i> MERGED RESULT (sent to Gemini):</strong>
+            <div style="font-family:monospace;font-size:11px;color:#334155;margin-top:4px;">
+              A1: ✅ available | A2: ✅ available | A3: ✅ available | A4: ✅ available<br>
+              B1: ❌ booked &nbsp;&nbsp;| B2: ✅ available | B3: 🔒 locked &nbsp;&nbsp;| B4: ✅ available<br>
+              C1: ✅ available | C2: ✅ available | C3: ❌ booked &nbsp;&nbsp;| C4: ✅ available
+            </div>
+            <span style="font-size:11px;color:#64748b;">11 available, 1 locked, 2 booked</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: FASTAPI TRANSFORMATION -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">6. FastAPI — Transforming Matrix for Voice Readout</div>
+
+    <div class="sub-title">FastAPI Merges Data → Creates Voice-Ready Response</div>
+
+    <div class="ws-window">
+      <div class="ws-titlebar">
+        <div class="ws-dot" style="background:#ef4444;"></div>
+        <div class="ws-dot" style="background:#f59e0b;"></div>
+        <div class="ws-dot" style="background:#22c55e;"></div>
+        <span style="color:#94a3b8;font-size:12px;font-weight:600;margin-left:8px;">fastapi-seat-matrix-handler.py</span>
+      </div>
+      <div class="ws-content">
+<div style="color:#64748b;"><span class="comment"># FastAPI function that Gemini calls for seat matrix</span></div>
+<div style="color:#a855f7;">@app.post</div><span style="color:#e2e8f0;">("/api/v1/get-seats")</span>
+<div style="color:#a855f7;">async def</div> <span class="function">get_seat_matrix</span>(request: SeatRequest):
+<br>
+<span style="color:#64748b;">&nbsp;&nbsp;# STEP 1: Get cached seat data from PostgreSQL</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;seats = </span><span style="color:#a855f7;">await</span><span style="color:#e2e8f0;"> db.</span><span style="color:#3b82f6;">fetch</span><span style="color:#e2e8f0;">(</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"""SELECT * FROM seat_cache 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE bus_id = $1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORDER BY row_letter, seat_id"""</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;request.bus_id</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;)</span>
+<br>
+<br><span style="color:#64748b;">&nbsp;&nbsp;# STEP 2: Check if cache is stale (>5 min old)</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#a855f7;">if</span><span style="color:#e2e8f0;"> seats[</span><span style="color:#number">0</span><span style="color:#e2e8f0;">].last_synced &lt; datetime.</span><span style="color:#3b82f6;">now</span><span style="color:#e2e8f0;">() - </span><span style="color:#f59e0b;">timedelta</span><span style="color:#e2e8f0;">(</span><span style="color:#number">5</span><span style="color:#e2e8f0;">):</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#a855f7;">await</span><span style="color:#e2e8f0;"> </span><span style="color:#3b82f6;">sync_seat_cache</span><span style="color:#e2e8f0;">(request.bus_id)</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;seats = </span><span style="color:#a855f7;">await</span><span style="color:#e2e8f0;"> db.</span><span style="color:#3b82f6;">fetch</span><span style="color:#e2e8f0;">(...)</span>
+<br>
+<br><span style="color:#64748b;">&nbsp;&nbsp;# STEP 3: Get Redis locks</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;locked_keys = </span><span style="color:#a855f7;">await</span><span style="color:#e2e8f0;"> redis.</span><span style="color:#3b82f6;">keys</span><span style="color:#e2e8f0;">(</span><span style="color:#22c55e;">f"seat_lock:</span><span style="color:#f59e0b;">{request.bus_id}</span><span style="color:#22c55e;">:*"</span><span style="color:#e2e8f0;">)</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;locked_seats = [k.</span><span style="color:#3b82f6;">split</span><span style="color:#e2e8f0;">(</span><span style="color:#22c55e;">":"</span><span style="color:#e2e8f0;">)[</span><span style="color:#number">2</span><span style="color:#e2e8f0;">] </span><span style="color:#a855f7;">for</span><span style="color:#e2e8f0;"> k </span><span style="color:#a855f7;">in</span><span style="color:#e2e8f0;"> locked_keys]</span>
+<br>
+<br><span style="color:#64748b;">&nbsp;&nbsp;# STEP 4: Get confirmed bookings</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;booked = </span><span style="color:#a855f7;">await</span><span style="color:#e2e8f0;"> db.</span><span style="color:#3b82f6;">fetch</span><span style="color:#e2e8f0;">(</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"""SELECT seat_id FROM bookings 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE bus_id=$1 AND status='confirmed'"""</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;request.bus_id</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;)</span>
+<br>
+<br><span style="color:#64748b;">&nbsp;&nbsp;# STEP 5: Merge all data</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;matrix = </span><span style="color:#a855f7;">for</span><span style="color:#e2e8f0;"> seat </span><span style="color:#a855f7;">in</span><span style="color:#e2e8f0;"> seats:</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#a855f7;">if</span><span style="color:#e2e8f0;"> seat.id </span><span style="color:#a855f7;">in</span><span style="color:#e2e8f0;"> booked:</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seat.live_status = </span><span style="color:#22c55e;">"booked"</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#a855f7;">elif</span><span style="color:#e2e8f0;"> seat.id </span><span style="color:#a855f7;">in</span><span style="color:#e2e8f0;"> locked_seats:</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seat.live_status = </span><span style="color:#22c55e;">"locked"</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#a855f7;">else</span><span style="color:#e2e8f0;">:</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seat.live_status = </span><span style="color:#22c55e;">"available"</span>
+<br>
+<br><span style="color:#64748b;">&nbsp;&nbsp;# STEP 6: Build voice-ready response</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;</span><span style="color:#a855f7;">return</span><span style="color:#e2e8f0;"> {</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"bus_type"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"seater"</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"layout"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"2+2"</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"total"</span><span style="color:#e2e8f0;">: </span><span style="color:#number">40</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"available_count"</span><span style="color:#e2e8f0;">: </span><span style="color:#number">11</span><span style="color:#e2e8f0;">,</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#22c55e;">"seats"</span><span style="color:#e2e8f0;">: [</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ </span><span style="color:#22c55e;">"id"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"A1"</span><span style="color:#e2e8f0;">, </span><span style="color:#22c55e;">"pos"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"window"</span><span style="color:#e2e8f0;">, </span><span style="color:#22c55e;">"status"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"available"</span><span style="color:#e2e8f0;"> },</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ </span><span style="color:#22c55e;">"id"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"A2"</span><span style="color:#e2e8f0;">, </span><span style="color:#22c55e;">"pos"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"middle"</span><span style="color:#e2e8f0;">, </span><span style="color:#22c55e;">"status"</span><span style="color:#e2e8f0;">: </span><span style="color:#22c55e;">"available"</span><span style="color:#e2e8f0;"> },</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... </span><span style="color:#64748b;"># all 40 seats</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;&nbsp;&nbsp;]</span>
+<br><span style="color:#e2e8f0;">&nbsp;&nbsp;}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 7: GEMINI VOICE READOUT -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">7. Gemini — Speaking the Seat Matrix to Blind User</div>
+
+    <div class="grid-2">
+      <div class="mega-card" style="border-color:#4285f4;background:linear-gradient(135deg,#e8f0fe,#fff);">
+        <div class="mega-card-header" style="color:#1a73e8;">
+          <i class="fas fa-brain" style="font-size:20px;"></i>
+          <span>GEMINI'S VOICE RESPONSE</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>When user says:</strong> "Peela Travels ki seats sunao"
+          <div class="voice-bubble">
+            <div class="voice-label" style="color:#16a34a;"><i class="fas fa-user"></i> User</div>
+            "Peela Travels ki seats sunao"
+          </div>
+
+          <strong>Gemini calls function → gets merged matrix → speaks:</strong>
+          <div class="voice-bubble voice-bubble-system">
+            <div class="voice-label" style="color:#1d4ed8;"><i class="fas fa-robot"></i> BusSahayak</div>
+            "Peela Travels. Seater bus hai. 2+2 layout hai. 40 seats total, 11 khali hain. 550 rupay ticket hai.<br><br>
+
+            <strong>Row A — chaaron seat khali hain:</strong><br>
+            A1 — Window seat, khali<br>
+            A2 — Middle seat, khali<br>
+            A3 — Middle seat, khali<br>
+            A4 — Aisle seat, khali<br><br>
+
+            <strong>Row B — ek seat booked hai, ek locked hai:</strong><br>
+            B1 — Window seat, <span style="color:#dc2626;">BOOKED hai</span><br>
+            B2 — Middle seat, khali<br>
+            B3 — Middle seat, <span style="color:#d97706;">LOCKED hai kisi ne</span><br>
+            B4 — Aisle seat, khali<br><br>
+
+            <strong>Row C — ek seat booked hai:</strong><br>
+            C1 — Window seat, khali<br>
+            C2 — Middle seat, khali<br>
+            C3 — Middle seat, <span style="color:#dc2626;">BOOKED hai</span><br>
+            C4 — Aisle seat, khali<br><br>
+
+            Bol dijiye kaunsi seat chahiye — 'A1 lelo' ya 'window seat do' ya 'khaali seat batao'."
+          </div>
+        </div>
+      </div>
+
+      <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+        <div class="mega-card-header" style="color:#16a34a;">
+          <i class="fas fa-comments" style="font-size:20px;"></i>
+          <span>VOICE SELECTION METHODS</span>
+        </div>
+        <div class="mega-card-body">
+          <strong>User can select seats in 4 ways:</strong><br><br>
+
+          <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#16a34a;">METHOD 1: By Seat ID</strong>
+            <div style="font-size:12px;color:#475569;">"A1 lelo" / "B4 book karo" / "Mujhe C2 chahiye"</div>
+            <div style="font-size:11px;color:#64748b;">→ Gemini extracts: seat_id = "A1"</div>
+          </div>
+
+          <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#1d4ed8;">METHOD 2: By Position</strong>
+            <div style="font-size:12px;color:#475569;">"Window seat do" / "Aisle seat chahiye"</div>
+            <div style="font-size:11px;color:#64748b;">→ Gemini calls search_buses with position filter → finds next available window/aisle</div>
+          </div>
+
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#7c3aed;">METHOD 3: By Number</strong>
+            <div style="font-size:12px;color:#475569;">"Pehli wali lelo" / "Teesri wali"</div>
+            <div style="font-size:11px;color:#64748b;">→ Gemini maps: "pehli" → 1st available (A1), "teesri" → 3rd available (A3)</div>
+          </div>
+
+          <div style="background:#fffbeb;border:2px solid #fde68a;border-radius:10px;padding:10px;margin:6px 0;">
+            <strong style="color:#d97706;">METHOD 4: By Row</strong>
+            <div style="font-size:12px;color:#475569;">"Row A se koi bhi de do" / "B row mein konsi khali hai?"</div>
+            <div style="font-size:11px;color:#64748b;">→ Gemini filters row A seats → speaks only those → user picks one</div>
+          </div>
+
+          <br>
+          <span class="badge badge-green">4 SELECTION METHODS</span>
+          <span class="badge badge-blue">ALL VOICE-BASED</span>
+          <span class="badge badge-purple">NO SCREEN NEEDED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Gemini Function Call for Seat Selection</div>
+    <div class="code-block" style="font-size:12px;"><span class="comment">// Gemini calls this function when user asks for seats</span>
+{
+  "functionDeclarations": [
+    {
+      "name": "get_seats",
+      "description": "Get seat matrix for a bus. Returns all seats with status and position.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "bus_id":      { "type": "STRING", "description": "Bus ID like peela_001" },
+          "filter":      { "type": "STRING", "enum": ["all", "available", "window", "aisle", "middle"], "description": "Filter seats by type" },
+          "row":         { "type": "STRING", "description": "Specific row like A, B, C" }
+        },
+        "required": ["bus_id"]
+      }
+    },
+    {
+      "name": "search_buses",
+      "description": "Search buses between cities",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "from_city": { "type": "STRING" },
+          "to_city":   { "type": "STRING" },
+          "date":      { "type": "STRING" },
+          "bus_type":  { "type": "STRING", "enum": ["AC", "Non-AC", "Sleeper", "Seater", "any"] }
+        },
+        "required": ["from_city", "to_city", "date"]
+      }
+    }
+  ]
+}</div>
+  </div>
+</div>
+
+<!-- SECTION 8: SEAT MATRIX VISUALIZATION -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">8. Seat Matrix — Visual vs Voice Representation</div>
+
+    <div class="sub-title">Seater Bus (2+2 Layout) — How AI Converts Visual → Spoken</div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-eye" style="color:#3b82f6;"></i> Visual Matrix (for sighted)</div>
+        <div class="card-content">
+          <div class="seat-matrix" style="grid-template-columns:repeat(5,52px);">
+            <div class="seat seat-driver" style="grid-column:span 2;"><span class="seat-id"><i class="fas fa-steering-wheel"></i></span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-available"><span class="seat-id">A1</span><span class="seat-type"><i class="fas fa-window-maximize"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">A2</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-available"><span class="seat-id">A3</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">A4</span><span class="seat-type"><i class="fas fa-arrows-alt-h"></i></span></div>
+            <div class="seat seat-booked"><span class="seat-id">B1</span><span class="seat-type"><i class="fas fa-window-maximize"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">B2</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-locked"><span class="seat-id">B3</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">B4</span><span class="seat-type"><i class="fas fa-arrows-alt-h"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">C1</span><span class="seat-type"><i class="fas fa-window-maximize"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">C2</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-aisle"></div>
+            <div class="seat seat-booked"><span class="seat-id">C3</span><span class="seat-type"><i class="fas fa-square"></i></span></div>
+            <div class="seat seat-available"><span class="seat-id">C4</span><span class="seat-type"><i class="fas fa-arrows-alt-h"></i></span></div>
+          </div>
+          <div style="font-size:10px;margin-top:6px;">
+            <i class="fas fa-window-maximize" style="color:#3b82f6;"></i> Window
+            <i class="fas fa-square" style="color:#a855f7;margin:0 4px 0 8px;"></i> Middle
+            <i class="fas fa-arrows-alt-h" style="color:#f59e0b;margin:0 4px 0 8px;"></i> Aisle
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-headphones" style="color:#a855f7;"></i> Voice Matrix (for blind)</div>
+        <div class="card-content">
+          <div style="background:#faf5ff;border:2px solid #e9d5ff;border-radius:10px;padding:10px;font-size:12px;color:#334155;line-height:1.8;">
+            <strong style="color:#7c3aed;">Row A — sab khali hain:</strong><br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>A1</strong> — Window seat, khali, 550 rupay<br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>A2</strong> — Middle seat, khali, 550 rupay<br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>A3</strong> — Middle seat, khali, 550 rupay<br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>A4</strong> — Aisle seat, khali, 550 rupay<br><br>
+
+            <strong style="color:#7c3aed;">Row B — ek booked, ek locked:</strong><br>
+            <i class="fas fa-times-circle" style="color:#dc2626;"></i> <strong>B1</strong> — Window seat, <span style="color:#dc2626;">booked</span><br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>B2</strong> — Middle seat, khali, 550 rupay<br>
+            <i class="fas fa-lock" style="color:#d97706;"></i> <strong>B3</strong> — Middle seat, <span style="color:#d97706;">locked</span> (kisi ne hold kiya)<br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>B4</strong> — Aisle seat, khali, 550 rupay<br><br>
+
+            <strong style="color:#7c3aed;">Row C — ek booked:</strong><br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>C1</strong> — Window seat, khali, 550 rupay<br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>C2</strong> — Middle seat, khali, 550 rupay<br>
+            <i class="fas fa-times-circle" style="color:#dc2626;"></i> <strong>C3</strong> — Middle seat, <span style="color:#dc2626;">booked</span><br>
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> <strong>C4</strong> — Aisle seat, khali, 550 rupay
+          </div>
+          <div style="font-size:10px;margin-top:6px;">
+            <i class="fas fa-check-circle" style="color:#22c55e;"></i> Khali (11)
+            <i class="fas fa-times-circle" style="color:#dc2626;margin:0 4px 0 8px;"></i> Booked (2)
+            <i class="fas fa-lock" style="color:#d97706;margin:0 4px 0 8px;"></i> Locked (1)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Sleeper Bus (2+1 Layout) — Voice Readout Format</div>
+    <div class="card" style="max-width:800px;margin:0 auto;">
+      <div class="card-content">
+        <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:12px;font-size:12px;color:#334155;line-height:1.8;">
+          <strong style="color:#16a34a;"><i class="fas fa-bed"></i> Sleeper Layout (2 berths left + 1 berth right):</strong><br><br>
+          "Sleeper bus hai. 2+1 layout hai. Left side mein 2 berth hain, right side mein 1 berth hai.<br><br>
+
+          <strong>Row A:</strong> A1 Window berth khali, A2 Middle berth khali, A3 Right berth khali<br>
+          <strong>Row B:</strong> B1 Window berth khali, B2 Middle berth khali, B3 Right berth BOOKED hai<br>
+          <strong>Row C:</strong> C1 Window berth khali, C2 Middle berth khali, C3 Right berth khali<br><br>
+
+          Bol dijiye kaunsi berth chahiye — 'A1 lelo' ya 'window berth do'."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 9: COMPLETE CODE FLOW -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">9. Complete Code Flow — Every Function Call</div>
+
+    <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
+      <div class="flow-step-num" style="background:#ef4444;">1</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-user"></i> User: "Peela Travels ki seats sunao"</div>
+        <div class="flow-step-desc">
+          Audio → Gemini WebSocket → STT converts to text → LLM understands "seats sunao" → calls <code>get_seats(bus_id="peela_001")</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#a855f7;background:#faf5ff;">
+      <div class="flow-step-num" style="background:#a855f7;">2</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-server"></i> FastAPI: Get Cached Seats</div>
+        <div class="flow-step-desc">
+          <code>SELECT * FROM seat_cache WHERE bus_id='peela_001'</code> → Returns 40 seats with row, position, side, type
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#a855f7;background:#faf5ff;">
+      <div class="flow-step-num" style="background:#a855f7;">3</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-sync-alt"></i> FastAPI: Check Cache Freshness</div>
+        <div class="flow-step-desc">
+          If <code>last_synced > 5 min</code> → Call <code>sync_seat_cache()</code> → Refresh from ZuelPay → Update PostgreSQL
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
+      <div class="flow-step-num" style="background:#ef4444;">4</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-database"></i> Redis: Get Live Locks</div>
+        <div class="flow-step-desc">
+          <code>KEYS seat_lock:peela_001:*</code> → Returns ["seat_lock:peela_001:B3"] → B3 is locked
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#a855f7;background:#faf5ff;">
+      <div class="flow-step-num" style="background:#a855f7;">5</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-database"></i> PostgreSQL: Get Confirmed Bookings</div>
+        <div class="flow-step-desc">
+          <code>SELECT seat_id FROM bookings WHERE bus_id='peela_001' AND status='confirmed'</code> → B1, C3 booked
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#22c55e;background:#f0fdf4;">
+      <div class="flow-step-num" style="background:#22c55e;">6</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-code"></i> FastAPI: Merge All Sources</div>
+        <div class="flow-step-desc">
+          For each seat: Check PostgreSQL (base) + Redis (locks) + Bookings (confirmed) → Set <code>live_status</code> → Return merged matrix to Gemini
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#4285f4;background:#eff6ff;">
+      <div class="flow-step-num" style="background:#4285f4;">7</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-brain"></i> Gemini: Generate Voice Response</div>
+        <div class="flow-step-desc">
+          Receives merged matrix → Generates Hindi/Hinglish response → TTS converts to audio → Streams back to user's phone
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+    <div class="flow-step" style="border-color:#ef4444;background:#fef2f2;">
+      <div class="flow-step-num" style="background:#ef4444;">8</div>
+      <div class="flow-step-content">
+        <div class="flow-step-title"><i class="fas fa-user"></i> User: "A1 lelo"</div>
+        <div class="flow-step-desc">
+          User holds MIC again → Gemini calls <code>create_booking(bus_id, seat_id="A1", name, phone)</code> → FastAPI locks seat → PostgreSQL saves → Booking confirmed
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 10: JUDGE Q&A -->
+<div class="slide page-break">
+  <div class="section">
+    <div class="section-title">10. Judge Q&A — Seat Matrix Specific</div>
+
+    <div class="grid-2">
+      <div>
+        <div class="mega-card" style="border-color:#2563eb;background:linear-gradient(135deg,#eff6ff,#fff);">
+          <div class="mega-card-body">
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#2563eb;"></i> Q1: How does AI know which seat is window/middle/aisle?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                ZuelPay API returns <code>position: "window"</code> for each seat. PostgreSQL caches this. FastAPI includes it in the merged response. Gemini speaks "A1 Window seat, khali" — user knows the position without seeing.
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#2563eb;"></i> Q2: What if user says "window seat do" instead of "A1"?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                Gemini calls <code>get_seats(bus_id, filter="window")</code> → FastAPI filters seats where <code>position="window"</code> and <code>status="available"</code> → Returns A1, B2, C4 → Gemini speaks them → User picks one.
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#2563eb;"></i> Q3: Why cache in PostgreSQL instead of reading ZuelPay every time?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                ZuelPay has rate limits (100 req/min). With 1000 users, we'd hit limits instantly. Caching reduces API calls by 90%. Seat layout changes every few minutes, not every second. Cache refreshes every 5 min.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="mega-card" style="border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#fff);">
+          <div class="mega-card-body">
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#22c55e;"></i> Q4: How does AI handle different bus types (seater vs sleeper)?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                ZuelPay returns <code>bus_type: "seater"</code> or <code>"sleeper"</code>. FastAPI includes this in response. Gemini adjusts readout: "Seater bus hai, 2+2 layout" vs "Sleeper bus hai, 2+1 layout". Different voice format for each.
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#22c55e;"></i> Q5: What if Redis and PostgreSQL disagree on seat status?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                PostgreSQL is source of truth. Redis is for real-time locks only. If conflict: PostgreSQL wins. Redis lock is temporary (60 min). If Redis says "locked" but PostgreSQL says "confirmed" → seat is booked. Priority: Booked > Locked > Available.
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="font-size:14px;font-weight:800;color:#0f172a;margin-bottom:4px;"><i class="fas fa-question-circle" style="color:#22c55e;"></i> Q6: Can user select multiple seats in one go?</div>
+              <div style="font-size:12px;color:#475569;padding-left:24px;">
+                Yes! User says "A1 aur A2 dono lelo" → Gemini calls <code>create_booking</code> twice → FastAPI locks both seats atomically → Two Redis keys created → Both appear in PostgreSQL as locked.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
