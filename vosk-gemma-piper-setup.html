@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak - Offline Voice Assistant Setup (VOSK + Gemma + Piper)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  @media print { .no-print { display: none; } .slide { page-break-inside: avoid; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 16px; line-height: 1.35; }
+  .container { max-width: 1400px; margin: 0 auto; }
+  .header { text-align: center; padding: 24px 20px; border-bottom: 3px solid #2563eb; margin-bottom: 24px; }
+  .header h1 { font-size: 28px; font-weight: 900; color: #fff; }
+  .header p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 3px solid #2563eb; display: inline-block; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .card { background: #1e293b; border: 2px solid #334155; border-radius: 14px; padding: 16px; }
+  .card-title { font-size: 14px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .card-content { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .card-content strong { color: #e2e8f0; }
+  pre { background: #0f172a; color: #22c55e; padding: 12px; border-radius: 8px; font-family: 'Fira Code','Consolas',monospace; font-size: 11px; line-height: 1.5; overflow-x: auto; margin-bottom: 10px; border: 1px solid #334155; white-space: pre-wrap; word-break: break-all; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 800; }
+  .note { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 12px; color: #94a3b8; }
+  .note strong { color: #f59e0b; }
+  .highlight-box { padding: 14px 18px; border-radius: 12px; border-left: 5px solid; margin-bottom: 10px; }
+  .table-container { overflow-x: auto; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #334155; color: #fff; padding: 10px 14px; text-align: left; font-weight: 800; }
+  td { padding: 10px 14px; border-bottom: 1px solid #334155; color: #94a3b8; }
+  tr:nth-child(even) { background: #1e293b; }
+  .code-comment { color: #64748b; }
+  .code-keyword { color: #a855f7; }
+  .code-string { color: #22c55e; }
+  .code-function { color: #3b82f6; }
+  .code-number { color: #f59e0b; }
+  .code-json { color: #38bdf8; }
+  .flow-box { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 16px; border-radius: 12px; border: 2px solid; min-width: 120px; }
+  .flow-box i { font-size: 24px; margin-bottom: 6px; }
+  .flow-box-title { font-size: 12px; font-weight: 800; margin-bottom: 2px; }
+  .flow-box-sub { font-size: 10px; opacity: 0.8; }
+  .flow-arrow { display: flex; align-items: center; justify-content: center; width: 36px; font-size: 18px; color: #2563eb; }
+  .os-label { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; margin-bottom: 6px; }
+  .mac { background: #1e293b; color: #22c55e; border: 1px solid #22c55e; }
+  .ubuntu { background: #1e293b; color: #f59e0b; border: 1px solid #f59e0b; }
+  .windows { background: #1e293b; color: #3b82f6; border: 1px solid #3b82f6; }
+  .link { color: #38bdf8; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .os-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .os-tab { padding: 8px 16px; background: #1e293b; border: 2px solid #334155; border-radius: 8px; color: #94a3b8; font-size: 12px; font-weight: 800; cursor: pointer; }
+  .os-tab.active { border-color: #2563eb; color: #fff; background: #0f172a; }
+  .os-content { display: none; }
+  .os-content.active { display: block; }
+  .step-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; font-weight: 900; color: #fff; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <h1><i class="fas fa-microphone-alt" style="color:#2563eb;"></i> Offline Voice Assistant &mdash; VOSK + Gemma + Piper</h1>
+  <p>100% Local | No API Keys | No Internet Required After Setup</p>
+  <p style="margin-top:4px;">
+    <span class="badge" style="background:#2563eb; color:#fff;">VOSK (STT)</span>
+    <span class="badge" style="background:#7c3aed; color:#fff;">Gemma via Ollama (LLM)</span>
+    <span class="badge" style="background:#16a34a; color:#fff;">Piper (TTS)</span>
+    <span class="badge" style="background:#f59e0b; color:#fff;">Hindi + English</span>
+  </p>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 1: ARCHITECTURE DIAGRAM -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-project-diagram" style="color:#2563eb;"></i> 1. Architecture Diagram
+  </div>
+
+  <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:10px;">
+    <div class="flow-box" style="border-color:#f59e0b; background:#1e293b;">
+      <i class="fas fa-microphone" style="color:#f59e0b;"></i>
+      <div class="flow-box-title" style="color:#f59e0b;">MIC</div>
+      <div class="flow-box-sub">User speaks</div>
+    </div>
+    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+    <div class="flow-box" style="border-color:#22c55e; background:#1e293b;">
+      <i class="fas fa-font" style="color:#22c55e;"></i>
+      <div class="flow-box-title" style="color:#22c55e;">VOSK</div>
+      <div class="flow-box-sub">Speech &rarr; Text</div>
+    </div>
+    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+    <div class="flow-box" style="border-color:#7c3aed; background:#1e293b;">
+      <i class="fas fa-brain" style="color:#7c3aed;"></i>
+      <div class="flow-box-title" style="color:#7c3aed;">GEMMA (Ollama)</div>
+      <div class="flow-box-sub">Think + Reply</div>
+    </div>
+    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+    <div class="flow-box" style="border-color:#3b82f6; background:#1e293b;">
+      <i class="fas fa-assistive-listening-systems" style="color:#3b82f6;"></i>
+      <div class="flow-box-title" style="color:#3b82f6;">PIPER</div>
+      <div class="flow-box-sub">Text &rarr; Speech</div>
+    </div>
+    <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+    <div class="flow-box" style="border-color:#0891b2; background:#1e293b;">
+      <i class="fas fa-volume-up" style="color:#0891b2;"></i>
+      <div class="flow-box-title" style="color:#0891b2;">SPEAKER</div>
+      <div class="flow-box-sub">Audio plays</div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="background:#1e293b; border-color:#2563eb; margin-top:14px;">
+    <p style="font-weight:800; color:#2563eb; margin-bottom:8px;">
+      <i class="fas fa-info-circle"></i> How It Works:
+    </p>
+    <div class="grid-2">
+      <div class="card-content" style="color:#94a3b8;">
+        <strong style="color:#e2e8f0;">Data Flow:</strong><br>
+        1. User speaks into microphone<br>
+        2. <strong style="color:#22c55e;">VOSK</strong> converts speech &rarr; text (offline STT)<br>
+        3. Text sent to <strong style="color:#7c3aed;">Gemma</strong> via Ollama API (localhost:11434)<br>
+        4. Gemma generates text response<br>
+        5. <strong style="color:#3b82f6;">Piper</strong> converts text &rarr; audio (offline TTS)<br>
+        6. Audio plays through speaker
+      </div>
+      <div class="card-content" style="color:#94a3b8;">
+        <strong style="color:#e2e8f0;">Key Points:</strong><br>
+        &bull; <strong style="color:#22c55e;">100% offline</strong> &mdash; no internet needed after setup<br>
+        &bull; <strong style="color:#7c3aed;">No API keys</strong> &mdash; Gemma runs locally via Ollama<br>
+        &bull; <strong style="color:#f59e0b;">Hindi + English</strong> &mdash; both languages supported<br>
+        &bull; <strong style="color:#3b82f6;">Fast</strong> &mdash; typical response &lt; 3 seconds<br>
+        &bull; <strong style="color:#0891b2;">Customizable</strong> &mdash; swap models, add wake words
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- SECTION 2: WHAT EACH TOOL DOES -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-cogs" style="color:#16a34a;"></i> 2. What Each Tool Does
+  </div>
+
+  <div class="grid-3">
+    <!-- VOSK -->
+    <div class="card" style="border-color:#22c55e;">
+      <div class="card-title" style="color:#22c55e;">
+        <i class="fas fa-font"></i> VOSK &mdash; Speech to Text (STT)
+      </div>
+      <div class="card-content">
+        <p><strong>What:</strong> Offline speech recognition engine. Converts spoken words into text without internet.</p>
+        <p style="margin-top:6px;"><strong>How:</strong> Uses pre-trained Kaldi models. Supports 20+ languages including Hindi, English, Hinglish.</p>
+        <p style="margin-top:6px;"><strong>Specs:</strong></p>
+        <ul style="margin-left:16px; margin-top:4px;">
+          <li>Model sizes: <strong style="color:#22c55e;">40MB</strong> (small) to <strong style="color:#22c55e;">1.5GB</strong> (large)</li>
+          <li>Real-time streaming recognition</li>
+          <li>16kHz PCM audio input</li>
+          <li>Word-level timestamps</li>
+          <li>Speaker diarization support</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <strong><i class="fas fa-star"></i> Why VOSK:</strong> Lightweight, runs on Raspberry Pi, fully offline, Apache 2.0 license
+        </div>
+      </div>
+    </div>
+
+    <!-- Gemma -->
+    <div class="card" style="border-color:#7c3aed;">
+      <div class="card-title" style="color:#7c3aed;">
+        <i class="fas fa-brain"></i> Gemma &mdash; Large Language Model (LLM)
+      </div>
+      <div class="card-content">
+        <p><strong>What:</strong> Google's open-source LLM. Understands context, generates intelligent responses. Runs locally via Ollama.</p>
+        <p style="margin-top:6px;"><strong>How:</strong> Ollama loads the model into RAM. Python sends text via REST API (localhost:11434).</p>
+        <p style="margin-top:6px;"><strong>Specs:</strong></p>
+        <ul style="margin-left:16px; margin-top:4px;">
+          <li>Size options: <strong style="color:#7c3aed;">2B</strong>, <strong style="color:#7c3aed;">7B</strong>, <strong style="color:#7c3aed;">27B</strong> parameters</li>
+          <li>2B model: ~1.7GB RAM, fast responses</li>
+          <li>7B model: ~5GB RAM, better quality</li>
+          <li>27B model: ~17GB RAM, best quality</li>
+          <li>Supports Hindi + English fluently</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <strong><i class="fas fa-star"></i> Why Gemma:</strong> Open weights, runs via Ollama, great Hindi support, Apache 2.0
+        </div>
+      </div>
+    </div>
+
+    <!-- Piper -->
+    <div class="card" style="border-color:#3b82f6;">
+      <div class="card-title" style="color:#3b82f6;">
+        <i class="fas fa-assistive-listening-systems"></i> Piper &mdash; Text to Speech (TTS)
+      </div>
+      <div class="card-content">
+        <p><strong>What:</strong> Fast neural text-to-speech engine by Rhasspy. Converts text responses into natural-sounding speech.</p>
+        <p style="margin-top:6px;"><strong>How:</strong> Uses ONNX neural models. Takes text, outputs WAV audio file. Plays through speaker.</p>
+        <p style="margin-top:6px;"><strong>Specs:</strong></p>
+        <ul style="margin-left:16px; margin-top:4px;">
+          <li>Model sizes: <strong style="color:#3b82f6;">15MB</strong> to <strong style="color:#3b82f6;">60MB</strong></li>
+          <li>Real-time synthesis (faster than real-time)</li>
+          <li>Natural sounding voices</li>
+          <li>40+ languages supported</li>
+          <li>Custom voice training possible</li>
+        </ul>
+        <div class="note" style="margin-top:10px;">
+          <strong><i class="fas fa-star"></i> Why Piper:</strong> Tiny models, fast synthesis, sounds natural, MIT license
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 3: SYSTEM REQUIREMENTS -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-server" style="color:#f59e0b;"></i> 3. System Requirements
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Minimum (2B Gemma)</th>
+          <th>Recommended (7B Gemma)</th>
+          <th>High-End (27B Gemma)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong><i class="fas fa-memory" style="color:#f59e0b;"></i> RAM</strong></td>
+          <td><strong style="color:#22c55e;">4 GB</strong><br>2B model + VOSK + Piper</td>
+          <td><strong style="color:#f59e0b;">8 GB</strong><br>7B model + VOSK + Piper</td>
+          <td><strong style="color:#dc2626;">24 GB</strong><br>27B model + VOSK + Piper</td>
+        </tr>
+        <tr>
+          <td><strong><i class="fas fa-microchip" style="color:#f59e0b;"></i> CPU</strong></td>
+          <td>Any modern CPU (ARM/x86)</td>
+          <td>4+ cores recommended</td>
+          <td>8+ cores, Apple Silicon preferred</td>
+        </tr>
+        <tr>
+          <td><strong><i class="fas fa-hdd" style="color:#f59e0b;"></i> Disk Space</strong></td>
+          <td><strong style="color:#22c55e;">~3 GB</strong><br>1.7GB Gemma 2B + 50MB VOSK + 30MB Piper</td>
+          <td><strong style="color:#f59e0b;">~7 GB</strong><br>4.4GB Gemma 7B + 50MB VOSK + 30MB Piper</td>
+          <td><strong style="color:#dc2626;">~19 GB</strong><br>17GB Gemma 27B + 50MB VOSK + 30MB Piper</td>
+        </tr>
+        <tr>
+          <td><strong><i class="fas fa-tachometer-alt" style="color:#f59e0b;"></i> Response Time</strong></td>
+          <td><strong style="color:#22c55e;">~1-2 sec</strong></td>
+          <td><strong style="color:#f59e0b;">~2-4 sec</strong></td>
+          <td><strong style="color:#dc2626;">~5-10 sec</strong></td>
+        </tr>
+        <tr>
+          <td><strong><i class="fas fa-star" style="color:#f59e0b;"></i> Quality</strong></td>
+          <td>Good for simple commands</td>
+          <td><strong>Best balance</strong> of speed + quality</td>
+          <td>Best quality, slowest</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box" style="background:#1e293b; border-color:#22c55e;">
+    <p style="font-weight:800; color:#22c55e; margin-bottom:4px;">
+      <i class="fas fa-lightbulb"></i> Recommendation for BusSahayak:
+    </p>
+    <p style="font-size:12px; color:#94a3b8;">
+      Start with <strong style="color:#f59e0b;">Gemma 2B</strong> on a 4GB RAM machine for fast responses. Upgrade to <strong style="color:#f59e0b;">Gemma 7B</strong> on 8GB+ for better Hindi understanding. The 27B model is overkill for bus booking commands.
+    </p>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- SECTION 4: INSTALLATION COMMANDS -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-terminal" style="color:#16a34a;"></i> 4. Installation Commands
+  </div>
+
+  <!-- STEP 1: VOSK -->
+  <div class="card" style="border-color:#22c55e; margin-bottom:14px;">
+    <div class="step-header">
+      <span class="step-num" style="background:#22c55e;">1</span>
+      <div>
+        <div class="card-title" style="color:#22c55e; margin-bottom:0;">
+          <i class="fas fa-font"></i> Install VOSK (Speech-to-Text)
+        </div>
+      </div>
+    </div>
+    <div class="card-content">
+
+      <div class="grid-3">
+        <!-- Mac -->
+        <div>
+          <span class="os-label mac"><i class="fab fa-apple"></i> macOS</span>
+          <pre>brew install portaudio
+pip3 install vosk sounddevice</pre>
+        </div>
+        <!-- Ubuntu -->
+        <div>
+          <span class="os-label ubuntu"><i class="fab fa-linux"></i> Ubuntu</span>
+          <pre>sudo apt update
+sudo apt install python3-pip portaudio19-dev
+pip3 install vosk sounddevice</pre>
+        </div>
+        <!-- Windows -->
+        <div>
+          <span class="os-label windows"><i class="fab fa-windows"></i> Windows</span>
+          <pre>pip install vosk sounddevice pyaudio</pre>
+        </div>
+      </div>
+
+      <p style="margin-top:10px;"><strong>Download VOSK Language Models:</strong></p>
+      <div class="grid-2" style="margin-top:6px;">
+        <div>
+          <p><strong style="color:#f59e0b;">Hindi Models:</strong></p>
+          <pre># Small (50MB) - Fast, good accuracy
+wget https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip
+unzip vosk-model-small-hi-0.22.zip
+
+# Large (1.5GB) - Best accuracy
+wget https://alphacephei.com/vosk/models/vosk-model-hi-0.22.zip
+unzip vosk-model-hi-0.22.zip</pre>
+        </div>
+        <div>
+          <p><strong style="color:#f59e0b;">English Models:</strong></p>
+          <pre># Small (40MB) - Fast, good accuracy
+wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+unzip vosk-model-small-en-us-0.15.zip
+
+# Large (1.8GB) - Best accuracy
+wget https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip
+unzip vosk-model-en-us-0.22.zip</pre>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong><i class="fas fa-info-circle"></i> Note:</strong> Extract the zip files in the same directory as your Python script. VOSK looks for model folders by name.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: OLLAMA + GEMMA -->
+  <div class="card" style="border-color:#7c3aed; margin-bottom:14px;">
+    <div class="step-header">
+      <span class="step-num" style="background:#7c3aed;">2</span>
+      <div>
+        <div class="card-title" style="color:#7c3aed; margin-bottom:0;">
+          <i class="fas fa-brain"></i> Install Ollama + Gemma (LLM)
+        </div>
+      </div>
+    </div>
+    <div class="card-content">
+
+      <div class="grid-3">
+        <!-- Mac -->
+        <div>
+          <span class="os-label mac"><i class="fab fa-apple"></i> macOS</span>
+          <pre>brew install ollama</pre>
+        </div>
+        <!-- Ubuntu -->
+        <div>
+          <span class="os-label ubuntu"><i class="fab fa-linux"></i> Ubuntu</span>
+          <pre>curl -fsSL https://ollama.ai/install.sh | sh</pre>
+        </div>
+        <!-- Windows -->
+        <div>
+          <span class="os-label windows"><i class="fab fa-windows"></i> Windows</span>
+          <pre># Download from https://ollama.ai
+# Run the installer .exe</pre>
+        </div>
+      </div>
+
+      <p style="margin-top:10px;"><strong>Pull Gemma Models:</strong></p>
+      <pre># Lightweight (2B) - ~1.7GB, fast, 4GB RAM minimum
+ollama pull gemma2:2b
+
+# Standard (7B) - ~4.4GB, better quality, 8GB RAM recommended
+ollama pull gemma2
+
+# Heavy (27B) - ~17GB, best quality, 24GB RAM required
+ollama pull gemma2:27b</pre>
+
+      <p style="margin-top:6px;"><strong>Start & Test Ollama:</strong></p>
+      <pre># Start Ollama server (runs on localhost:11434)
+ollama serve
+
+# Test in another terminal
+ollama run gemma2
+
+# Quick API test (no Python needed)
+curl http://localhost:11434/api/generate -d '{
+  "model": "gemma2",
+  "prompt": "Hello, who are you?"
+}'</pre>
+
+      <div class="note">
+        <strong><i class="fas fa-info-circle"></i> Note:</strong> Ollama runs as a background service on macOS (starts automatically). On Linux, run <code>ollama serve</code> manually or set it as a systemd service.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: PIPER -->
+  <div class="card" style="border-color:#3b82f6; margin-bottom:14px;">
+    <div class="step-header">
+      <span class="step-num" style="background:#3b82f6;">3</span>
+      <div>
+        <div class="card-title" style="color:#3b82f6; margin-bottom:0;">
+          <i class="fas fa-assistive-listening-systems"></i> Install Piper (Text-to-Speech)
+        </div>
+      </div>
+    </div>
+    <div class="card-content">
+
+      <div class="grid-3">
+        <!-- Mac -->
+        <div>
+          <span class="os-label mac"><i class="fab fa-apple"></i> macOS</span>
+          <pre>brew install piper-tts
+
+# Or download binary from GitHub:
+# https://github.com/rhasspy/piper/releases</pre>
+        </div>
+        <!-- Ubuntu -->
+        <div>
+          <span class="os-label ubuntu"><i class="fab fa-linux"></i> Ubuntu</span>
+          <pre>pip3 install piper-tts
+
+# Or download binary:
+wget https://github.com/rhasspy/piper/releases/latest/download/piper_linux_x86_64.tar.gz
+tar -xzf piper_linux_x86_64.tar.gz</pre>
+        </div>
+        <!-- Windows -->
+        <div>
+          <span class="os-label windows"><i class="fab fa-windows"></i> Windows</span>
+          <pre># Download from GitHub releases:
+# piper_windows_amd64.zip
+# https://github.com/rhasspy/piper/releases
+# Extract and add to PATH</pre>
+        </div>
+      </div>
+
+      <p style="margin-top:10px;"><strong>Download Voice Models:</strong></p>
+      <div class="grid-2" style="margin-top:6px;">
+        <div>
+          <p><strong style="color:#f59e0b;">Hindi Voice:</strong></p>
+          <pre># Download from HuggingFace:
+# https://huggingface.co/rhasspy/piper-voices/tree/main/hi/IN/swara/medium
+# Files needed:
+#   hi_IN-swara-medium.onnx
+#   hi_IN-swara-medium.onnx.json
+
+# Download commands:
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/IN/swara/medium/hi_IN-swara-medium.onnx
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/IN/swara/medium/hi_IN-swara-medium.onnx.json</pre>
+        </div>
+        <div>
+          <p><strong style="color:#f59e0b;">English Voice:</strong></p>
+          <pre># Lessac medium (~15MB) - Natural sounding
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json</pre>
+        </div>
+      </div>
+
+      <p style="margin-top:10px;"><strong>Test Piper:</strong></p>
+      <pre># Test English
+echo "Hello world, this is Piper speaking!" | piper --model en_US-lessac-medium.onnx --output_file test_en.wav
+
+# Test Hindi
+echo "नमस्ते, मैं पाइपर हूँ। आप कैसे हैं?" | piper --model hi_IN-swara-medium.onnx --output_file test_hi.wav
+
+# Play the audio (macOS)
+afplay test_en.wav
+
+# Play the audio (Linux)
+aplay test_en.wav</pre>
+
+      <div class="note">
+        <strong><i class="fas fa-info-circle"></i> Note:</strong> Place both <code>.onnx</code> and <code>.onnx.json</code> files in the same directory. Piper needs both files to work.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: PYTHON DEPS -->
+  <div class="card" style="border-color:#f59e0b; margin-bottom:14px;">
+    <div class="step-header">
+      <span class="step-num" style="background:#f59e0b;">4</span>
+      <div>
+        <div class="card-title" style="color:#f59e0b; margin-bottom:0;">
+          <i class="fas fa-python"></i> Install Python Dependencies
+        </div>
+      </div>
+    </div>
+    <div class="card-content">
+      <pre>pip3 install vosk sounddevice requests numpy</pre>
+      <p style="margin-top:6px;"><strong>Optional (for better audio handling):</strong></p>
+      <pre>pip3 install pyaudio wave scipy</pre>
+
+      <div class="note">
+        <strong><i class="fas fa-info-circle"></i> Note:</strong> On macOS, if <code>sounddevice</code> gives errors, install PortAudio first: <code>brew install portaudio</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- SECTION 5: FULL WORKING PYTHON CODE -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-file-code" style="color:#f59e0b;"></i> 5. Full Working Python Code &mdash; assistant.py
+  </div>
+
+  <div class="card" style="border-color:#f59e0b;">
+    <div class="card-title" style="color:#f59e0b;">
+      <i class="fas fa-file-alt"></i> assistant.py &mdash; Complete Offline Voice Assistant
+    </div>
+    <pre><span class="code-comment">#!/usr/bin/env python3</span>
+<span class="code-comment">"""</span>
+<span class="code-comment">BusSahayak Offline Voice Assistant</span>
+<span class="code-comment">Uses: VOSK (STT) + Gemma via Ollama (LLM) + Piper (TTS)</span>
+<span class="code-comment">"""</span>
+
+<span class="code-keyword">import</span> json
+<span class="code-keyword">import</span> wave
+<span class="code-keyword">import</span> os
+<span class="code-keyword">import</span> sys
+<span class="code-keyword">import</span> subprocess
+<span class="code-keyword">import</span> tempfile
+<span class="code-keyword">import</span> requests
+<span class="code-keyword">import</span> sounddevice <span class="code-keyword">as</span> sd
+<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+<span class="code-keyword">from</span> vosk <span class="code-keyword">import</span> Model, KaldiRecognizer
+
+<span class="code-comment"># ============================================</span>
+<span class="code-comment"># CONFIGURATION</span>
+<span class="code-comment"># ============================================</span>
+OLLAMA_URL = <span class="code-string">"http://localhost:11434"</span>
+OLLAMA_MODEL = <span class="code-string">"gemma2"</span>          <span class="code-comment"># or "gemma2:2b" for lightweight</span>
+VOSK_MODEL_PATH = <span class="code-string">"vosk-model-small-hi-0.22"</span>  <span class="code-comment"># Hindi small model</span>
+PIPER_MODEL = <span class="code-string">"hi_IN-swara-medium.onnx"</span>      <span class="code-comment"># Hindi TTS voice</span>
+PIPER_EN_MODEL = <span class="code-string">"en_US-lessac-medium.onnx"</span>  <span class="code-comment"># English TTS voice</span>
+SAMPLE_RATE = <span class="code-number">16000</span>
+WAKE_WORD = <span class="code-string">"hey bus"</span>            <span class="code-comment"># Wake word to activate</span>
+CHANNELS = <span class="code-number">1</span>
+
+<span class="code-comment"># System prompt for Gemma</span>
+SYSTEM_PROMPT = <span class="code-string">"""You are BusSahayak, a friendly voice assistant for bus booking.
+Speak in the same language the user speaks (Hindi, English, or Hinglish).
+Keep responses short and conversational (2-3 sentences max).
+If user asks about buses, help them search, compare, and book.
+Always be polite and helpful. Use simple words."""</span>
+
+
+<span class="code-comment"># ============================================</span>
+<span class="code-comment"># VOSK: Speech to Text</span>
+<span class="code-comment"># ============================================</span>
+<span class="code-keyword">class</span> <span class="code-function">SpeechToText</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, model_path):
+        <span class="code-keyword">print</span>(<span class="code-string">f"Loading VOSK model from {model_path}..."</span>)
+        <span class="code-keyword">if not</span> os.path.exists(model_path):
+            <span class="code-keyword">print</span>(<span class="code-string">f"ERROR: Model not found at {model_path}"</span>)
+            <span class="code-keyword">print</span>(<span class="code-string">"Download it first! See Section 4 in the guide."</span>)
+            sys.exit(<span class="code-number">1</span>)
+        self.model = Model(model_path)
+        self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
+        self.recognizer.SetWords(True)
+        <span class="code-keyword">print</span>(<span class="code-string">"VOSK model loaded successfully!"</span>)
+
+    <span class="code-keyword">def</span> <span class="code-function">listen</span>(self, timeout=<span class="code-number">10</span>):
+        <span class="code-string">"""Listen to microphone and return recognized text."""</span>
+        <span class="code-keyword">print</span>(<span class="code-string">"\n🎤 Listening... Speak now!"</span>)
+        <span class="code-keyword">try</span>:
+            audio = sd.rec(
+                int(timeout * SAMPLE_RATE),
+                samplerate=SAMPLE_RATE,
+                channels=CHANNELS,
+                dtype=<span class="code-string">"int16"</span>
+            )
+            sd.wait()
+            <span class="code-comment"># Convert to bytes for VOSK</span>
+            audio_bytes = audio.tobytes()
+
+            <span class="code-keyword">if</span> self.recognizer.AcceptWaveform(audio_bytes):
+                result = json.loads(self.recognizer.Result())
+                text = result.get(<span class="code-string">"text"</span>, <span class="code-string">""</span>)
+            <span class="code-keyword">else</span>:
+                result = json.loads(self.recognizer.FinalResult())
+                text = result.get(<span class="code-string">"text"</span>, <span class="code-string">""</span>)
+
+            <span class="code-keyword">if</span> text:
+                <span class="code-keyword">print</span>(<span class="code-string">f"📝 You said: {text}"</span>)
+            <span class="code-keyword">else</span>:
+                <span class="code-keyword">print</span>(<span class="code-string">"No speech detected. Try again."</span>)
+            <span class="code-keyword">return</span> text
+
+        <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+            <span class="code-keyword">print</span>(<span class="code-string">f"Microphone error: {e}"</span>)
+            <span class="code-keyword">return</span> <span class="code-string">""</span>
+
+
+<span class="code-comment"># ============================================</span>
+<span class="code-comment"># GEMMA via OLLAMA: Text to Text (LLM)</span>
+<span class="code-comment"># ============================================</span>
+<span class="code-keyword">class</span> <span class="code-function">LLMBrain</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, model_name, ollama_url):
+        self.model = model_name
+        self.url = ollama_url
+        self.conversation_history = []
+
+    <span class="code-keyword">def</span> <span class="code-function">think</span>(self, user_text):
+        <span class="code-string">"""Send text to Gemma via Ollama and get response."""</span>
+        <span class="code-keyword">print</span>(<span class="code-string">"🧠 Gemma is thinking..."</span>)
+
+        <span class="code-comment"># Build messages with conversation history</span>
+        messages = [
+            {<span class="code-string">"role"</span>: <span class="code-string">"system"</span>, <span class="code-string">"content"</span>: SYSTEM_PROMPT}
+        ]
+        <span class="code-comment"># Add last 5 messages for context</span>
+        messages.extend(self.conversation_history[-<span class="code-number">5</span>:])
+        messages.append({<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: user_text})
+
+        <span class="code-keyword">try</span>:
+            response = requests.post(
+                <span class="code-string">f"{self.url}/api/chat"</span>,
+                json={
+                    <span class="code-string">"model"</span>: self.model,
+                    <span class="code-string">"messages"</span>: messages,
+                    <span class="code-string">"stream"</span>: False
+                },
+                timeout=<span class="code-number">30</span>
+            )
+            response.raise_for_status()
+            result = response.json()
+            reply = result[<span class="code-string">"message"</span>][<span class="code-string">"content"</span>]
+
+            <span class="code-comment"># Store in conversation history</span>
+            self.conversation_history.append(
+                {<span class="code-string">"role"</span>: <span class="code-string">"user"</span>, <span class="code-string">"content"</span>: user_text}
+            )
+            self.conversation_history.append(
+                {<span class="code-string">"role"</span>: <span class="code-string">"assistant"</span>, <span class="code-string">"content"</span>: reply}
+            )
+
+            <span class="code-keyword">print</span>(<span class="code-string">f"💬 Gemma says: {reply}"</span>)
+            <span class="code-keyword">return</span> reply
+
+        <span class="code-keyword">except</span> requests.ConnectionError:
+            <span class="code-keyword">return</span> <span class="code-string">"Ollama server not running. Start it with: ollama serve"</span>
+        <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+            <span class="code-keyword">return</span> <span class="code-string">f"Error contacting Gemma: {e}"</span>
+
+
+<span class="code-comment"># ============================================</span>
+<span class="code-comment"># PIPER: Text to Speech</span>
+<span class="code-comment"># ============================================</span>
+<span class="code-keyword">class</span> <span class="code-function">TextToSpeech</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, hindi_model, english_model):
+        self.hindi_model = hindi_model
+        self.english_model = english_model
+
+    <span class="code-keyword">def</span> <span class="code-function">speak</span>(self, text):
+        <span class="code-string">"""Convert text to speech and play it."""</span>
+        <span class="code-keyword">if not</span> text:
+            <span class="code-keyword">return</span>
+
+        <span class="code-keyword">print</span>(<span class="code-string">"🔊 Piper is speaking..."</span>)
+
+        <span class="code-comment"># Detect language (simple heuristic)</span>
+        has_hindi = <span class="code-keyword">any</span>(<span class="code-string">'\u0900'</span> <= c <= <span class="code-string">'\u097f'</span> <span class="code-keyword">for</span> c <span class="code-keyword">in</span> text)
+        model = self.hindi_model <span class="code-keyword">if</span> has_hindi <span class="code-keyword">else</span> self.english_model
+
+        <span class="code-keyword">with</span> tempfile.NamedTemporaryFile(suffix=<span class="code-string">".wav"</span>, delete=False) <span class="code-keyword">as</span> f:
+            temp_path = f.name
+
+        <span class="code-keyword">try</span>:
+            <span class="code-comment"># Run Piper TTS</span>
+            process = subprocess.Popen(
+                [<span class="code-string">"piper"</span>, <span class="code-string">"--model"</span>, model, <span class="code-string">"--output_file"</span>, temp_path],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            process.communicate(input=text.encode(<span class="code-string">"utf-8"</span>))
+
+            <span class="code-keyword">if</span> process.returncode == <span class="code-number">0</span> <span class="code-keyword">and</span> os.path.exists(temp_path):
+                <span class="code-comment"># Play the audio</span>
+                <span class="code-keyword">if</span> sys.platform == <span class="code-string">"darwin"</span>:  <span class="code-comment"># macOS</span>
+                    subprocess.run([<span class="code-string">"afplay"</span>, temp_path])
+                <span class="code-keyword">elif</span> sys.platform == <span class="code-string">"linux"</span>:
+                    subprocess.run([<span class="code-string">"aplay"</span>, temp_path])
+                <span class="code-keyword">else</span>:  <span class="code-comment"># Windows</span>
+                    os.startfile(temp_path)
+            <span class="code-keyword">else</span>:
+                <span class="code-keyword">print</span>(<span class="code-string">"Piper TTS failed. Check model path."</span>)
+
+        <span class="code-keyword">except</span> FileNotFoundError:
+            <span class="code-keyword">print</span>(<span class="code-string">"Piper not found. Install it first! See Section 4."</span>)
+        <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+            <span class="code-keyword">print</span>(<span class="code-string">f"TTS Error: {e}"</span>)
+        <span class="code-keyword">finally</span>:
+            <span class="code-keyword">if</span> os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+
+<span class="code-comment"># ============================================</span>
+<span class="code-comment"># MAIN ASSISTANT LOOP</span>
+<span class="code-comment"># ============================================</span>
+<span class="code-keyword">def</span> <span class="code-function">detect_wake_word</span>(text):
+    <span class="code-string">"""Check if wake word is in the text."""</span>
+    <span class="code-keyword">return</span> WAKE_WORD.lower() <span class="code-keyword">in</span> text.lower()
+
+
+<span class="code-keyword">def</span> <span class="code-function">main</span>():
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 50</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"  BusSahayak Offline Voice Assistant"</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"  VOSK + Gemma + Piper"</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 50</span>)
+
+    <span class="code-comment"># Initialize components</span>
+    stt = SpeechToText(VOSK_MODEL_PATH)
+    llm = LLMBrain(OLLAMA_MODEL, OLLAMA_URL)
+    tts = TextToSpeech(PIPER_MODEL, PIPER_EN_MODEL)
+
+    <span class="code-keyword">print</span>(<span class="code-string">f"\nSay '{WAKE_WORD}' to activate, or press Enter to talk."</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"Type 'quit' to exit.\n"</span>)
+
+    <span class="code-keyword">while</span> True:
+        <span class="code-keyword">try</span>:
+            <span class="code-comment"># Option 1: Wait for wake word</span>
+            <span class="code-comment"># Option 2: Press Enter to talk</span>
+            user_input = input(<span class="code-string">"\n[Press Enter to talk, or type message]: "</span>)
+
+            <span class="code-keyword">if</span> user_input.lower() == <span class="code-string">"quit"</span>:
+                <span class="code-keyword">print</span>(<span class="code-string">"Goodbye! 👋"</span>)
+                tts.speak(<span class="code-string">"Alvida! BusSahayak band ho raha hai."</span>)
+                <span class="code-keyword">break</span>
+
+            <span class="code-keyword">if</span> user_input.strip():
+                <span class="code-comment"># User typed a message</span>
+                user_text = user_input
+            <span class="code-keyword">else</span>:
+                <span class="code-comment"># Listen to microphone</span>
+                user_text = stt.listen(timeout=<span class="code-number">8</span>)
+
+                <span class="code-keyword">if not</span> user_text:
+                    <span class="code-keyword">continue</span>
+
+                <span class="code-comment"># Check for wake word</span>
+                <span class="code-keyword">if not</span> detect_wake_word(user_text):
+                    <span class="code-keyword">print</span>(<span class="code-string">f"Say '{WAKE_WORD}' first, or press Enter and type."</span>)
+                    <span class="code-keyword">continue</span>
+
+                <span class="code-comment"># Remove wake word from text</span>
+                user_text = user_text.replace(WAKE_WORD, <span class="code-string">""</span>).strip()
+
+            <span class="code-keyword">if not</span> user_text:
+                <span class="code-keyword">print</span>(<span class="code-string">"No input detected. Try again."</span>)
+                <span class="code-keyword">continue</span>
+
+            <span class="code-comment"># Get LLM response</span>
+            response = llm.think(user_text)
+
+            <span class="code-comment"># Speak the response</span>
+            tts.speak(response)
+
+        <span class="code-keyword">except</span> KeyboardInterrupt:
+            <span class="code-keyword">print</span>(<span class="code-string">"\nInterrupted. Goodbye!"</span>)
+            <span class="code-keyword">break</span>
+        <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+            <span class="code-keyword">print</span>(<span class="code-string">f"Error: {e}"</span>)
+            <span class="code-keyword">continue</span>
+
+
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    main()</pre>
+  </div>
+
+  <div class="note" style="margin-top:10px;">
+    <strong><i class="fas fa-info-circle"></i> How to run:</strong>
+    <pre style="margin-top:6px;"># Make sure Ollama is running in another terminal
+ollama serve
+
+# Run the assistant
+python3 assistant.py</pre>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- SECTION 6: VOICE MODELS DOWNLOAD LINKS -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-download" style="color:#38bdf8;"></i> 6. Voice Models &mdash; Download Links
+  </div>
+
+  <!-- VOSK MODELS -->
+  <div class="card" style="border-color:#22c55e; margin-bottom:14px;">
+    <div class="card-title" style="color:#22c55e;">
+      <i class="fas fa-font"></i> VOSK Speech Recognition Models
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Model Name</th>
+            <th>Size</th>
+            <th>Accuracy</th>
+            <th>Download URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:#f59e0b;">Hindi (Small)</strong></td>
+            <td>vosk-model-small-hi-0.22</td>
+            <td><strong style="color:#22c55e;">50 MB</strong></td>
+            <td>Good</td>
+            <td><a class="link" href="https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip" target="_blank"><i class="fas fa-external-link-alt"></i> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#f59e0b;">Hindi (Large)</strong></td>
+            <td>vosk-model-hi-0.22</td>
+            <td><strong style="color:#f59e0b;">1.5 GB</strong></td>
+            <td>Best</td>
+            <td><a class="link" href="https://alphacephei.com/vosk/models/vosk-model-hi-0.22.zip" target="_blank"><i class="fas fa-external-link-alt"></i> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong>English (Small)</strong></td>
+            <td>vosk-model-small-en-us-0.15</td>
+            <td><strong style="color:#22c55e;">40 MB</strong></td>
+            <td>Good</td>
+            <td><a class="link" href="https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip" target="_blank"><i class="fas fa-external-link-alt"></i> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong>English (Large)</strong></td>
+            <td>vosk-model-en-us-0.22</td>
+            <td><strong style="color:#f59e0b;">1.8 GB</strong></td>
+            <td>Best</td>
+            <td><a class="link" href="https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip" target="_blank"><i class="fas fa-external-link-alt"></i> Download</a></td>
+          </tr>
+          <tr>
+            <td><strong>Hinglish</strong></td>
+            <td>vosk-model-small-hi-0.22</td>
+            <td><strong style="color:#22c55e;">50 MB</strong></td>
+            <td>Good</td>
+            <td><a class="link" href="https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip" target="_blank"><i class="fas fa-external-link-alt"></i> Download</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PIPER VOICES -->
+  <div class="card" style="border-color:#3b82f6; margin-bottom:14px;">
+    <div class="card-title" style="color:#3b82f6;">
+      <i class="fas fa-assistive-listening-systems"></i> Piper Text-to-Speech Voices
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Voice Name</th>
+            <th>Quality</th>
+            <th>Size</th>
+            <th>Download (ONNX + JSON)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:#f59e0b;">Hindi</strong></td>
+            <td>hi_IN-swara-medium</td>
+            <td>Medium</td>
+            <td><strong style="color:#3b82f6;">~30 MB</strong></td>
+            <td><a class="link" href="https://huggingface.co/rhasspy/piper-voices/tree/main/hi/IN/swara/medium" target="_blank"><i class="fas fa-external-link-alt"></i> HuggingFace</a></td>
+          </tr>
+          <tr>
+            <td><strong>English (US)</strong></td>
+            <td>en_US-lessac-medium</td>
+            <td>Medium</td>
+            <td><strong style="color:#3b82f6;">~15 MB</strong></td>
+            <td><a class="link" href="https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/lessac/medium" target="_blank"><i class="fas fa-external-link-alt"></i> HuggingFace</a></td>
+          </tr>
+          <tr>
+            <td><strong>English (US)</strong></td>
+            <td>en_US-amy-medium</td>
+            <td>Medium</td>
+            <td><strong style="color:#3b82f6;">~15 MB</strong></td>
+            <td><a class="link" href="https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/amy/medium" target="_blank"><i class="fas fa-external-link-alt"></i> HuggingFace</a></td>
+          </tr>
+          <tr>
+            <td><strong>English (UK)</strong></td>
+            <td>en_GB-alba-medium</td>
+            <td>Medium</td>
+            <td><strong style="color:#3b82f6;">~15 MB</strong></td>
+            <td><a class="link" href="https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_GB/alba/medium" target="_blank"><i class="fas fa-external-link-alt"></i> HuggingFace</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong><i class="fas fa-info-circle"></i> All Piper voices:</strong>
+      <a class="link" href="https://huggingface.co/rhasspy/piper-voices/tree/main" target="_blank">Browse all 40+ languages on HuggingFace <i class="fas fa-external-link-alt"></i></a>
+    </div>
+  </div>
+
+  <!-- GEMMA MODELS -->
+  <div class="card" style="border-color:#7c3aed;">
+    <div class="card-title" style="color:#7c3aed;">
+      <i class="fas fa-brain"></i> Gemma LLM Models (via Ollama)
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Parameters</th>
+            <th>Download Size</th>
+            <th>RAM Needed</th>
+            <th>Ollama Command</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:#22c55e;">Gemma 2B</strong></td>
+            <td>2 Billion</td>
+            <td><strong style="color:#22c55e;">~1.7 GB</strong></td>
+            <td>~4 GB</td>
+            <td><code>ollama pull gemma2:2b</code></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#f59e0b;">Gemma 7B</strong></td>
+            <td>7 Billion</td>
+            <td><strong style="color:#f59e0b;">~4.4 GB</strong></td>
+            <td>~8 GB</td>
+            <td><code>ollama pull gemma2</code></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#dc2626;">Gemma 27B</strong></td>
+            <td>27 Billion</td>
+            <td><strong style="color:#dc2626;">~17 GB</strong></td>
+            <td>~24 GB</td>
+            <td><code>ollama pull gemma2:27b</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong><i class="fas fa-info-circle"></i> All Gemma models:</strong>
+      <a class="link" href="https://ollama.ai/library/gemma2" target="_blank">Browse on Ollama <i class="fas fa-external-link-alt"></i></a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- SECTION 7: TROUBLESHOOTING -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> 7. Troubleshooting &mdash; Common Errors & Fixes
+  </div>
+
+  <div class="grid-2">
+    <!-- VOSK Issues -->
+    <div class="card" style="border-color:#22c55e;">
+      <div class="card-title" style="color:#22c55e;">
+        <i class="fas fa-font"></i> VOSK Issues
+      </div>
+      <div class="card-content">
+        <p><strong style="color:#dc2626;">Error:</strong> <code>ModuleNotFoundError: No module named 'vosk'</code></p>
+        <pre>pip3 install vosk
+# If still fails:
+pip3 install --upgrade pip
+pip3 install vosk</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>sounddevice PortAudio not found</code></p>
+        <pre># macOS
+brew install portaudio
+pip3 install sounddevice
+
+# Ubuntu
+sudo apt install portaudio19-dev
+pip3 install sounddevice</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Model not found</code></p>
+        <pre># Make sure model folder is in same directory as script
+ls vosk-model-small-hi-0.22/
+# Should contain: am/ conf/ ivector/ etc.
+
+# Or specify full path:
+model = Model("/full/path/to/vosk-model-small-hi-0.22")</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Microphone not detected</code></p>
+        <pre># Check available devices
+python3 -c "import sounddevice; print(sounddevice.query_devices())"
+
+# On macOS, grant microphone permission in:
+# System Preferences > Security & Privacy > Privacy > Microphone</pre>
+      </div>
+    </div>
+
+    <!-- Ollama/Gemma Issues -->
+    <div class="card" style="border-color:#7c3aed;">
+      <div class="card-title" style="color:#7c3aed;">
+        <i class="fas fa-brain"></i> Ollama / Gemma Issues
+      </div>
+      <div class="card-content">
+        <p><strong style="color:#dc2626;">Error:</strong> <code>Connection refused localhost:11434</code></p>
+        <pre># Start Ollama server
+ollama serve
+
+# Check if running
+curl http://localhost:11434/api/tags
+
+# On macOS, Ollama runs as a service
+# Restart it: brew services restart ollama</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Model not found: gemma2</code></p>
+        <pre># List available models
+ollama list
+
+# Pull the model
+ollama pull gemma2
+
+# Or lightweight version
+ollama pull gemma2:2b</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Out of memory</code></p>
+        <pre># Use smaller model
+ollama pull gemma2:2b
+
+# Check RAM usage
+# macOS: Activity Monitor
+# Linux: htop</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Slow responses (&gt;10 sec)</code></p>
+        <pre># Check which model you're using
+ollama list
+
+# Downgrade to 2B for speed
+ollama pull gemma2:2b</pre>
+      </div>
+    </div>
+
+    <!-- Piper Issues -->
+    <div class="card" style="border-color:#3b82f6;">
+      <div class="card-title" style="color:#3b82f6;">
+        <i class="fas fa-assistive-listening-systems"></i> Piper Issues
+      </div>
+      <div class="card-content">
+        <p><strong style="color:#dc2626;">Error:</strong> <code>piper: command not found</code></p>
+        <pre># macOS
+brew install piper-tts
+
+# Or check PATH after manual install
+which piper
+# If not found, add to PATH:
+export PATH="$PATH:/path/to/piper"</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Model file not found</code></p>
+        <pre># Both files must be in same directory:
+ls -la *.onnx*
+# Should see:
+#   hi_IN-swara-medium.onnx
+#   hi_IN-swara-medium.onnx.json
+
+# Or use full path:
+piper --model /full/path/to/hi_IN-swara-medium.onnx</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>No audio output / silent file</code></p>
+        <pre># Test Piper directly
+echo "Hello" | piper --model en_US-lessac-medium.onnx --output_file test.wav
+
+# Check file size (should be > 0)
+ls -la test.wav
+
+# Play manually
+afplay test.wav  # macOS
+aplay test.wav   # Linux</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Gibberish / wrong language output</code></p>
+        <pre># Make sure you're using the right model
+# Hindi text -> hi_IN-swara-medium.onnx
+# English text -> en_US-lessac-medium.onnx
+
+# The assistant auto-detects, but you can force:
+piper --model hi_IN-swara-medium.onnx</pre>
+      </div>
+    </div>
+
+    <!-- General Issues -->
+    <div class="card" style="border-color:#f59e0b;">
+      <div class="card-title" style="color:#f59e0b;">
+        <i class="fas fa-cog"></i> General / Python Issues
+      </div>
+      <div class="card-content">
+        <p><strong style="color:#dc2626;">Error:</strong> <code>Python version not supported</code></p>
+        <pre># VOSK requires Python 3.7+
+python3 --version
+
+# Install latest Python
+# macOS: brew install python@3.11
+# Ubuntu: sudo apt install python3.11</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>numpy version conflict</code></p>
+        <pre>pip3 install --upgrade numpy
+# Or install in a virtual environment
+python3 -m venv venv
+source venv/bin/activate
+pip3 install vosk sounddevice requests numpy</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>macOS permission denied for microphone</code></p>
+        <pre># Go to:
+# System Preferences > Security & Privacy > Privacy > Microphone
+# Add Terminal (or your IDE) to the allowed list</pre>
+
+        <p style="margin-top:10px;"><strong style="color:#dc2626;">Error:</strong> <code>Windows build errors for vosk/pyaudio</code></p>
+        <pre># Use pre-built wheels
+pip install pipwin
+pipwin install pyaudio
+
+# Or download .whl from:
+# https://www.lfd.uci.edu/~gohlke/pythonlibs/</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- SECTION 8: QUICK TEST SCRIPT -->
+<!-- ============================================ -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-flask" style="color:#0891b2;"></i> 8. Quick Test Script &mdash; Verify All 3 Tools Work
+  </div>
+
+  <div class="card" style="border-color:#0891b2;">
+    <div class="card-title" style="color:#0891b2;">
+      <i class="fas fa-file-code"></i> test_all.py &mdash; Verify VOSK + Gemma + Piper
+    </div>
+    <pre><span class="code-comment">#!/usr/bin/env python3</span>
+<span class="code-comment">"""Quick test script to verify all 3 components work."""</span>
+
+<span class="code-keyword">import</span> sys
+<span class="code-keyword">import</span> json
+<span class="code-keyword">import</span> requests
+<span class="code-keyword">import</span> subprocess
+<span class="code-keyword">import</span> tempfile
+<span class="code-keyword">import</span> os
+
+<span class="code-keyword">def</span> <span class="code-function">test_vosk</span>():
+    <span class="code-string">"""Test VOSK speech recognition."""</span>
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 40</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"1. Testing VOSK (Speech-to-Text)..."</span>)
+    <span class="code-keyword">try</span>:
+        <span class="code-keyword">from</span> vosk <span class="code-keyword">import</span> Model, KaldiRecognizer
+        <span class="code-keyword">import</span> sounddevice <span class="code-keyword">as</span> sd
+        <span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+        <span class="code-comment"># Check if model exists</span>
+        model_path = <span class="code-string">"vosk-model-small-hi-0.22"</span>
+        <span class="code-keyword">if not</span> os.path.exists(model_path):
+            model_path = <span class="code-string">"vosk-model-small-en-us-0.15"</span>
+        <span class="code-keyword">if not</span> os.path.exists(model_path):
+            <span class="code-keyword">print</span>(<span class="code-string">"   [SKIP] No VOSK model found. Download one first."</span>)
+            <span class="code-keyword">return</span> True
+
+        model = Model(model_path)
+        rec = KaldiRecognizer(model, <span class="code-number">16000</span>)
+        <span class="code-keyword">print</span>(<span class="code-string">"   [OK] VOSK model loaded!"</span>)
+
+        <span class="code-comment"># Quick mic test</span>
+        <span class="code-keyword">print</span>(<span class="code-string">"   Recording 3 seconds of audio..."</span>)
+        audio = sd.rec(<span class="code-number">3</span> * <span class="code-number">16000</span>, samplerate=<span class="code-number">16000</span>, channels=<span class="code-number">1</span>, dtype=<span class="code-string">"int16"</span>)
+        sd.wait()
+        <span class="code-keyword">if</span> rec.AcceptWaveform(audio.tobytes()):
+            result = json.loads(rec.Result())
+            <span class="code-keyword">print</span>(<span class="code-string">f"   [OK] Recognized: {result.get('text', '(silence)')}"</span>)
+        <span class="code-keyword">else</span>:
+            result = json.loads(rec.FinalResult())
+            <span class="code-keyword">print</span>(<span class="code-string">f"   [OK] Recognized: {result.get('text', '(silence)')}"</span>)
+        <span class="code-keyword">return</span> True
+    <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+        <span class="code-keyword">print</span>(<span class="code-string">f"   [FAIL] {e}"</span>)
+        <span class="code-keyword">return</span> False
+
+
+<span class="code-keyword">def</span> <span class="code-function">test_ollama</span>():
+    <span class="code-string">"""Test Ollama + Gemma LLM."""</span>
+    <span class="code-keyword">print</span>(<span class="code-string">"\n" + "=" * 40</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"2. Testing Ollama + Gemma (LLM)..."</span>)
+    <span class="code-keyword">try</span>:
+        <span class="code-comment"># Check if Ollama is running</span>
+        response = requests.get(<span class="code-string">"http://localhost:11434/api/tags"</span>, timeout=<span class="code-number">5</span>)
+        models = response.json().get(<span class="code-string">"models"</span>, [])
+        <span class="code-keyword">print</span>(<span class="code-string">f"   [OK] Ollama running! Found {len(models)} model(s)."</span>)
+
+        <span class="code-keyword">if not</span> models:
+            <span class="code-keyword">print</span>(<span class="code-string">"   [WARN] No models pulled. Run: ollama pull gemma2"</span>)
+            <span class="code-keyword">return</span> True
+
+        <span class="code-comment"># Test generation</span>
+        <span class="code-keyword">print</span>(<span class="code-string">"   Testing Gemma response..."</span>)
+        gen_response = requests.post(
+            <span class="code-string">"http://localhost:11434/api/generate"</span>,
+            json={
+                <span class="code-string">"model"</span>: models[<span class="code-number">0</span>][<span class="code-string">"name"</span>],
+                <span class="code-string">"prompt"</span>: <span class="code-string">"Say hello in one word."</span>,
+                <span class="code-string">"stream"</span>: False
+            },
+            timeout=<span class="code-number">30</span>
+        )
+        reply = gen_response.json().get(<span class="code-string">"response"</span>, <span class="code-string">""</span>)
+        <span class="code-keyword">print</span>(<span class="code-string">f"   [OK] Gemma replied: {reply[:80]}..."</span>)
+        <span class="code-keyword">return</span> True
+    <span class="code-keyword">except</span> requests.ConnectionError:
+        <span class="code-keyword">print</span>(<span class="code-string">"   [FAIL] Ollama not running. Start with: ollama serve"</span>)
+        <span class="code-keyword">return</span> False
+    <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+        <span class="code-keyword">print</span>(<span class="code-string">f"   [FAIL] {e}"</span>)
+        <span class="code-keyword">return</span> False
+
+
+<span class="code-keyword">def</span> <span class="code-function">test_piper</span>():
+    <span class="code-string">"""Test Piper text-to-speech."""</span>
+    <span class="code-keyword">print</span>(<span class="code-string">"\n" + "=" * 40</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"3. Testing Piper (Text-to-Speech)..."</span>)
+    <span class="code-keyword">try</span>:
+        <span class="code-comment"># Check if piper is installed</span>
+        result = subprocess.run(
+            [<span class="code-string">"piper"</span>, <span class="code-string">"--help"</span>],
+            capture_output=True, timeout=<span class="code-number">5</span>
+        )
+        <span class="code-keyword">print</span>(<span class="code-string">"   [OK] Piper is installed!"</span>)
+
+        <span class="code-comment"># Check if model exists</span>
+        model = <span class="code-string">"en_US-lessac-medium.onnx"</span>
+        <span class="code-keyword">if not</span> os.path.exists(model):
+            model = <span class="code-string">"hi_IN-swara-medium.onnx"</span>
+        <span class="code-keyword">if not</span> os.path.exists(model):
+            <span class="code-keyword">print</span>(<span class="code-string">"   [WARN] No Piper model found. Download one first."</span>)
+            <span class="code-keyword">return</span> True
+
+        <span class="code-comment"># Test TTS</span>
+        <span class="code-keyword">print</span>(<span class="code-string">"   Testing speech synthesis..."</span>)
+        <span class="code-keyword">with</span> tempfile.NamedTemporaryFile(suffix=<span class="code-string">".wav"</span>, delete=False) <span class="code-keyword">as</span> f:
+            temp_path = f.name
+
+        proc = subprocess.Popen(
+            [<span class="code-string">"piper"</span>, <span class="code-string">"--model"</span>, model, <span class="code-string">"--output_file"</span>, temp_path],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        proc.communicate(input=<span class="code-string">b"Hello, this is a test!"</span>)
+
+        <span class="code-keyword">if</span> os.path.exists(temp_path) <span class="code-keyword">and</span> os.path.getsize(temp_path) > <span class="code-number">0</span>:
+            size_kb = os.path.getsize(temp_path) / <span class="code-number">1024</span>
+            <span class="code-keyword">print</span>(<span class="code-string">f"   [OK] Generated audio: {size_kb:.1f} KB"</span>)
+        <span class="code-keyword">else</span>:
+            <span class="code-keyword">print</span>(<span class="code-string">"   [FAIL] Piper produced empty output"</span>)
+            <span class="code-keyword">return</span> False
+
+        os.unlink(temp_path)
+        <span class="code-keyword">return</span> True
+    <span class="code-keyword">except</span> FileNotFoundError:
+        <span class="code-keyword">print</span>(<span class="code-string">"   [FAIL] Piper not found. Install it first."</span>)
+        <span class="code-keyword">return</span> False
+    <span class="code-keyword">except</span> Exception <span class="code-keyword">as</span> e:
+        <span class="code-keyword">print</span>(<span class="code-string">f"   [FAIL] {e}"</span>)
+        <span class="code-keyword">return</span> False
+
+
+<span class="code-keyword">def</span> <span class="code-function">main</span>():
+    <span class="code-keyword">print</span>(<span class="code-string">"BusSahayak - Component Test"</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"=" * 40</span>)
+
+    results = {
+        <span class="code-string">"VOSK"</span>: test_vosk(),
+        <span class="code-string">"Ollama+Gemma"</span>: test_ollama(),
+        <span class="code-string">"Piper"</span>: test_piper()
+    }
+
+    <span class="code-keyword">print</span>(<span class="code-string">"\n" + "=" * 40</span>)
+    <span class="code-keyword">print</span>(<span class="code-string">"RESULTS:"</span>)
+    <span class="code-keyword">for</span> name, ok <span class="code-keyword">in</span> results.items():
+        status = <span class="code-string">"[OK]"</span> <span class="code-keyword">if</span> ok <span class="code-keyword">else</span> <span class="code-string">"[FAIL]"</span>
+        color = <span class="code-string">"\033[92m"</span> <span class="code-keyword">if</span> ok <span class="code-keyword">else</span> <span class="code-string">"\033[91m"</span>
+        <span class="code-keyword">print</span>(<span class="code-string">f"  {color}{status} {name}\033[0m"</span>)
+
+    all_ok = <span class="code-keyword">all</span>(results.values())
+    <span class="code-keyword">if</span> all_ok:
+        <span class="code-keyword">print</span>(<span class="code-string">"\nAll components ready! Run: python3 assistant.py"</span>)
+    <span class="code-keyword">else</span>:
+        <span class="code-keyword">print</span>(<span class="code-string">"\nSome components failed. Fix the issues above."</span>)
+
+    <span class="code-keyword">return</span> <span class="code-number">0</span> <span class="code-keyword">if</span> all_ok <span class="code-keyword">else</span> <span class="code-number">1</span>
+
+
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    sys.exit(main())</pre>
+  </div>
+
+  <div class="note" style="margin-top:10px;">
+    <strong><i class="fas fa-info-circle"></i> Run the test:</strong>
+    <pre style="margin-top:6px;">python3 test_all.py</pre>
+    <p style="margin-top:6px;">All three components should show <span style="color:#22c55e;">[OK]</span>. If any show <span style="color:#dc2626;">[FAIL]</span>, check Section 7 for fixes.</p>
+  </div>
+</div>
+
+<!-- QUICK START SUMMARY -->
+<div class="section">
+  <div class="section-title">
+    <i class="fas fa-rocket" style="color:#22c55e;"></i> Quick Start Summary
+  </div>
+
+  <div class="card" style="border-color:#22c55e;">
+    <div class="card-content">
+      <div class="grid-2">
+        <div>
+          <p><strong style="color:#e2e8f0;">One-time setup (5 minutes):</strong></p>
+          <pre># 1. Install everything
+brew install portaudio ollama piper-tts  # macOS
+pip3 install vosk sounddevice requests numpy
+
+# 2. Pull models
+ollama pull gemma2:2b
+wget https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip
+unzip vosk-model-small-hi-0.22.zip
+
+# 3. Download Piper voice
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json</pre>
+        </div>
+        <div>
+          <p><strong style="color:#e2e8f0;">Each time you use it:</strong></p>
+          <pre># 1. Start Ollama (if not running)
+ollama serve
+
+# 2. Run the test
+python3 test_all.py
+
+# 3. Run the assistant
+python3 assistant.py
+
+# 4. Press Enter, speak, get response!
+# Type 'quit' to exit</pre>
+
+          <p style="margin-top:10px;"><strong style="color:#e2e8f0;">Total disk needed:</strong></p>
+          <pre># Minimum (2B model): ~3 GB
+# Recommended (7B):   ~7 GB
+# Full (27B):         ~19 GB</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+</body>
+</html>
