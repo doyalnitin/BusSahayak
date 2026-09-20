@@ -77,6 +77,7 @@ async def root():
 def classify_intent(text: str) -> dict:
     text = text.lower().strip()
     
+    # App launch - check first
     for app_name, package in KNOWN_APPS.items():
         if app_name in text:
             action = "open_app"
@@ -84,37 +85,51 @@ def classify_intent(text: str) -> dict:
                 action = "close_app"
             return {"action": action, "app": app_name, "package": package}
     
-    if any(w in text for w in ["back", "peeche", "pichla"]):
+    # Navigation - exact phrases only
+    if text in ["back", "go back", "peeche", "pichla"]:
         return {"action": "go_back"}
-    if any(w in text for w in ["home", "homescreen", "main"]):
+    if text in ["home", "go home", "homescreen", "main"]:
         return {"action": "go_home"}
-    if any(w in text for w in ["recent", "recents", "recent apps"]):
+    if text in ["recent", "recents", "recent apps"]:
         return {"action": "open_recents"}
-    if any(w in text for w in ["what", "screen", "page", "kya hai", "kya dikh"]):
+    
+    # Screen reading - must be specific about screen
+    if any(phrase in text for phrase in ["what's on screen", "what is on screen", "screen kya hai", "kya dikh raha hai", "read screen", "screen padho"]):
         return {"action": "read_screen"}
-    if any(w in text for w in ["summarize", "summary", "short", "brief"]):
+    if any(phrase in text for phrase in ["summarize screen", "summary of screen", "screen summary"]):
         return {"action": "summarize_screen"}
-    if any(w in text for w in ["button", "buttons", "kya kar", "options"]):
+    if any(phrase in text for phrase in ["list buttons", "what buttons", "button options", "kya kar sakte"]):
         return {"action": "list_buttons"}
-    if any(w in text for w in ["read", "padho", "sunao"]):
-        return {"action": "read_content", "full": "full" in text}
-    if any(w in text for w in ["email", "mail", "message", "sms"]):
+    
+    # Reading content - must specify what to read
+    if any(phrase in text for phrase in ["read email", "read mail", "read message", "padho email", "sunao message"]):
         return {"action": "read_messages"}
-    if any(w in text for w in ["scroll up", "upar", "neeche scroll"]):
-        return {"action": "scroll_up"}
-    if any(w in text for w in ["scroll down", "neeche", "aur neeche"]):
-        return {"action": "scroll_down"}
-    if any(w in text for w in ["type", "likho", "search"]):
+    
+    # Scrolling - be specific
+    if any(phrase in text for phrase in ["scroll up", "scroll down", "upar scroll", "neeche scroll"]):
+        return {"action": "scroll_down" if "down" in text or "neeche" in text else "scroll_up"}
+    
+    # Typing - must have type/search command
+    if any(phrase in text for phrase in ["type ", "search for", "search ", "likho "]):
         return {"action": "type_text", "text": text}
-    if any(w in text for w in ["click", "tap", "dabao", "press"]):
+    
+    # Clicking - must have click command
+    if any(phrase in text for phrase in ["click ", "tap ", "dabao ", "press "]):
         return {"action": "click", "target": text}
-    if any(w in text for w in ["reply", "jawaab", "bhejo"]):
+    
+    # Reply - must have reply command
+    if any(phrase in text for phrase in ["reply ", "jawaab ", "bhejo "]):
         return {"action": "reply", "text": text}
-    if any(w in text for w in ["help", "madad", "kya kar sakta"]):
+    
+    # Help
+    if any(phrase in text for phrase in ["help", "madad", "kya kar sakta hai"]):
         return {"action": "show_help"}
-    if any(w in text for w in ["bye", "exit", "quit", "band"]):
+    
+    # Exit
+    if any(phrase in text for phrase in ["bye", "exit", "quit", "band kar"]):
         return {"action": "exit"}
     
+    # Default: send to Gemini AI for general questions
     return {"action": "ask_ai", "text": text}
 
 # ==================== GEMINI LLM ====================
