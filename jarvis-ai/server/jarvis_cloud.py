@@ -13,7 +13,7 @@ import requests
 
 # ==================== CONFIG ====================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
 
 SYSTEM_PROMPT = """You are JARVIS - an advanced AI assistant for blind/visually impaired users.
 
@@ -126,10 +126,10 @@ def ask_gemini(prompt: str, screen_context: str = "") -> str:
         full_prompt += f"User: {prompt}\nJARVIS:"
         
         payload = {
-            "contents": [{"parts": [{"text": full_prompt}]}],
+            "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
             "generationConfig": {
                 "temperature": 0.7,
-                "maxOutputTokens": 100,
+                "maxOutputTokens": 200,
                 "topP": 0.8,
             }
         }
