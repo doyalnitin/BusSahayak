@@ -31,8 +31,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     companion object {
         const val TAG = "JARVIS"
-        const val SERVER_URL = "http://10.0.2.2:8000" // Localhost for emulator
-        // For real device, use: "http://YOUR_PC_IP:8000"
+        const val SERVER_URL = "https://bussahayak.onrender.com" // Cloud server
         const val PERMISSION_REQUEST = 100
     }
 
@@ -165,17 +164,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun processVoiceCommand(text: String) {
         speak("Processing: $text")
 
-        // Send to server via WebSocket or HTTP
+        // Send to cloud server via HTTP POST
         val json = JSONObject().apply {
-            put("type", "audio")
-            put("data", text)
+            put("text", text)
         }
 
         val requestBody = json.toString()
             .toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("$SERVER_URL/voice")
+            .url("$SERVER_URL/api/chat")
             .post(requestBody)
             .build()
 
@@ -321,7 +319,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun connectToServer() {
         val request = Request.Builder()
-            .url("http://10.0.2.2:8000/health")
+            .url("$SERVER_URL/health")
             .get()
             .build()
 
