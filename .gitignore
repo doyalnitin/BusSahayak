@@ -1,2 +1,17 @@
 vosk-gemma-piper-setup.html
 assistant.py
+.jarvis-ai/android/.gradle/
+jarvis-ai/android/app/build/
+jarvis-ai/android/build/
+jarvis-ai/android/local.properties
+*.apk
+*.class
+*.jar
+*.dex
+.DS_Store
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.env
+.env.local
