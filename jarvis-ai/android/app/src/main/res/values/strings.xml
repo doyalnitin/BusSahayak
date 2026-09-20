@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">JARVIS AI</string>
-    <string name="accessibility_service_description">JARVIS AI reads your screen and performs actions using voice commands. This helps blind and visually impaired users navigate their phone hands-free.</string>
-</resources>
