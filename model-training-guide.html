@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusSahayak — Model Training Guide (VOSK + Gemma + Piper)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;padding:40px 30px;line-height:1.6}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#1e293b}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:4px}
+.container{max-width:1200px;margin:0 auto}
+.hero{background:linear-gradient(135deg,#1e293b 0%,#0f172a 50%,#1a1a2e 100%);border:2px solid #334155;border-radius:20px;padding:48px 40px;margin-bottom:40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 50%,rgba(59,130,246,0.08) 0%,transparent 50%),radial-gradient(circle at 70% 50%,rgba(168,85,247,0.08) 0%,transparent 50%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;padding:8px 20px;border-radius:30px;font-size:13px;font-weight:700;margin-bottom:20px;position:relative}
+.hero h1{font-size:42px;font-weight:900;background:linear-gradient(135deg,#e2e8f0,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;position:relative}
+.hero p{color:#94a3b8;font-size:17px;max-width:700px;margin:0 auto;position:relative}
+.hero-meta{display:flex;justify-content:center;gap:32px;margin-top:24px;position:relative;flex-wrap:wrap}
+.hero-meta-item{display:flex;align-items:center;gap:8px;color:#64748b;font-size:13px;font-weight:600}
+.hero-meta-item i{color:#60a5fa}
+.section{margin-bottom:48px}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #1e293b}
+.section-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.section-icon.blue{background:rgba(59,130,246,0.15);color:#60a5fa}
+.section-icon.purple{background:rgba(168,85,247,0.15);color:#c084fc}
+.section-icon.green{background:rgba(34,197,94,0.15);color:#4ade80}
+.section-icon.amber{background:rgba(245,158,11,0.15);color:#fbbf24}
+.section-icon.red{background:rgba(239,68,68,0.15);color:#f87171}
+.section-icon.teal{background:rgba(20,184,166,0.15);color:#2dd4bf}
+.section-title{font-size:26px;font-weight:800;color:#f1f5f9}
+.section-subtitle{font-size:13px;color:#64748b;font-weight:500}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-header i{color:#60a5fa;font-size:18px}
+.card-title{font-size:16px;font-weight:700;color:#f1f5f9}
+.card-body{font-size:14px;color:#94a3b8;line-height:1.7}
+.card-body code{background:#0f172a;padding:2px 8px;border-radius:5px;font-family:'Fira Code','Consolas',monospace;font-size:12px;color:#a78bfa;border:1px solid #334155}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;text-align:center}
+.stat-card i{font-size:28px;margin-bottom:10px}
+.stat-card.blue i{color:#60a5fa}.stat-card.green i{color:#4ade80}.stat-card.purple i{color:#c084fc}.stat-card.amber i{color:#fbbf24}.stat-card.red i{color:#f87171}
+.stat-value{font-size:28px;font-weight:900;color:#f1f5f9;margin-bottom:4px}
+.stat-label{font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.code-block{background:#0c1222;color:#e2e8f0;padding:20px;border-radius:12px;font-family:'Fira Code','Consolas',monospace;font-size:12.5px;line-height:1.65;overflow-x:auto;margin-bottom:16px;border:1px solid #1e293b;white-space:pre}
+.code-block-header{display:flex;align-items:center;justify-content:space-between;background:#1e293b;padding:8px 16px;border-radius:12px 12px 0 0;border:1px solid #1e293b;border-bottom:none;margin-bottom:-1px}
+.code-block-header+.code-block{border-radius:0 0 12px 12px;margin-top:0}
+.code-lang{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px}
+.code-dots{display:flex;gap:6px}
+.code-dots span{width:10px;height:10px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}.code-dots span:nth-child(2){background:#f59e0b}.code-dots span:nth-child(3){background:#22c55e}
+.c-comment{color:#4b5563;font-style:italic}.c-keyword{color:#c084fc}.c-string{color:#4ade80}.c-number{color:#fbbf24}.c-function{color:#60a5fa}.c-class{color:#f472b6}.c-decorator{color:#fb923c}.c-builtin{color:#2dd4bf}.c-param{color:#f87171}
+.table-wrapper{overflow-x:auto;border-radius:14px;border:1px solid #334155;margin-bottom:20px}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:#1e293b;color:#f1f5f9;padding:14px 18px;font-weight:700;text-align:left;white-space:nowrap;border-bottom:2px solid #334155}
+.data-table td{padding:12px 18px;border-bottom:1px solid #1e293b;color:#94a3b8}
+.data-table tr:hover td{background:rgba(59,130,246,0.05)}
+.data-table code{background:#0f172a;padding:2px 8px;border-radius:5px;font-family:'Fira Code','Consolas',monospace;font-size:11px;color:#a78bfa;border:1px solid #334155}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-free{background:rgba(34,197,94,0.15);color:#4ade80}
+.badge-paid{background:rgba(239,68,68,0.15);color:#f87171}
+.badge-blue{background:rgba(59,130,246,0.15);color:#60a5fa}
+.badge-purple{background:rgba(168,85,247,0.15);color:#c084fc}
+.badge-amber{background:rgba(245,158,11,0.15);color:#fbbf24}
+.alert{padding:16px 20px;border-radius:12px;border-left:4px solid;margin-bottom:20px;font-size:13px;line-height:1.7}
+.alert-title{font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.alert-info{background:rgba(59,130,246,0.1);border-color:#3b82f6}.alert-info .alert-title{color:#60a5fa}
+.alert-success{background:rgba(34,197,94,0.1);border-color:#22c55e}.alert-success .alert-title{color:#4ade80}
+.alert-warning{background:rgba(245,158,11,0.1);border-color:#f59e0b}.alert-warning .alert-title{color:#fbbf24}
+.alert-danger{background:rgba(239,68,68,0.1);border-color:#ef4444}.alert-danger .alert-title{color:#f87171}
+.step-list{display:flex;flex-direction:column;gap:12px}
+.step-item{display:flex;gap:16px;padding:16px;background:#1e293b;border-radius:12px;border:1px solid #334155;align-items:flex-start}
+.step-num{width:32px;height:32px;border-radius:10px;background:rgba(59,130,246,0.15);color:#60a5fa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.step-content{flex:1}
+.step-title{font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.step-desc{font-size:13px;color:#94a3b8;line-height:1.6}
+.flow-vertical{display:flex;flex-direction:column;gap:0;align-items:center;margin-bottom:20px}
+.flow-box{width:100%;max-width:900px;border-radius:12px;padding:18px 24px;border:2px solid}
+.flow-box-title{font-size:15px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.flow-box-content{font-size:13px;color:#94a3b8;line-height:1.7}
+.flow-box-content code{background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-family:'Fira Code','Consolas',monospace;font-size:11px;color:#a78bfa}
+.flow-connector{width:3px;height:28px;background:#334155}
+.box-blue{background:rgba(59,130,246,0.08);border-color:#3b82f6}.box-blue .flow-box-title{color:#60a5fa}
+.box-purple{background:rgba(168,85,247,0.08);border-color:#a855f7}.box-purple .flow-box-title{color:#c084fc}
+.box-green{background:rgba(34,197,94,0.08);border-color:#22c55e}.box-green .flow-box-title{color:#4ade80}
+.box-amber{background:rgba(245,158,11,0.08);border-color:#f59e0b}.box-amber .flow-box-title{color:#fbbf24}
+.box-teal{background:rgba(20,184,166,0.08);border-color:#14b8a6}.box-teal .flow-box-title{color:#2dd4bf}
+.box-red{background:rgba(239,68,68,0.08);border-color:#ef4444}.box-red .flow-box-title{color:#f87171}
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tag{display:inline-flex;align-items:center;gap:5px;background:#1e293b;border:1px solid #334155;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;color:#94a3b8}
+.tag i{font-size:10px}
+.tag-blue{border-color:rgba(59,130,246,0.3);color:#60a5fa}.tag-green{border-color:rgba(34,197,94,0.3);color:#4ade80}.tag-purple{border-color:rgba(168,85,247,0.3);color:#c084fc}.tag-amber{border-color:rgba(245,158,11,0.3);color:#fbbf24}
+.toc{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:24px;margin-bottom:40px}
+.toc-title{font-size:16px;font-weight:800;color:#f1f5f9;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.toc-title i{color:#60a5fa}
+.toc-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toc-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;text-decoration:none;color:#94a3b8;font-size:13px;font-weight:600;transition:all 0.2s}
+.toc-item:hover{background:rgba(59,130,246,0.1);color:#60a5fa}
+.toc-item i{font-size:14px;width:20px;text-align:center}
+.toc-item .num{background:rgba(59,130,246,0.15);color:#60a5fa;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.note-box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;margin-bottom:20px}
+.note-title{font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.note-title i{color:#fbbf24}
+.note-content{font-size:13px;color:#94a3b8;line-height:1.7}
+.colab-card{background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #f59e0b;border-radius:14px;padding:24px;margin-bottom:20px}
+.colab-card .card-header i{color:#f59e0b}
+.timeline-item{display:flex;gap:16px;position:relative}
+.timeline-line{width:3px;background:linear-gradient(180deg,#3b82f6,#a855f7);position:absolute;left:15px;top:40px;bottom:0}
+.timeline-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;position:relative;z-index:1}
+.timeline-content{flex:1;padding-bottom:24px}
+.timeline-title{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.timeline-desc{font-size:13px;color:#94a3b8;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- HERO -->
+<!-- ============================================================ -->
+<div class="hero">
+  <div class="hero-badge"><i class="fas fa-brain"></i> Complete Training Guide</div>
+  <h1><i class="fas fa-robot"></i> Model Training Guide</h1>
+  <p>Step-by-step instructions for training all three models: VOSK (STT), Gemma (LLM), and Piper (TTS). From zero to a fully custom Hindi voice assistant.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><i class="fas fa-microphone"></i> VOSK — Speech-to-Text</div>
+    <div class="hero-meta-item"><i class="fas fa-brain"></i> Gemma — Language Model</div>
+    <div class="hero-meta-item"><i class="fas fa-volume-up"></i> Piper — Text-to-Speech</div>
+    <div class="hero-meta-item"><i class="fas fa-rupee-sign"></i> ₹0 Cost</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS -->
+<!-- ============================================================ -->
+<div class="toc">
+  <div class="toc-title"><i class="fas fa-list"></i> Table of Contents</div>
+  <div class="toc-list">
+    <a href="#part1" class="toc-item"><span class="num">1</span> <i class="fas fa-closed-captioning"></i> Train VOSK (Speech-to-Text)</a>
+    <a href="#part2" class="toc-item"><span class="num">2</span> <i class="fas fa-brain"></i> Train Gemma (LLM)</a>
+    <a href="#part3" class="toc-item"><span class="num">3</span> <i class="fas fa-volume-up"></i> Train Piper (TTS)</a>
+    <a href="#part4" class="toc-item"><span class="num">4</span> <i class="fab fa-google"></i> Google Colab Notebooks</a>
+    <a href="#part5" class="toc-item"><span class="num">5</span> <i class="fas fa-calendar-alt"></i> Timeline &amp; Cost</a>
+    <a href="#part6" class="toc-item"><span class="num">6</span> <i class="fas fa-wrench"></i> Common Issues &amp; Fixes</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STATS OVERVIEW -->
+<!-- ============================================================ -->
+<div class="grid-4">
+  <div class="stat-card blue">
+    <i class="fas fa-closed-captioning"></i>
+    <div class="stat-value">VOSK</div>
+    <div class="stat-label">Speech-to-Text</div>
+  </div>
+  <div class="stat-card purple">
+    <i class="fas fa-brain"></i>
+    <div class="stat-value">Gemma</div>
+    <div class="stat-label">Language Model</div>
+  </div>
+  <div class="stat-card green">
+    <i class="fas fa-volume-up"></i>
+    <div class="stat-value">Piper</div>
+    <div class="stat-label">Text-to-Speech</div>
+  </div>
+  <div class="stat-card amber">
+    <i class="fas fa-rupee-sign"></i>
+    <div class="stat-value">₹0</div>
+    <div class="stat-label">Total Cost</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 1: TRAIN VOSK -->
+<!-- ============================================================ -->
+<div class="section" id="part1">
+  <div class="section-header">
+    <div class="section-icon blue"><i class="fas fa-closed-captioning"></i></div>
+    <div>
+      <div class="section-title">PART 1: Train VOSK (Speech-to-Text)</div>
+      <div class="section-subtitle">Teach VOSK your Hindi bus commands</div>
+    </div>
+  </div>
+
+  <!-- What is VOSK Training? -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-info-circle"></i>
+      <div class="card-title">What is VOSK Training?</div>
+    </div>
+    <div class="card-body">
+      <div class="grid-3" style="margin-bottom:0">
+        <div>
+          <strong style="color:#60a5fa"><i class="fas fa-cogs"></i> Under the Hood</strong><br>
+          VOSK uses <strong>Kaldi</strong> under the hood — the industry-standard open-source speech recognition toolkit used by researchers worldwide.
+        </div>
+        <div>
+          <strong style="color:#c084fc"><i class="fas fa-graduation-cap"></i> What Training Does</strong><br>
+          Training means teaching it <strong>YOUR specific vocabulary</strong> (Hindi bus commands). Pre-trained model understands general Hindi, but not bus-specific terms.
+        </div>
+        <div>
+          <strong style="color:#4ade80"><i class="fas fa-bullseye"></i> Goal</strong><br>
+          A model that accurately recognizes words like <code>"Delhi se Jaipur"</code>, <code>"window seat"</code>, <code>"kitne baje"</code> — bus-specific Hindi.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOSK Architecture Flow -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-project-diagram"></i>
+      <div class="card-title">How VOSK Training Works</div>
+    </div>
+    <div class="card-body">
+      <div class="flow-vertical">
+        <div class="flow-box box-blue">
+          <div class="flow-box-title"><i class="fas fa-microphone"></i> Raw Audio</div>
+          <div class="flow-box-content">Record 100+ Hindi bus commands as WAV files (16kHz, mono)</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-purple">
+          <div class="flow-box-title"><i class="fas fa-file-alt"></i> Transcripts</div>
+          <div class="flow-box-content">Create text transcripts for each audio file: <code>utt001 delhi se jaipur jana hai</code></div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-green">
+          <div class="flow-box-title"><i class="fas fa-book"></i> Vocabulary + Language Model</div>
+          <div class="flow-box-content">Build vocab list + FST language model from text corpus</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-amber">
+          <div class="flow-box-title"><i class="fas fa-brain"></i> Train Acoustic Model</div>
+          <div class="flow-box-content">Kaldi s5 recipe trains the acoustic model on your data</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-teal">
+          <div class="flow-box-title"><i class="fas fa-file-export"></i> Export to VOSK Format</div>
+          <div class="flow-box-content">Convert Kaldi model → VOSK format for real-time inference</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Install Kaldi -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-terminal"></i>
+      <div class="card-title">Step 1: Install Kaldi</div>
+    </div>
+    <div class="card-body">
+      <div class="tag-list">
+        <span class="tag tag-blue"><i class="fab fa-apple"></i> Mac</span>
+        <span class="tag tag-purple"><i class="fab fa-linux"></i> Linux</span>
+      </div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Mac</span>
+brew install sox
+git clone https://github.com/kaldi-asr/kaldi
+<span class="c-keyword">cd</span> kaldi/tools
+./extras/make_dependencies.sh
+<span class="c-keyword">cd</span> ../src
+./configure
+make -j
+
+<span class="c-comment"># Linux (Ubuntu/Debian)</span>
+sudo apt-get install sox libatlas-base-dev
+git clone https://github.com/kaldi-asr/kaldi
+<span class="c-keyword">cd</span> kaldi/tools
+./extras/make_dependencies.sh
+<span class="c-keyword">cd</span> ../src
+./configure
+make -j</div>
+
+      <div class="alert alert-warning">
+        <div class="alert-title"><i class="fas fa-exclamation-triangle"></i> Build Time Warning</div>
+        Kaldi compilation takes 30-60 minutes depending on your machine. Go grab a chai — it's worth the wait.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Create Training Data -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-database"></i>
+      <div class="card-title">Step 2: Create Training Data</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px">Record <strong>100+ Hindi bus commands</strong> as WAV files and create text transcripts for each.</p>
+
+      <div class="alert alert-info">
+        <div class="alert-title"><i class="fas fa-info-circle"></i> Audio Requirements</div>
+        Format: WAV, Sample Rate: 16kHz, Channels: Mono (16-bit PCM). Use Audacity or any phone recorder app.
+      </div>
+
+      <p style="margin-bottom:8px"><strong>Transcript Format:</strong> <code>utt_id transcript</code></p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-alt"></i> transcripts.txt</div>
+      </div>
+      <div class="code-block">utt001 delhi se jaipur jana hai
+utt002 window seat chahiye
+utt003 kitne baje ki bus hai
+utt004 ac volvo book karni hai
+utt005 mera ticket cancel karo
+utt006 bus kahan hai abhi
+utt007 payment upi se karunga
+utt008 lower deck seat do
+utt009 kal subah ki bus chahiye
+utt010 refund kab milega</div>
+
+      <div class="grid-2" style="margin-top:16px;margin-bottom:0">
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-lightbulb"></i> Recording Tips</div>
+          <div class="note-content">
+            • Speak naturally, like you're talking to a friend<br>
+            • Vary your tone and speed<br>
+            • Record in a quiet room (minimal background noise)<br>
+            • Each command: 2-5 seconds duration
+          </div>
+        </div>
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-list-ol"></i> What to Record</div>
+          <div class="note-content">
+            • Bus search commands (city, date, time)<br>
+            • Seat preference (window, upper, lower)<br>
+            • Payment related (UPI, card, cash)<br>
+            • Status queries (bus location, ETA)<br>
+            • Cancellation &amp; refund requests
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Create Vocabulary -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-spell-check"></i>
+      <div class="card-title">Step 3: Create Vocabulary</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:8px">List all unique words from your transcripts. This is the vocabulary VOSK will recognize.</p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-alt"></i> vocab.txt</div>
+      </div>
+      <div class="code-block">&lt;SPK&gt;
+delhi
+se
+jaipur
+jana
+hai
+window
+seat
+chahiye
+kitne
+baje
+ki
+bus
+ac
+volvo
+book
+karni
+mera
+ticket
+cancel
+karo
+kahan
+abhi
+payment
+upi
+karunga
+lower
+deck
+kal
+subah
+refund
+kab
+milega
+rupaye
+hain</div>
+
+      <div class="alert alert-info">
+        <div class="alert-title"><i class="fas fa-info-circle"></i> Vocab Size</div>
+        Aim for 200-500 unique words. Too few = poor recognition. Too many = slower performance. Bus domain is narrow enough to keep it manageable.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Create Language Model -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-project-diagram"></i>
+      <div class="card-title">Step 4: Create Language Model</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:8px">Use SRILM or OpenGrm to create an FST language model from your text corpus.</p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash — SRILM</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Install SRILM</span>
+brew install srilm  <span class="c-comment"># Mac</span>
+sudo apt-get install srilm  <span class="c-comment"># Linux</span>
+
+<span class="c-comment"># Create n-gram counts</span>
+ngram-count -text corpus.txt -order <span class="c-number">3</span> -write vocab.count
+
+<span class="c-comment"># Build language model (ARPA format)</span>
+ngram-count -text corpus.txt -order <span class="c-number">3</span> -vocab vocab.txt \
+  -lm lang.arpa
+
+<span class="c-comment"># Convert to FST format for Kaldi</span>
+arpa2fst --disambig-symbol=<span class="c-number">0</span> \
+  --read-symbol-table=words.txt \
+  lang.arpa graph/LG.fst</div>
+
+      <div class="code-block-header" style="margin-top:16px">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash — OpenGrm (Alternative)</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Install OpenGrm</span>
+brew install opengrm-ngram  <span class="c-comment"># Mac</span>
+
+<span class="c-comment"># Build language model</span>
+ngramcount -o <span class="c-number">3</span> corpus.txt corpus.cnt
+ngrammake corpus.cnt lang.fst</div>
+    </div>
+  </div>
+
+  <!-- Step 5: Train Acoustic Model -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-brain"></i>
+      <div class="card-title">Step 5: Train Acoustic Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash — Kaldi s5 Recipe</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">cd</span> kaldi/egs/your_dataset
+
+<span class="c-comment"># Copy your data into the recipe structure</span>
+mkdir -p data/train data/test
+cp transcripts.txt data/train/text
+cp *.wav data/train/wav.scp
+
+<span class="c-comment"># Prepare data directory</span>
+utils/prepare_lang.sh data/local/lang <span class="c-string">"&lt;SPK&gt;"</span> \
+  data/local/langtmp data/lang
+
+<span class="c-comment"># Run training (includes feature extraction + monophone + triphone)</span>
+./run.sh
+
+<span class="c-comment"># Training outputs to:</span>
+<span class="c-comment"># exp/mono/ — Monophone model</span>
+<span class="c-comment"># exp/tri1/ — Triphone model (better accuracy)</span></div>
+
+      <div class="alert alert-success">
+        <div class="alert-title"><i class="fas fa-check-circle"></i> Training Time</div>
+        On a modern Mac/Linux machine: 10-30 minutes for 100 utterances. On Google Colab with T4 GPU: 5-15 minutes.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: Export to VOSK Format -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-file-export"></i>
+      <div class="card-title">Step 6: Export to VOSK Format</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Install VOSK</span>
+pip install vosk
+
+<span class="c-comment"># Convert Kaldi model to VOSK format</span>
+python3 -c "
+<span class="c-keyword">from</span> vosk <span class="c-keyword">import</span> Model, KaldiRecognizer
+<span class="c-keyword">import</span> json
+
+<span class="c-comment"># VOSK expects these files in the model directory:</span>
+<span class="c-comment">#   - final.mdl (acoustic model)</span>
+<span class="c-comment">#   - HCLr.fst (hetero cloud lexicon)</span>
+<span class="c-comment">#   - LG.fst (language model)</span>
+<span class="c-comment">#   - words.txt (word symbol table)</span>
+<span class="c-comment">#   - am/final.mdl</span>
+
+<span class="c-comment"># Copy files to vosk_model directory</span>
+<span class="c-keyword">import</span> shutil, os
+os.makedirs(<span class="c-string">'vosk_model/am'</span>, exist_ok=True)
+shutil.copy(<span class="c-string">'exp/tri1/final.mdl'</span>, <span class="c-string">'vosk_model/am/final.mdl'</span>)
+shutil.copy(<span class="c-string">'graph/HCLr.fst'</span>, <span class="c-string">'vosk_model/HCLr.fst'</span>)
+shutil.copy(<span class="c-string">'graph/LG.fst'</span>, <span class="c-string">'vosk_model/LG.fst'</span>)
+shutil.copy(<span class="c-string">'data/lang/words.txt'</span>, <span class="c-string">'vosk_model/words.txt'</span>)
+shutil.copy(<span class="c-string">'exp/tri1/tree'</span>, <span class="c-string">'vosk_model/tree'</span>)
+print(<span class="c-string">'Model exported to vosk_model/'</span>)
+"</div>
+    </div>
+  </div>
+
+  <!-- Step 7: Test -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-play-circle"></i>
+      <div class="card-title">Step 7: Test Your VOSK Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">from</span> vosk <span class="c-keyword">import</span> Model, KaldiRecognizer
+<span class="c-keyword">import</span> wave
+
+<span class="c-comment"># Load your custom model</span>
+model = Model(<span class="c-string">"vosk_model"</span>)
+rec = KaldiRecognizer(model, <span class="c-number">16000</span>)
+
+<span class="c-comment"># Test with audio file</span>
+wf = wave.open(<span class="c-string">"test_audio.wav"</span>, <span class="c-string">"rb"</span>)
+
+<span class="c-keyword">while</span> <span class="c-builtin">True</span>:
+    data = wf.readframes(<span class="c-number">4000</span>)
+    <span class="c-keyword">if</span> <span class="c-builtin">len</span>(data) == <span class="c-number">0</span>:
+        <span class="c-keyword">break</span>
+    <span class="c-keyword">if</span> rec.AcceptWaveform(data):
+        result = <span class="c-builtin">eval</span>(rec.Result())
+        <span class="c-builtin">print</span>(<span class="c-string">"Recognized:"</span>, result[<span class="c-string">"text"</span>])
+
+<span class="c-comment"># Final result</span>
+final = <span class="c-builtin">eval</span>(rec.FinalResult())
+<span class="c-builtin">print</span>(<span class="c-string">"Final:"</span>, final[<span class="c-string">"text"</span>])</div>
+    </div>
+  </div>
+
+  <!-- Easier Alternative -->
+  <div class="card" style="border-color:#f59e0b">
+    <div class="card-header">
+      <i class="fas fa-magic" style="color:#fbbf24"></i>
+      <div class="card-title" style="color:#fbbf24">Easier Alternative: Fine-tune Existing VOSK Model</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px">Skip the full Kaldi training pipeline. Start with a pre-trained Hindi model and add custom vocabulary:</p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Download Pre-trained Model</div>
+            <div class="step-desc"><code>vosk-model-small-hi-0.22</code> — lightweight Hindi model (~40MB)</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Add Custom Vocabulary</div>
+            <div class="step-desc">Extend the model's vocabulary with bus-specific words using VOSK's grammar feature</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Retrain with Bus Command Data</div>
+            <div class="step-desc">Fine-tune on your 100+ bus command recordings for domain-specific accuracy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block-header" style="margin-top:16px">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python — Grammar Feature</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># VOSK grammar feature — limit recognition to known words</span>
+<span class="c-keyword">from</span> vosk <span class="c-keyword">import</span> Model, KaldiRecognizer
+
+model = Model(<span class="c-string">"vosk-model-small-hi-0.22"</span>)
+
+<span class="c-comment"># Define grammar (list of expected words/phrases)</span>
+grammar = [
+    <span class="c-string">"delhi"</span>, <span class="c-string">"jaipur"</span>, <span class="c-string">"mumbai"</span>, <span class="c-string">"bus"</span>,
+    <span class="c-string">"window seat"</span>, <span class="c-string">"upper deck"</span>, <span class="c-string">"lower deck"</span>,
+    <span class="c-string">"ac"</span>, <span class="c-string">"non ac"</span>, <span class="c-string">"volvo"</span>, <span class="c-string">"sleeper"</span>,
+    <span class="c-string">"book"</span>, <span class="c-string">"cancel"</span>, <span class="c-string">"ticket"</span>, <span class="c-string">"payment"</span>,
+    <span class="c-string">"upi"</span>, <span class="c-string">"kitne baje"</span>, <span class="c-string">"kab"</span>, <span class="c-string">"kahan"</span>
+]
+
+rec = KaldiRecognizer(model, <span class="c-number">16000</span>)
+rec.SetGrammar(grammar)
+
+<span class="c-comment"># Now recognition is constrained to bus-related words</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 2: TRAIN GEMMA -->
+<!-- ============================================================ -->
+<div class="section" id="part2">
+  <div class="section-header">
+    <div class="section-icon purple"><i class="fas fa-brain"></i></div>
+    <div>
+      <div class="section-title">PART 2: Train Gemma (LLM)</div>
+      <div class="section-subtitle">Fine-tune Gemma on Hindi bus conversations</div>
+    </div>
+  </div>
+
+  <!-- What is Gemma Fine-tuning? -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-info-circle"></i>
+      <div class="card-title">What is Gemma Fine-tuning?</div>
+    </div>
+    <div class="card-body">
+      <div class="grid-3" style="margin-bottom:0">
+        <div>
+          <strong style="color:#60a5fa"><i class="fas fa-globe"></i> Pre-trained Gemma</strong><br>
+          Gemma is pre-trained on general internet text. It knows a lot about everything, but nothing specific about bus booking.
+        </div>
+        <div>
+          <strong style="color:#c084fc"><i class="fas fa-graduation-cap"></i> Fine-tuning</strong><br>
+          Fine-tuning teaches it <strong>YOUR specific conversations</strong> (Hindi bus booking). It learns the patterns, responses, and context of your domain.
+        </div>
+        <div>
+          <strong style="color:#4ade80"><i class="fas fa-microchip"></i> LoRA</strong><br>
+          Uses <strong>LoRA (Low-Rank Adaptation)</strong> — only trains a small adapter (~50MB), not the whole model (~2GB). Saves time, memory, and disk space.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gemma Training Flow -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-project-diagram"></i>
+      <div class="card-title">How Gemma Fine-tuning Works</div>
+    </div>
+    <div class="card-body">
+      <div class="flow-vertical">
+        <div class="flow-box box-blue">
+          <div class="flow-box-title"><i class="fas fa-file-code"></i> Training Dataset (JSONL)</div>
+          <div class="flow-box-content">200+ Hindi bus conversation pairs: <code>{"instruction": "Delhi se Jaipur", "response": "Kab jana hai?"}</code></div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-purple">
+          <div class="flow-box-title"><i class="fas fa-cube"></i> Gemma 2B (4-bit Quantized)</div>
+          <div class="flow-box-content">Load pre-trained model with BitsAndBytes 4-bit quantization — fits in 6GB VRAM</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-green">
+          <div class="flow-box-title"><i class="fas fa-link"></i> LoRA Adapter</div>
+          <div class="flow-box-content">Attach trainable LoRA layers to attention projections — only ~50MB of trainable params</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-amber">
+          <div class="flow-box-title"><i class="fas fa-fire"></i> Train (3 epochs)</div>
+          <div class="flow-box-content">SFTTrainer fine-tunes on bus conversations — 1-2 hours on T4 GPU</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-teal">
+          <div class="flow-box-title"><i class="fas fa-file-export"></i> Export to GGUF → Ollama</div>
+          <div class="flow-box-content">Merge LoRA → Convert to GGUF (Q4_0) → Import into Ollama for local inference</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Install Dependencies -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-download"></i>
+      <div class="card-title">Step 1: Install Dependencies</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block">pip install transformers peft bitsandbytes datasets accelerate trl
+<span class="c-comment"># transformers — HuggingFace model loading</span>
+<span class="c-comment"># peft — LoRA adapter framework</span>
+<span class="c-comment"># bitsandbytes — 4-bit quantization</span>
+<span class="c-comment"># datasets — HuggingFace dataset loading</span>
+<span class="c-comment"># accelerate — multi-GPU/distributed training</span>
+<span class="c-comment"># trl — SFTTrainer for fine-tuning</span></div>
+    </div>
+  </div>
+
+  <!-- Step 2: Create Training Dataset -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-database"></i>
+      <div class="card-title">Step 2: Create Training Dataset</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:8px">JSONL format with Hindi bus conversations. <strong>Aim for 200+ examples</strong> covering all scenarios.</p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-code"></i> bus_conversations.jsonl</div>
+      </div>
+      <div class="code-block">{"instruction": "Delhi se Jaipur jana hai", "response": "Aapko kab jana hai? Kal ya parson?"}
+{"instruction": "Window seat chahiye", "response": "Kaunsi bus mein? AC ya Non-AC?"}
+{"instruction": "Kitne rupaye hain?", "response": "AC Volvo 850, Non-AC 450 rupaye hain."}
+{"instruction": "Bus kitne baje ki hai?", "response": "Subah 6 baje aur shaam 7 baje."}
+{"instruction": "Booking cancel karo", "response": "Booking cancel ho gayi. Refund 3-5 din mein aayega."}
+{"instruction": "Mumbai se Pune jaana hai", "response": "Aapko kis date ko travel karna hai?"}
+{"instruction": "Upper deck pe do seat chahiye", "response": "2 upper deck seats available hain. Confirm karein?"}
+{"instruction": "Payment UPI se karunga", "response": "Theek hai, UPI payment ka option ready hai."}
+{"instruction": "Bus kahan hai abhi?", "response": "Aapki bus Delhi ISBT se nikal chuki hai, ETA 45 min."}
+{"instruction": "Mera ticket dikhao", "response": "Aapka ticket hai: Delhi → Jaipur, 15 May, Seat 23A, AC Volvo."}</div>
+
+      <div class="alert alert-info" style="margin-top:12px">
+        <div class="alert-title"><i class="fas fa-info-circle"></i> Dataset Categories (200+ examples)</div>
+        <div class="grid-2" style="margin-bottom:0;margin-top:8px">
+          <div>
+            <strong>Bus Search:</strong> City, date, time queries<br>
+            <strong>Seat Selection:</strong> Window, upper, lower, AC<br>
+            <strong>Payment:</strong> UPI, card, cash, confirmation
+          </div>
+          <div>
+            <strong>Status Check:</strong> Bus location, ETA, delay<br>
+            <strong>Cancellation:</strong> Cancel request, refund status<br>
+            <strong>Fallback:</strong> General questions, greetings
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Load Gemma Model -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-cube"></i>
+      <div class="card-title">Step 3: Load Gemma Model (4-bit Quantized)</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">from</span> transformers <span class="c-keyword">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+<span class="c-keyword">import</span> torch
+
+<span class="c-comment"># 4-bit quantization config — reduces model from ~5GB to ~1.5GB</span>
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=<span class="c-builtin">True</span>,
+    bnb_4bit_quant_type=<span class="c-string">"nf4"</span>,
+    bnb_4bit_compute_dtype=torch.float16,
+    bnb_4bit_use_double_quant=<span class="c-builtin">True</span>
+)
+
+<span class="c-comment"># Load Gemma 2B with quantization</span>
+model = AutoModelForCausalLM.from_pretrained(
+    <span class="c-string">"google/gemma-2b-it"</span>,
+    quantization_config=bnb_config,
+    device_map=<span class="c-string">"auto"</span>
+)
+
+tokenizer = AutoTokenizer.from_pretrained(<span class="c-string">"google/gemma-2b-it"</span>)
+tokenizer.pad_token = tokenizer.eos_token
+
+<span class="c-comment"># Verify it loaded</span>
+<span class="c-builtin">print</span>(<span class="c-string">f"Model loaded: </span>{model.num_parameters()<span class="c-string">/1e9:.1f}B params"</span>)
+<span class="c-builtin">print</span>(<span class="c-string">f"Memory: </span>{torch.cuda.memory_allocated()<span class="c-string">/1e9:.2f}GB"</span>)</div>
+
+      <div class="grid-2" style="margin-bottom:0;margin-top:12px">
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-memory"></i> Memory Requirements</div>
+          <div class="note-content">
+            <strong>Gemma 2B (4-bit):</strong> ~1.5GB VRAM<br>
+            <strong>Gemma 2B (full):</strong> ~5GB VRAM<br>
+            <strong>With LoRA training:</strong> ~4GB VRAM<br>
+            Fits on T4 GPU (16GB) easily
+          </div>
+        </div>
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-shield-alt"></i> Access Required</div>
+          <div class="note-content">
+            Gemma requires HuggingFace access. Go to <code>huggingface.co/google/gemma-2b-it</code>, accept the license, and use your HF token:<br>
+            <code>huggingface-cli login</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Configure LoRA -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-sliders-h"></i>
+      <div class="card-title">Step 4: Configure LoRA</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">from</span> peft <span class="c-keyword">import</span> LoraConfig, get_peft_model, prepare_model_for_kbit_training
+
+<span class="c-comment"># Prepare model for k-bit training (required for 4-bit models)</span>
+model = prepare_model_for_kbit_training(model)
+
+<span class="c-comment"># LoRA configuration</span>
+lora_config = LoraConfig(
+    r=<span class="c-number">16</span>,                    <span class="c-comment"># Rank — higher = more capacity, more VRAM</span>
+    lora_alpha=<span class="c-number">32</span>,            <span class="c-comment"># Scaling factor</span>
+    target_modules=[
+        <span class="c-string">"q_proj"</span>,             <span class="c-comment"># Query projection</span>
+        <span class="c-string">"k_proj"</span>,             <span class="c-comment"># Key projection</span>
+        <span class="c-string">"v_proj"</span>,             <span class="c-comment"># Value projection</span>
+        <span class="c-string">"o_proj"</span>              <span class="c-comment"># Output projection</span>
+    ],
+    lora_dropout=<span class="c-number">0.05</span>,        <span class="c-comment"># Dropout for regularization</span>
+    bias=<span class="c-string">"none"</span>,
+    task_type=<span class="c-string">"CAUSAL_LM"</span>
+)
+
+<span class="c-comment"># Apply LoRA to model</span>
+model = get_peft_model(model, lora_config)
+
+<span class="c-comment"># Check trainable parameters</span>
+model.print_trainable_parameters()
+<span class="c-comment"># Output: trainable params: 4,718,592 || all params: 2,507,599,872 || 0.19%</span></div>
+
+      <div class="alert alert-info">
+        <div class="alert-title"><i class="fas fa-info-circle"></i> Why LoRA?</div>
+        Full fine-tuning of Gemma 2B would require ~8GB VRAM and hours of training. LoRA trains only <strong>0.19%</strong> of parameters (~4.7M), reducing VRAM to ~4GB and training time to ~1 hour. The adapter weights are only ~20MB.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Create Training Function -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-fire"></i>
+      <div class="card-title">Step 5: Train the Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">from</span> trl <span class="c-keyword">import</span> SFTTrainer
+<span class="c-keyword">from</span> transformers <span class="c-keyword">import</span> TrainingArguments
+<span class="c-keyword">from</span> datasets <span class="c-keyword">import</span> load_dataset
+
+<span class="c-comment"># Load dataset</span>
+dataset = load_dataset(<span class="c-string">"json"</span>, data_files=<span class="c-string">"bus_conversations.jsonl"</span>, split=<span class="c-string">"train"</span>)
+
+<span class="c-comment"># Training arguments</span>
+training_args = TrainingArguments(
+    output_dir=<span class="c-string">"./gemma-bus-sahayak"</span>,
+    num_train_epochs=<span class="c-number">3</span>,
+    per_device_train_batch_size=<span class="c-number">4</span>,
+    gradient_accumulation_steps=<span class="c-number">4</span>,
+    learning_rate=<span class="c-number">2e-4</span>,
+    fp16=<span class="c-builtin">True</span>,
+    save_steps=<span class="c-number">100</span>,
+    logging_steps=<span class="c-number">10</span>,
+    max_grad_norm=<span class="c-number">0.3</span>,
+    warmup_ratio=<span class="c-number">0.03</span>,
+    optim=<span class="c-string">"paged_adamw_8bit"</span>,
+    report_to=<span class="c-string">"none"</span>
+)
+
+<span class="c-comment"># SFTTrainer — Supervised Fine-Tuning Trainer</span>
+trainer = SFTTrainer(
+    model=model,
+    train_dataset=dataset,
+    args=training_args,
+    dataset_text_field=<span class="c-string">"text"</span>,
+    max_seq_length=<span class="c-number">512</span>,
+    packing=<span class="c-builtin">True</span>  <span class="c-comment"># Packs short examples together — 2x faster training</span>
+)
+
+<span class="c-comment"># Start training!</span>
+trainer.train()
+
+<span class="c-comment"># Training time: ~1-2 hours on T4 GPU</span>
+<span class="c-comment"># Loss should decrease from ~2.5 to ~0.8</span></div>
+    </div>
+  </div>
+
+  <!-- Step 6: Save & Export -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-save"></i>
+      <div class="card-title">Step 6: Save & Export</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python — Save LoRA Adapter</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Save LoRA adapter (~20MB)</span>
+model.save_pretrained(<span class="c-string">"./gemma-bus-lora"</span>)
+tokenizer.save_pretrained(<span class="c-string">"./gemma-bus-lora"</span>)
+
+<span class="c-comment"># Reload later:</span>
+<span class="c-comment"># from peft import PeftModel</span>
+<span class="c-comment"># model = PeftModel.from_pretrained(base_model, "./gemma-bus-lora")</span></div>
+
+      <div class="code-block-header" style="margin-top:16px">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash — Convert to GGUF for Ollama</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Clone llama.cpp for GGUF conversion</span>
+git clone https://github.com/ggerganov/llama.cpp
+<span class="c-keyword">cd</span> llama.cpp
+
+<span class="c-comment"># Merge LoRA adapter with base model</span>
+python convert_hf_to_gguf.py \
+  --outfile gemma-bus-q4_0.gguf \
+  --outtype q4_0 \
+  /path/to/merged_model
+
+<span class="c-comment"># This creates a ~1.3GB GGUF file (4-bit quantized)</span></div>
+    </div>
+  </div>
+
+  <!-- Step 7: Import to Ollama -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-box"></i>
+      <div class="card-title">Step 7: Import to Ollama</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Create Modelfile for Ollama</span>
+cat > Modelfile << <span class="c-string">'EOF'</span>
+FROM ./gemma-bus-q4_0.gguf
+
+TEMPLATE """{{ .System }}
+{{ .Prompt }}"""
+
+SYSTEM """You are BusSahayak, a Hindi voice assistant for bus booking.
+You help users search buses, book tickets, select seats, check status, and handle cancellations.
+Always respond in Hindi (Hinglish). Be concise and helpful.
+Do not make up bus schedules or prices. If unsure, ask for clarification."""
+
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER repeat_penalty 1.1
+<span class="c-string">EOF</span>
+
+<span class="c-comment"># Create Ollama model</span>
+ollama create gemma-bus -f Modelfile
+
+<span class="c-comment"># Verify</span>
+ollama list | grep gemma-bus</div>
+    </div>
+  </div>
+
+  <!-- Step 8: Test -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-play-circle"></i>
+      <div class="card-title">Step 8: Test Your Gemma Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Test with Ollama</span>
+ollama run gemma-bus <span class="c-string">"Delhi se Jaipur bus chahiye"</span>
+
+<span class="c-comment"># Expected response:</span>
+<span class="c-comment"># "Aapko kab jana hai? Kal ya parson? AC ya Non-AC preference hai?"</span>
+
+<span class="c-comment"># Test via API</span>
+curl http://localhost:<span class="c-number">11434</span>/api/generate -d <span class="c-string">'{
+  "model": "gemma-bus",
+  "prompt": "Mujhe Mumbai se Pune 2 window seat chahiye",
+  "stream": false
+}'</span></div>
+
+      <div class="alert alert-success" style="margin-top:12px">
+        <div class="alert-title"><i class="fas fa-check-circle"></i> Success Criteria</div>
+        Model responds in Hindi, understands bus context, doesn't hallucinate schedules, and gracefully handles out-of-scope questions.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 3: TRAIN PIPER -->
+<!-- ============================================================ -->
+<div class="section" id="part3">
+  <div class="section-header">
+    <div class="section-icon green"><i class="fas fa-volume-up"></i></div>
+    <div>
+      <div class="section-title">PART 3: Train Piper (TTS)</div>
+      <div class="section-subtitle">Teach Piper to speak in your voice</div>
+    </div>
+  </div>
+
+  <!-- What is Piper Training? -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-info-circle"></i>
+      <div class="card-title">What is Piper Training?</div>
+    </div>
+    <div class="card-body">
+      <div class="grid-3" style="margin-bottom:0">
+        <div>
+          <strong style="color:#60a5fa"><i class="fas fa-wave-square"></i> Under the Hood</strong><br>
+          Piper uses <strong>VITS</strong> (Variational Inference with adversarial learning for end-to-end Text-to-Speech) — state-of-the-art neural TTS.
+        </div>
+        <div>
+          <strong style="color:#c084fc"><i class="fas fa-user-microphone"></i> What Training Does</strong><br>
+          Training means teaching it to speak in <strong>YOUR voice</strong>. You record 50-100 sentences, and the model learns your voice characteristics.
+        </div>
+        <div>
+          <strong style="color:#4ade80"><i class="fas fa-bolt"></i> Why Piper?</strong><br>
+          Ultra-fast inference (~50ms per sentence), runs on CPU, produces natural-sounding Hindi speech. Perfect for offline voice assistants.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Piper Training Flow -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-project-diagram"></i>
+      <div class="card-title">How Piper Training Works</div>
+    </div>
+    <div class="card-body">
+      <div class="flow-vertical">
+        <div class="flow-box box-blue">
+          <div class="flow-box-title"><i class="fas fa-microphone"></i> Record Voice (50-100 sentences)</div>
+          <div class="flow-box-content">WAV format, 22050Hz mono, each sentence 3-10 seconds. Clear audio, no background noise.</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-purple">
+          <div class="flow-box-title"><i class="fas fa-file-csv"></i> Create Metadata (metadata.csv)</div>
+          <div class="flow-box-content">Map each audio file to its transcript: <code>recording_001|Namaste, main aapka voice assistant hoon.</code></div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-green">
+          <div class="flow-box-title"><i class="fas fa-cog"></i> Configure Training (config.json)</div>
+          <div class="flow-box-content">Set language (hi), sample rate, model architecture, and character set</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-amber">
+          <div class="flow-box-title"><i class="fas fa-fire"></i> Train VITS Model</div>
+          <div class="flow-box-content">Coqui TTS trainer — 1-4 hours on T4 GPU depending on data size</div>
+        </div>
+        <div class="flow-connector"></div>
+        <div class="flow-box box-teal">
+          <div class="flow-box-title"><i class="fas fa-file-export"></i> Export to ONNX → Piper</div>
+          <div class="flow-box-content">Convert to ONNX format for ultra-fast CPU inference (~50ms per sentence)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Install Coqui TTS -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-download"></i>
+      <div class="card-title">Step 1: Install Coqui TTS</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block">pip install TTS
+
+<span class="c-comment"># Verify installation</span>
+tts --list_models | grep vits
+
+<span class="c-comment"># Also install Piper CLI (for inference)</span>
+pip install piper-tts</div>
+    </div>
+  </div>
+
+  <!-- Step 2: Record Your Voice -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-microphone"></i>
+      <div class="card-title">Step 2: Record Your Voice</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px">Record <strong>50-100 Hindi sentences</strong>. Use your phone voice recorder in a quiet room.</p>
+
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-check-circle" style="color:#4ade80"></i> Audio Requirements</div>
+          <div class="note-content">
+            • Format: WAV<br>
+            • Sample Rate: 22050Hz<br>
+            • Channels: Mono<br>
+            • Duration: 3-10 seconds per sentence<br>
+            • No background noise or echo
+          </div>
+        </div>
+        <div class="note-box">
+          <div class="note-title"><i class="fas fa-microphone" style="color:#60a5fa"></i> Recording Tips</div>
+          <div class="note-content">
+            • Speak naturally, at your normal pace<br>
+            • Vary your tone across recordings<br>
+            • Record 5-10 sentences per session<br>
+            • Use a pop filter if available<br>
+            • Stay consistent with distance from mic
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-bottom:8px"><strong>Example sentences to record:</strong></p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-alt"></i> sentences.txt — Record These</div>
+      </div>
+      <div class="code-block">Namaste, main aapka voice assistant hoon.
+Aapko kahan jana hai?
+Bus kitne baje ki hai?
+Window seat available hai.
+Booking confirm ho gayi.
+Kitne rupaye hain ticket ke?
+Payment kaise karenge?
+Aapka ticket book ho gaya.
+Safe travel kijiye.
+Dhanyavaad.
+Delhi se Jaipur ki bus hai kya?
+AC bus chahiye ya Non-AC?
+Upper deck ya lower deck?
+Refund kab milega?
+Bus delay mein hai kya?
+Aapka boarding point kya hai?
+PVR notification bhej do.
+Booking ID kya hai?
+Ek aur ticket book karna hai.</div>
+    </div>
+  </div>
+
+  <!-- Step 3: Create Dataset Structure -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-folder-open"></i>
+      <div class="card-title">Step 3: Create Dataset Structure</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-folder"></i> Directory Structure</div>
+      </div>
+      <div class="code-block">dataset/
+├── wavs/
+│   ├── recording_001.wav
+│   ├── recording_002.wav
+│   ├── recording_003.wav
+│   └── ...
+├── metadata.csv
+└── config.json</div>
+    </div>
+  </div>
+
+  <!-- Step 4: Create metadata.csv -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-file-csv"></i>
+      <div class="card-title">Step 4: Create metadata.csv</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-csv"></i> metadata.csv</div>
+      </div>
+      <div class="code-block">recording_001|Namaste, main aapka voice assistant hoon.
+recording_002|Aapko kahan jana hai?
+recording_003|Bus kitne baje ki hai?
+recording_004|Window seat available hai.
+recording_005|Booking confirm ho gayi.
+recording_006|Kitne rupaye hain ticket ke?
+recording_007|Payment kaise karenge?
+recording_008|Aapka ticket book ho gaya.
+recording_009|Safe travel kijiye.
+recording_010|Dhanyavaad.</div>
+
+      <div class="alert alert-info">
+        <div class="alert-title"><i class="fas fa-info-circle"></i> Format</div>
+        Pipe-separated (<code>|</code>): <code>audio_id|transcription</code>. Audio IDs must match the WAV filenames (without .wav extension).
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Create config.json -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-cog"></i>
+      <div class="card-title">Step 5: Create config.json</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-file-code"></i> config.json</div>
+      </div>
+      <div class="code-block">{
+  <span class="c-string">"dataset_name"</span>: <span class="c-string">"my_voice"</span>,
+  <span class="c-string">"language"</span>: <span class="c-string">"hi"</span>,
+  <span class="c-string">"speaker_wav"</span>: <span class="c-string">"dataset/wavs/recording_001.wav"</span>,
+  <span class="c-string">"audio"</span>: {
+    <span class="c-string">"sample_rate"</span>: <span class="c-number">22050</span>
+  },
+  <span class="c-string">"model"</span>: <span class="c-string">"tts_models/multilingual/multi-dataset/xtts_v2"</span>,
+  <span class="c-string">"characters"</span>: {
+    <span class="c-string">"characters"</span>: <span class="c-string">"abcdefghijklmnopqrstuvwxyz"</span>,
+    <span class="c-string">"punctuations"</span>: <span class="c-string">"!\"',-.:;? "</span>,
+    <span class="c-string">"letters"</span>: <span class="c-string">"ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span>
+  }
+}</div>
+    </div>
+  </div>
+
+  <!-- Step 6: Train Model -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-fire"></i>
+      <div class="card-title">Step 6: Train the Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python — Full Training Script</div>
+      </div>
+      <div class="code-block"><span class="c-keyword">import</span> os
+<span class="c-keyword">from</span> TTS.trainer <span class="c-keyword">import</span> Trainer, InitArgs
+<span class="c-keyword">from</span> TTS.config <span class="c-keyword">import</span> load_config
+<span class="c-keyword">from</span> TTS.tts.datasets <span class="c-keyword">import</span> load_wav_metafile_dataset
+
+<span class="c-comment"># Load config</span>
+config = load_config(<span class="c-string">"config.json"</span>)
+
+<span class="c-comment"># Load dataset</span>
+dataset = load_wav_metafile_dataset(
+    meta_file=os.path.join(<span class="c-string">"dataset"</span>, <span class="c-string">"metadata.csv"</span>),
+    root_dir=<span class="c-string">"dataset"</span>,
+    language=<span class="c-string">"hi"</span>
+)
+
+<span class="c-comment"># Initialize trainer</span>
+trainer = Trainer(
+    config,
+    training_data=dataset,
+    output_path=<span class="c-string">"output/my_voice_model"</span>
+)
+
+<span class="c-comment"># Train!</span>
+trainer.fit()
+
+<span class="c-comment"># Training time: 1-4 hours on T4 GPU</span>
+<span class="c-comment"># Monitor val_loss — should decrease steadily</span></div>
+
+      <div class="alert alert-success" style="margin-top:12px">
+        <div class="alert-title"><i class="fas fa-check-circle"></i> Quick Alternative — Use XTTS v2</div>
+        For faster results, use <strong>XTTS v2</strong> — a multilingual model that supports Hindi out of the box. Fine-tune it with just 10-15 recordings for voice cloning. No need to train from scratch.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7: Export to Piper Format -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-file-export"></i>
+      <div class="card-title">Step 7: Export to ONNX/Piper Format</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-python"></i> python — Export to ONNX</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Convert to ONNX format for Piper inference</span>
+python -m TTS.utils.export_onnx \
+  --config output/my_voice_model/config.json \
+  --checkpoint output/my_voice_model/best_model.pth \
+  --output my_voice.onnx
+
+<span class="c-comment"># This creates:</span>
+<span class="c-comment">#   my_voice.onnx       — Model weights (~50MB)</span>
+<span class="c-comment">#   my_voice.onnx.json  — Model config</span></div>
+
+      <div class="code-block-header" style="margin-top:16px">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash — Using Piper CLI Export</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Alternatively, use piper-tts export</span>
+piper-tts export \
+  --input output/my_voice_model/best_model.pth \
+  --config output/my_voice_model/config.json \
+  --output-dir ./piper_model</div>
+    </div>
+  </div>
+
+  <!-- Step 8: Test -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-play-circle"></i>
+      <div class="card-title">Step 8: Test Your Piper Model</div>
+    </div>
+    <div class="card-body">
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fas fa-terminal"></i> bash</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Generate speech from text</span>
+echo <span class="c-string">"Namaste, main BusSahayak hoon. Aapko kahan jana hai?"</span> | \
+  piper --model my_voice.onnx --output_file test.wav
+
+<span class="c-comment"># Play the audio (Mac)</span>
+afplay test.wav
+
+<span class="c-comment"># Play the audio (Linux)</span>
+aplay test.wav
+
+<span class="c-comment"># Test with Python</span>
+python3 -c "
+<span class="c-keyword">from</span> piper <span class="c-keyword">import</span> PiperVoice
+<span class="c-keyword">import</span> wave
+
+voice = PiperVoice.load(<span class="c-string">"my_voice.onnx"</span>)
+<span class="c-keyword">with</span> wave.open(<span class="c-string">"test.wav"</span>, <span class="c-string">"wb"</span>) <span class="c-keyword">as</span> wav_file:
+    voice.synthesize(
+        <span class="c-string">"Aapka ticket book ho gaya. Safe travel kijiye!"</span>,
+        wav_file
+    )
+<span class="c-builtin">print</span>(<span class="c-string">"Audio saved to test.wav"</span>)
+"</div>
+
+      <div class="alert alert-success" style="margin-top:12px">
+        <div class="alert-title"><i class="fas fa-check-circle"></i> Success Criteria</div>
+        Audio sounds like your voice, Hindi pronunciation is correct, no robotic artifacts, and inference completes in under 100ms.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 4: GOOGLE COLAB NOTEBOOKS -->
+<!-- ============================================================ -->
+<div class="section" id="part4">
+  <div class="section-header">
+    <div class="section-icon amber"><i class="fab fa-google"></i></div>
+    <div>
+      <div class="section-title">PART 4: Google Colab Notebooks</div>
+      <div class="section-subtitle">No GPU? No problem. Train for free on Colab.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning">
+    <div class="alert-title"><i class="fas fa-exclamation-triangle"></i> For users without GPU on their Mac</div>
+    Google Colab provides free T4 GPUs. Upload your data, run the notebook, download the trained model. Session limit: ~12 hours. Save frequently!
+  </div>
+
+  <!-- VOSK Colab -->
+  <div class="colab-card">
+    <div class="card-header">
+      <i class="fas fa-closed-captioning" style="color:#f59e0b"></i>
+      <div class="card-title">VOSK Training Colab Notebook</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px"><strong>Setup:</strong> Enable GPU (Runtime → Change runtime type → T4 GPU)</p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 1: Install Kaldi</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 1: Install dependencies</span>
+!apt-get update && apt-get install -y sox libatlas-base-dev flac
+!pip install vosk
+
+<span class="c-comment"># Clone Kaldi</span>
+!git clone https://github.com/kaldi-asr/kaldi
+!cd kaldi/tools && ./extras/make_dependencies.sh
+!cd kaldi/src && ./configure && make -j4</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 2: Upload & Prepare Data</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 2: Upload your training data</span>
+<span class="c-keyword">from</span> google.colab <span class="c-keyword">import</span> files
+<span class="c-keyword">import</span> zipfile, os
+
+<span class="c-comment"># Upload zip containing wavs + transcripts</span>
+uploaded = files.upload()
+
+<span class="c-comment"># Extract</span>
+<span class="c-keyword">for</span> fn <span class="c-keyword">in</span> uploaded.keys():
+    <span class="c-keyword">if</span> fn.endswith(<span class="c-string">'.zip'</span>):
+        <span class="c-keyword">with</span> zipfile.ZipFile(fn, <span class="c-string">'r'</span>) <span class="c-keyword">as</span> z:
+            z.extractall(<span class="c-string">'.'</span>)
+        <span class="c-builtin">print</span>(<span class="c-string">f"Extracted: </span>{fn}<span class="c-string">"</span>)</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 3: Train & Export</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 3: Train VOSK model</span>
+!python3 train_vosk.py \
+  --data-dir ./dataset \
+  --output-dir ./vosk_bus_model \
+  --sample-rate <span class="c-number">16000</span>
+
+<span class="c-comment"># Test the model</span>
+<span class="c-keyword">from</span> vosk <span class="c-keyword">import</span> Model, KaldiRecognizer
+model = Model(<span class="c-string">"./vosk_bus_model"</span>)
+<span class="c-builtin">print</span>(<span class="c-string">"Model loaded successfully!"</span>)
+
+<span class="c-comment"># Download the model</span>
+<span class="c-keyword">import</span> shutil
+shutil.make_archive(<span class="c-string">"vosk_bus_model"</span>, <span class="c-string">"zip"</span>, <span class="c-string">"."</span>, <span class="c-string">"vosk_bus_model"</span>)
+files.download(<span class="c-string">"vosk_bus_model.zip"</span>)</div>
+    </div>
+  </div>
+
+  <!-- Gemma Colab -->
+  <div class="colab-card">
+    <div class="card-header">
+      <i class="fas fa-brain" style="color:#f59e0b"></i>
+      <div class="card-title">Gemma Fine-tuning Colab Notebook</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px"><strong>Setup:</strong> Enable GPU (T4), accept Gemma license on HuggingFace, run <code>huggingface-cli login</code></p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 1: Install & Login</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 1: Install dependencies</span>
+!pip install -q transformers peft bitsandbytes datasets accelerate trl
+
+<span class="c-comment"># HuggingFace login (for Gemma access)</span>
+<span class="c-keyword">from</span> huggingface_hub <span class="c-keyword">import</span> notebook_login
+notebook_login()</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 2: Load Model & Configure</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 2: Load Gemma 2B + LoRA</span>
+<span class="c-keyword">from</span> transformers <span class="c-keyword">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+<span class="c-keyword">from</span> peft <span class="c-keyword">import</span> LoraConfig, get_peft_model, prepare_model_for_kbit_training
+<span class="c-keyword">import</span> torch
+
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=<span class="c-builtin">True</span>,
+    bnb_4bit_quant_type=<span class="c-string">"nf4"</span>,
+    bnb_4bit_compute_dtype=torch.float16,
+    bnb_4bit_use_double_quant=<span class="c-builtin">True</span>
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    <span class="c-string">"google/gemma-2b-it"</span>,
+    quantization_config=bnb_config,
+    device_map=<span class="c-string">"auto"</span>
+)
+tokenizer = AutoTokenizer.from_pretrained(<span class="c-string">"google/gemma-2b-it"</span>)
+
+model = prepare_model_for_kbit_training(model)
+lora_config = LoraConfig(
+    r=<span class="c-number">16</span>, lora_alpha=<span class="c-number">32</span>,
+    target_modules=[<span class="c-string">"q_proj"</span>,<span class="c-string">"k_proj"</span>,<span class="c-string">"v_proj"</span>,<span class="c-string">"o_proj"</span>],
+    lora_dropout=<span class="c-number">0.05</span>, bias=<span class="c-string">"none"</span>, task_type=<span class="c-string">"CAUSAL_LM"</span>
+)
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 3: Train & Export</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 3: Upload dataset, train, export</span>
+<span class="c-keyword">from</span> google.colab <span class="c-keyword">import</span> files
+uploaded = files.upload()  <span class="c-comment"># Upload bus_conversations.jsonl</span>
+
+<span class="c-keyword">from</span> datasets <span class="c-keyword">import</span> load_dataset
+dataset = load_dataset(<span class="c-string">"json"</span>, data_files=<span class="c-string">"bus_conversations.jsonl"</span>, split=<span class="c-string">"train"</span>)
+
+<span class="c-keyword">from</span> trl <span class="c-keyword">import</span> SFTTrainer
+<span class="c-keyword">from</span> transformers <span class="c-keyword">import</span> TrainingArguments
+
+trainer = SFTTrainer(
+    model=model, train_dataset=dataset,
+    args=TrainingArguments(
+        output_dir=<span class="c-string">"./gemma-bus"</span>,
+        num_train_epochs=<span class="c-number">3</span>,
+        per_device_train_batch_size=<span class="c-number">4</span>,
+        gradient_accumulation_steps=<span class="c-number">4</span>,
+        learning_rate=<span class="c-number">2e-4</span>, fp16=<span class="c-builtin">True</span>,
+        logging_steps=<span class="c-number">10</span>, save_steps=<span class="c-number">100</span>
+    ),
+    dataset_text_field=<span class="c-string">"text"</span>,
+    max_seq_length=<span class="c-number">512</span>, packing=<span class="c-builtin">True</span>
+)
+
+trainer.train()
+model.save_pretrained(<span class="c-string">"./gemma-bus-lora"</span>)
+
+<span class="c-comment"># Download adapter</span>
+<span class="c-keyword">import</span> shutil
+shutil.make_archive(<span class="c-string">"gemma-bus-lora"</span>, <span class="c-string">"zip"</span>, <span class="c-string">"."</span>, <span class="c-string">"gemma-bus-lora"</span>)
+files.download(<span class="c-string">"gemma-bus-lora.zip"</span>)</div>
+    </div>
+  </div>
+
+  <!-- Piper Colab -->
+  <div class="colab-card">
+    <div class="card-header">
+      <i class="fas fa-volume-up" style="color:#f59e0b"></i>
+      <div class="card-title">Piper Training Colab Notebook</div>
+    </div>
+    <div class="card-body">
+      <p style="margin-bottom:12px"><strong>Setup:</strong> Enable GPU (T4), upload voice recordings as zip</p>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 1: Install Coqui TTS</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 1: Install TTS</span>
+!pip install -q TTS piper-tts
+
+<span class="c-comment"># Verify</span>
+!tts --list_models | grep -i vits
+<span class="c-builtin">print</span>(<span class="c-string">"Coqui TTS installed!"</span>)</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 2: Upload Voice Data</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 2: Upload voice recordings</span>
+<span class="c-keyword">from</span> google.colab <span class="c-keyword">import</span> files
+<span class="c-keyword">import</span> zipfile
+
+uploaded = files.upload()
+<span class="c-keyword">for</span> fn <span class="c-keyword">in</span> uploaded.keys():
+    <span class="c-keyword">if</span> fn.endswith(<span class="c-string">'.zip'</span>):
+        <span class="c-keyword">with</span> zipfile.ZipFile(fn, <span class="c-string">'r'</span>) <span class="c-keyword">as</span> z:
+            z.extractall(<span class="c-string">'dataset'</span>)
+        <span class="c-builtin">print</span>(<span class="c-string">f"Extracted: </span>{fn}<span class="c-string">"</span>)
+
+<span class="c-comment"># Verify structure</span>
+!ls dataset/wavs/ | head -5
+!cat dataset/metadata.csv | head -5</div>
+
+      <div class="code-block-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-lang"><i class="fab fa-python"></i> Colab — Cell 3: Train & Export</div>
+      </div>
+      <div class="code-block"><span class="c-comment"># Cell 3: Train Piper model</span>
+!python -m TTS.bin.train_tts \
+  --config_path dataset/config.json \
+  --restore_path <span class="c-cuiltin">None</span>
+
+<span class="c-comment"># Export to ONNX</span>
+!python -m TTS.utils.export_onnx \
+  --config dataset/config.json \
+  --checkpoint output/checkpoints/best_model.pth \
+  --output my_voice.onnx
+
+<span class="c-comment"># Download</span>
+<span class="c-keyword">import</span> shutil
+files.download(<span class="c-string">"my_voice.onnx"</span>)
+files.download(<span class="c-string">"my_voice.onnx.json"</span>)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 5: TIMELINE & COST -->
+<!-- ============================================================ -->
+<div class="section" id="part5">
+  <div class="section-header">
+    <div class="section-icon amber"><i class="fas fa-calendar-alt"></i></div>
+    <div>
+      <div class="section-title">PART 5: Timeline & Cost</div>
+      <div class="section-subtitle">5-week plan to train all three models</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-calendar"></i>
+      <div class="card-title">Training Timeline (5 Weeks)</div>
+    </div>
+    <div class="card-body">
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:#3b82f6">W1</div>
+        <div class="timeline-line"></div>
+        <div class="timeline-content">
+          <div class="timeline-title"><i class="fas fa-microphone" style="color:#60a5fa"></i> Week 1: Data Collection</div>
+          <div class="timeline-desc">
+            • Record 100+ Hindi bus commands (VOSK training data)<br>
+            • Record 50-100 voice sentences (Piper training data)<br>
+            • Create 200+ bus conversation pairs (Gemma training data)<br>
+            • <strong>Effort:</strong> 2-3 hours/day, mostly recording
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:#8b5cf6">W2</div>
+        <div class="timeline-line"></div>
+        <div class="timeline-content">
+          <div class="timeline-title"><i class="fas fa-closed-captioning" style="color:#c084fc"></i> Week 2: Train VOSK</div>
+          <div class="timeline-desc">
+            • Set up Kaldi environment<br>
+            • Prepare transcripts, vocab, language model<br>
+            • Train acoustic model<br>
+            • Export to VOSK format + test<br>
+            • <strong>Effort:</strong> 1-2 days setup + 1 day training
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:#a855f7">W3</div>
+        <div class="timeline-line"></div>
+        <div class="timeline-content">
+          <div class="timeline-title"><i class="fas fa-brain" style="color:#c084fc"></i> Week 3: Fine-tune Gemma</div>
+          <div class="timeline-desc">
+            • Set up Colab with T4 GPU<br>
+            • Upload dataset + configure LoRA<br>
+            • Train (1-2 hours on Colab)<br>
+            • Export to GGUF + import to Ollama + test<br>
+            • <strong>Effort:</strong> 1 day setup + few hours training
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:#22c55e">W4</div>
+        <div class="timeline-line"></div>
+        <div class="timeline-content">
+          <div class="timeline-title"><i class="fas fa-volume-up" style="color:#4ade80"></i> Week 4: Train Piper</div>
+          <div class="timeline-desc">
+            • Set up Coqui TTS environment<br>
+            • Prepare metadata + config<br>
+            • Train VITS model (1-4 hours)<br>
+            • Export to ONNX + test<br>
+            • <strong>Effort:</strong> 1 day setup + few hours training
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:#f59e0b">W5</div>
+        <div class="timeline-content">
+          <div class="timeline-title"><i class="fas fa-plug" style="color:#fbbf24"></i> Week 5: Integration & Testing</div>
+          <div class="timeline-desc">
+            • Connect VOSK → Gemma → Piper pipeline<br>
+            • End-to-end voice conversation testing<br>
+            • Performance optimization (latency, accuracy)<br>
+            • Bug fixes and edge case handling<br>
+            • <strong>Effort:</strong> 3-4 days full integration
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Breakdown -->
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-rupee-sign" style="color:#4ade80"></i>
+      <div class="card-title" style="color:#4ade80">Total Cost: ₹0</div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Training Platform</th>
+              <th>GPU</th>
+              <th>Cost</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><i class="fas fa-closed-captioning" style="color:#60a5fa"></i> VOSK (STT)</td>
+              <td>Google Colab (Free)</td>
+              <td>T4 16GB</td>
+              <td><span class="badge badge-free">FREE</span></td>
+              <td>30 min</td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-brain" style="color:#c084fc"></i> Gemma (LLM)</td>
+              <td>Google Colab (Free)</td>
+              <td>T4 16GB</td>
+              <td><span class="badge badge-free">FREE</span></td>
+              <td>1-2 hours</td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-volume-up" style="color:#4ade80"></i> Piper (TTS)</td>
+              <td>Google Colab (Free)</td>
+              <td>T4 16GB</td>
+              <td><span class="badge badge-free">FREE</span></td>
+              <td>1-4 hours</td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-hdd" style="color:#fbbf24"></i> Model Storage</td>
+              <td>Local / Colab</td>
+              <td>N/A</td>
+              <td><span class="badge badge-free">FREE</span></td>
+              <td>N/A</td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-server" style="color:#f87171"></i> Inference</td>
+              <td>Local (Ollama + Piper)</td>
+              <td>CPU only</td>
+              <td><span class="badge badge-free">FREE</span></td>
+              <td>~200ms/e2e</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-success">
+        <div class="alert-title"><i class="fas fa-check-circle"></i> Free Tier Limits</div>
+        Google Colab free tier: ~12 hours/session, limited GPU hours/day. Plan training sessions accordingly. Colab Pro ($10/mo) gives longer sessions and better GPUs if needed.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PART 6: COMMON ISSUES & FIXES -->
+<!-- ============================================================ -->
+<div class="section" id="part6">
+  <div class="section-header">
+    <div class="section-icon red"><i class="fas fa-wrench"></i></div>
+    <div>
+      <div class="section-title">PART 6: Common Issues & Fixes</div>
+      <div class="section-subtitle">Troubleshooting guide for all three models</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="card-title">VOSK Issues</div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Cause</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Training fails</strong></td>
+              <td>Wrong audio format</td>
+              <td>Check audio is WAV, 16kHz, mono, 16-bit PCM. Use: <code>sox input.wav -r 16000 -c 1 -b 16 output.wav</code></td>
+            </tr>
+            <tr>
+              <td><strong>Poor recognition accuracy</strong></td>
+              <td>Too few training samples</td>
+              <td>Record 200+ utterances. Include variations in tone, speed, and accent.</td>
+            </tr>
+            <tr>
+              <td><strong>Model doesn't recognize bus terms</strong></td>
+              <td>Words missing from vocabulary</td>
+              <td>Add all bus-specific words to <code>vocab.txt</code> and rebuild language model.</td>
+            </tr>
+            <tr>
+              <td><strong>Kaldi build fails</strong></td>
+              <td>Missing dependencies</td>
+              <td>Install <code>sox</code>, <code>libatlas-base-dev</code> (Linux), <code>gfortran</code>. Check Kaldi docs for your OS.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="card-title">Gemma Issues</div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Cause</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Out of Memory (OOM)</strong></td>
+              <td>Batch size too large</td>
+              <td>Reduce <code>per_device_train_batch_size</code> to 2 or 1. Increase <code>gradient_accumulation_steps</code> to compensate.</td>
+            </tr>
+            <tr>
+              <td><strong>Model produces gibberish</strong></td>
+              <td>Learning rate too high or bad data</td>
+              <td>Lower LR to <code>1e-4</code>. Check dataset for formatting errors. Ensure proper JSONL structure.</td>
+            </tr>
+            <tr>
+              <td><strong>Model doesn't speak Hindi</strong></td>
+              <td>Dataset too small or English-heavy</td>
+              <td>Add 200+ Hindi examples. Ensure 90%+ of training data is in Hindi/Hinglish.</td>
+            </tr>
+            <tr>
+              <td><strong>GGUF conversion fails</strong></td>
+              <td>Wrong merge order</td>
+              <td>First merge LoRA adapter with base model, then convert merged model to GGUF. Don't convert adapter directly.</td>
+            </tr>
+            <tr>
+              <td><strong>HuggingFace access denied</strong></td>
+              <td>Didn't accept Gemma license</td>
+              <td>Go to <code>huggingface.co/google/gemma-2b-it</code>, accept license agreement, then <code>huggingface-cli login</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="card-title">Piper Issues</div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Cause</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Output sounds robotic</strong></td>
+              <td>Not enough training data</td>
+              <td>Record 100+ sentences. Vary speaking style, tone, and speed. More data = more natural.</td>
+            </tr>
+            <tr>
+              <td><strong>Hindi pronunciation wrong</strong></td>
+              <td>Character set misconfigured</td>
+              <td>Ensure <code>config.json</code> has correct character set for Hindi. Include Devanagari characters if needed.</td>
+            </tr>
+            <tr>
+              <td><strong>Training doesn't converge</strong></td>
+              <td>Dataset too small or inconsistent</td>
+              <td>Ensure consistent recording quality. Remove noisy samples. Aim for 50+ clean recordings minimum.</td>
+            </tr>
+            <tr>
+              <td><strong>ONNX export fails</strong></td>
+              <td>Incompatible model architecture</td>
+              <td>Use XTTS v2 or VITS model. Export with <code>TTS.utils.export_onnx</code>. Check Coqui TTS docs.</td>
+            </tr>
+            <tr>
+              <td><strong>Model too slow</strong></td>
+              <td>Running on GPU instead of CPU</td>
+              <td>Piper ONNX is optimized for CPU. Use <code>piper --model my_voice.onnx</code> directly — it's fastest on CPU.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Reference -->
+  <div class="card" style="border-color:#22c55e">
+    <div class="card-header">
+      <i class="fas fa-clipboard-list" style="color:#4ade80"></i>
+      <div class="card-title">Quick Reference — Model Sizes</div>
+    </div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Size</th>
+              <th>Training Data</th>
+              <th>Training Time</th>
+              <th>Inference Speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>VOSK (small-hi)</strong></td>
+              <td>~40MB</td>
+              <td>100+ audio files</td>
+              <td>30 min</td>
+              <td>~50ms</td>
+            </tr>
+            <tr>
+              <td><strong>Gemma 2B (Q4_0)</strong></td>
+              <td>~1.3GB</td>
+              <td>200+ conversations</td>
+              <td>1-2 hours</td>
+              <td>~200ms</td>
+            </tr>
+            <tr>
+              <td><strong>Piper (custom)</strong></td>
+              <td>~50MB</td>
+              <td>50-100 recordings</td>
+              <td>1-4 hours</td>
+              <td>~50ms</td>
+            </tr>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td><strong>~1.4GB</strong></td>
+              <td>—</td>
+              <td><strong>~5-8 hours</strong></td>
+              <td><strong>~300ms e2e</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FOOTER -->
+<!-- ============================================================ -->
+<div style="text-align:center;padding:40px 0 20px;border-top:2px solid #1e293b;margin-top:40px">
+  <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#60a5fa,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">
+    <i class="fas fa-bus" style="-webkit-text-fill-color:#60a5fa"></i> BusSahayak Model Training Guide
+  </div>
+  <div style="color:#64748b;font-size:13px">
+    Train VOSK + Gemma + Piper — 100% Local, 100% Free, 100% Yours
+  </div>
+  <div style="margin-top:16px;display:flex;justify-content:center;gap:12px">
+    <span class="badge badge-blue"><i class="fas fa-closed-captioning"></i> VOSK</span>
+    <span class="badge badge-purple"><i class="fas fa-brain"></i> Gemma</span>
+    <span class="badge badge-free"><i class="fas fa-volume-up"></i> Piper</span>
+    <span class="badge badge-amber"><i class="fas fa-rupee-sign"></i> ₹0</span>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
