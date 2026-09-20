@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: jarvis-ai
+    runtime: docker
+    dockerfilePath: ./jarvis-ai/server/Dockerfile
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PORT
+        value: 8000
+    plan: free
+    healthCheckPath: /health
