@@ -3,6 +3,10 @@ package ai.bussahayak
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.AudioTrack
+import android.media.MediaRecorder
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -16,37 +20,47 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
+import okio.ByteString
+import okio.ByteString.Companion.toByteString
 import org.json.JSONObject
 import java.io.IOException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * JARVIS Main Activity
- * Listens for voice commands, sends to AI server, executes actions
+ * JARVIS Main Activity - Gemini Live API
+ * Streams audio to cloud server for real-time voice interaction
  */
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     companion object {
         const val TAG = "JARVIS"
-        const val SERVER_URL = "https://bussahayak.onrender.com" // Cloud server
+        const val SERVER_URL = "wss://bussahayak.onrender.com/ws/voice"
+        const val SERVER_HTTP = "https://bussahayak.onrender.com"
         const val PERMISSION_REQUEST = 100
+        const val SAMPLE_RATE = 16000
+        const val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+        const val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
     }
 
     private lateinit var tts: TextToSpeech
     private lateinit var speechRecognizer: SpeechRecognizer
     private lateinit var statusText: TextView
     private lateinit var speakButton: Button
-    private lateinit var webSocket: WebSocket
-
+    
+    private var webSocket: WebSocket? = null
     private val client = OkHttpClient.Builder()
-        .readTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
-
+    
     private var isListening = false
     private var isReady = false
+    private var isWebSocketConnected = false
+    
+    // Audio recording
+    private var audioRecord: AudioRecord? = null
+    private var isRecording = false
+    private var recordingThread: Thread? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,19 +69,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         statusText = findViewById(R.id.statusText)
         speakButton = findViewById(R.id.speakButton)
 
-        // Initialize TTS
         tts = TextToSpeech(this, this)
-
-        // Initialize Speech Recognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
 
-        // Check permissions
         checkPermissions()
+        connectWebSocket()
 
-        // Connect to server
-        connectToServer()
-
-        // Button click to start listening
         speakButton.setOnClickListener {
             if (isListening) {
                 stopListening()
@@ -76,17 +83,15 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
 
-        // Long press for screen reading
         speakButton.setOnLongClickListener {
             readScreen()
             true
         }
 
-        speak("JARVIS ready. Say hey JARVIS or tap the button.")
+        speak("JARVIS ready. Tap the button to speak.")
     }
 
     // ==================== TTS INIT ====================
-
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             tts.language = Locale.US
@@ -97,139 +102,231 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun speak(text: String) {
         if (isReady) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "utteranceId")
-            statusText.text = text
+            runOnUiThread { statusText.text = text }
         }
     }
 
-    // ==================== SPEECH RECOGNITION ====================
+    // ==================== WEBSOCKET CONNECTION ====================
+    private fun connectWebSocket() {
+        val request = Request.Builder()
+            .url(SERVER_URL)
+            .build()
 
+        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                Log.d(TAG, "WebSocket connected")
+                isWebSocketConnected = true
+                runOnUiThread {
+                    statusText.text = "Connected to JARVIS AI"
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                try {
+                    val json = JSONObject(text)
+                    val type = json.getString("type")
+                    
+                    when (type) {
+                        "connected" -> {
+                            Log.d(TAG, "Server: ${json.getString("text")}")
+                        }
+                        "response", "audio_response", "text_response" -> {
+                            val responseText = json.optString("text", "")
+                            val audio = json.optString("audio", "")
+                            
+                            runOnUiThread {
+                                speak(responseText)
+                                statusText.text = responseText
+                            }
+                            
+                            // If there's audio from Gemini, play it
+                            if (audio.isNotEmpty()) {
+                                playGeminiAudio(audio)
+                            }
+                            
+                            // Execute action if any
+                            val action = json.optJSONObject("action")
+                            if (action != null) {
+                                executeAction(action)
+                            }
+                        }
+                        "screen_summary" -> {
+                            val text = json.getString("text")
+                            speak(text)
+                        }
+                        "error" -> {
+                            speak(json.getString("text"))
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Parse error: ${e.message}")
+                }
+            }
+
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                webSocket.close(1000, null)
+                isWebSocketConnected = false
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                Log.e(TAG, "WebSocket failed: ${t.message}")
+                isWebSocketConnected = false
+                runOnUiThread {
+                    statusText.text = "Connection lost. Reconnecting..."
+                }
+                // Reconnect after 3 seconds
+                Thread.sleep(3000)
+                connectWebSocket()
+            }
+        })
+    }
+
+    // ==================== AUDIO STREAMING ====================
     private fun startListening() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST)
+        if (!isWebSocketConnected) {
+            speak("Not connected to server. Please wait.")
             return
         }
 
         isListening = true
+        isRecording = true
         speakButton.text = "Listening..."
-        speak("Yes?")
 
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN") // Indian English
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-        }
-
-        speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {}
-            override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) {}
-            override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {
-                isListening = false
-                speakButton.text = "Hold to Speak"
-            }
-
-            override fun onError(error: Int) {
-                isListening = false
-                speakButton.text = "Hold to Speak"
-                speak("Sorry, I didn't catch that. Try again.")
-            }
-
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                if (!matches.isNullOrEmpty()) {
-                    val text = matches[0]
-                    processVoiceCommand(text)
-                }
-            }
-
-            override fun onPartialResults(partialResults: Bundle?) {}
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-
-        speechRecognizer.startListening(intent)
+        // Start streaming audio to Gemini Live
+        startAudioStreaming()
     }
 
     private fun stopListening() {
-        speechRecognizer.stopListening()
         isListening = false
+        isRecording = false
         speakButton.text = "Hold to Speak"
+        stopAudioStreaming()
+    }
+
+    private fun startAudioStreaming() {
+        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+        
+        try {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                SAMPLE_RATE,
+                CHANNEL_CONFIG,
+                AUDIO_FORMAT,
+                bufferSize
+            )
+
+            audioRecord?.startRecording()
+            
+            recordingThread = Thread {
+                val buffer = ShortArray(1024)
+                while (isRecording) {
+                    val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+                    if (read > 0) {
+                        // Convert short array to byte array
+                        val byteBuffer = ByteArray(read * 2)
+                        for (i in 0 until read) {
+                            byteBuffer[i * 2] = (buffer[i].toInt() and 0xFF).toByte()
+                            byteBuffer[i * 2 + 1] = (buffer[i].toInt() shr 8 and 0xFF).toByte()
+                        }
+                        
+                        // Send audio chunk to server
+                        val audioB64 = android.util.Base64.encodeToString(byteBuffer, android.util.Base64.NO_WRAP)
+                        val message = JSONObject().apply {
+                            put("type", "audio")
+                            put("data", audioB64)
+                        }
+                        webSocket?.send(message.toString())
+                    }
+                }
+            }.apply { start() }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Audio recording failed: ${e.message}")
+        }
+    }
+
+    private fun stopAudioRecording() {
+        try {
+            audioRecord?.stop()
+            audioRecord?.release()
+            audioRecord = null
+        } catch (e: Exception) {
+            Log.e(TAG, "Stop recording failed: ${e.message}")
+        }
+    }
+
+    private fun stopAudioStreaming() {
+        isRecording = false
+        recordingThread?.join(1000)
+        stopAudioRecording()
+    }
+
+    private fun playGeminiAudio(audioB64: String) {
+        try {
+            val audioBytes = android.util.Base64.decode(audioB64, android.util.Base64.NO_WRAP)
+            
+            // Gemini outputs 24kHz 16-bit PCM audio
+            val sampleRate = 24000
+            val channelConfig = AudioFormat.CHANNEL_OUT_MONO
+            val encoding = AudioFormat.ENCODING_PCM_16BIT
+            
+            val bufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig, encoding)
+            
+            val audioTrack = AudioTrack.Builder()
+                .setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setSampleRate(sampleRate)
+                        .setChannelMask(channelConfig)
+                        .setEncoding(encoding)
+                        .build()
+                )
+                .setBufferSizeInBytes(bufferSize)
+                .setTransferMode(AudioTrack.MODE_STREAM)
+                .build()
+            
+            audioTrack.play()
+            audioTrack.write(audioBytes, 0, audioBytes.size)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Play audio failed: ${e.message}")
+        }
     }
 
     // ==================== COMMAND PROCESSING ====================
-
     private fun processVoiceCommand(text: String) {
         speak("Processing: $text")
-
-        // Send to cloud server via HTTP POST
+        
         val json = JSONObject().apply {
+            put("type", "text")
             put("text", text)
         }
-
-        val requestBody = json.toString()
-            .toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("$SERVER_URL/api/chat")
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    speak("Connection error. Is the server running?")
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val body = response.body?.string() ?: ""
-                try {
-                    val jsonResponse = JSONObject(body)
-                    val replyText = jsonResponse.getString("text")
-                    val action = jsonResponse.optJSONObject("action")
-
-                    runOnUiThread {
-                        speak(replyText)
-
-                        // Execute action if any
-                        if (action != null) {
-                            executeAction(action)
-                        }
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        speak("Sorry, I didn't understand that.")
-                    }
-                }
-            }
-        })
+        webSocket?.send(json.toString())
     }
 
     // ==================== ACTION EXECUTION ====================
-
     private fun executeAction(action: JSONObject) {
-        val actionType = action.getString("type")
-
+        val actionType = action.optString("type", "")
+        
         when (actionType) {
             "launch_app" -> {
                 val packageName = action.getString("package")
                 launchApp(packageName)
             }
-            "go_back" -> {
-                JarvisService.instance?.goBack()
-            }
-            "go_home" -> {
-                JarvisService.instance?.goHome()
-            }
-            "read_screen" -> {
-                readScreen()
-            }
-            "list_buttons" -> {
-                listButtons()
-            }
+            "go_back" -> JarvisService.instance?.goBack()
+            "go_home" -> JarvisService.instance?.goHome()
+            "read_screen" -> readScreen()
+            "list_buttons" -> listButtons()
             "scroll_down" -> {
                 JarvisService.instance?.let { service ->
                     service.findClickableElements().firstOrNull()?.let {
@@ -245,13 +342,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 }
             }
             "click" -> {
-                // Find and click element
                 val target = action.optString("target", "")
                 clickElement(target)
-            }
-            "type_text" -> {
-                val text = action.optString("text", "")
-                typeInFocusedElement(text)
             }
         }
     }
@@ -272,7 +364,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun readScreen() {
-        // Get accessibility service to read screen
         if (JarvisService.isRunning) {
             val service = JarvisService.instance
             val summary = service?.getScreenSummary() ?: "Cannot read screen."
@@ -310,41 +401,60 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun typeInFocusedElement(text: String) {
-        speak("Typing: $text")
-        // Implementation would use AccessibilityService to type
-    }
+    // ==================== SPEECH RECOGNITION (FALLBACK) ====================
+    private fun startSpeechRecognition() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST)
+            return
+        }
 
-    // ==================== SERVER CONNECTION ====================
+        isListening = true
+        speakButton.text = "Listening..."
+        speak("Yes?")
 
-    private fun connectToServer() {
-        val request = Request.Builder()
-            .url("$SERVER_URL/health")
-            .get()
-            .build()
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+        }
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    statusText.text = "Server offline. Run: python3 jarvis_server.py"
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {
+                isListening = false
+                speakButton.text = "Hold to Speak"
+            }
+            override fun onError(error: Int) {
+                isListening = false
+                speakButton.text = "Hold to Speak"
+                speak("Sorry, I didn't catch that. Try again.")
+            }
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    processVoiceCommand(matches[0])
                 }
             }
-
-            override fun onResponse(call: Call, response: Response) {
-                runOnUiThread {
-                    statusText.text = "Connected to AI server"
-                }
-            }
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
         })
+
+        speechRecognizer.startListening(intent)
     }
 
     // ==================== PERMISSIONS ====================
-
     private fun checkPermissions() {
         val permissions = arrayOf(
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.INTERNET,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
         )
 
         val needed = permissions.filter {
@@ -368,9 +478,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     // ==================== LIFECYCLE ====================
-
     override fun onDestroy() {
         super.onDestroy()
+        stopAudioRecording()
+        webSocket?.close(1000, "App closed")
         tts.stop()
         tts.shutdown()
         speechRecognizer.destroy()
