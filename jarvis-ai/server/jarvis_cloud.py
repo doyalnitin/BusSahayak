@@ -1,42 +1,35 @@
 #!/usr/bin/env python3
 """
-JARVIS AI Cloud Server - Gemini Live Multimodal API
-Real-time voice assistant using Google's Live API
+JARVIS AI Cloud Server - Direct Gemini Live WebSocket
+No SDK dependency - raw WebSocket connection to Gemini
 """
 
-import asyncio, json, os, base64, time
+import asyncio, json, os, base64
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import uvicorn
-from google import genai
-from google.genai import types
+import websockets
 
 # ==================== CONFIG ====================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-MODEL = "models/gemini-2.5-flash-native-audio-preview-09-2025"
+GEMINI_HOST = "generativelanguage.googleapis.com"
+GEMINI_MODEL = "models/gemini-2.5-flash-native-audio-preview-09-2025"
+GEMINI_URI = f"wss://{GEMINI_HOST}/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key={GEMINI_API_KEY}"
 
-SYSTEM_INSTRUCTION = """You are JARVIS - an advanced AI voice assistant for blind and visually impaired users. 
-You can control the user's Android phone with voice commands.
+SYSTEM_INSTRUCTION = """You are JARVIS - an advanced AI voice assistant for blind and visually impaired users.
 
-CORE ABILITIES:
-1. OPEN APPS: When user says "open WhatsApp", you execute the open action
-2. NAVIGATE: Go back, go home, open recent apps
-3. READ SCREEN: Describe what's on the phone screen
-4. SCROLL: Scroll up or down
-5. CLICK: Tap on buttons or elements
-6. TYPE: Type text into fields
-7. ANSWER QUESTIONS: General knowledge, math, translations, etc.
+You can control the user's Android phone with voice commands:
+- Open apps: "open WhatsApp", "open Chrome"
+- Navigate: "go back", "go home"  
+- Read screen: "what's on screen"
+- Scroll: "scroll up", "scroll down"
+- Answer questions: anything else
 
-VOICE RULES:
-- Always reply in SHORT sentences (1-2 sentences max)
-- Be direct and helpful - like a real assistant
-- Use natural conversational English
-- Never say "I can't" - you CAN do everything
+RULES:
+- Reply in SHORT sentences (1-2 sentences max)
+- Be direct and helpful
 - When opening apps, just say "Opening [app name]"
-- When unsure, ask for clarification
-
-IMPORTANT: You are speaking to a blind person. Be concise and clear.
+- You are speaking to a blind person - be concise and clear
 """
 
 # ==================== APPS DATABASE ====================
@@ -50,301 +43,207 @@ KNOWN_APPS = {
     "calculator": "com.google.android.calculator", "calendar": "com.google.android.calendar",
     "drive": "com.google.android.apps.docs", "files": "com.google.android.apps.nbu.files",
     "play store": "com.android.vending", "spotify": "com.spotify.music",
-    "twitter": "com.twitter.android", "x": "com.twitter.android",
-    "telegram": "org.telegram.messenger", "gmail": "com.google.android.gm",
-    "google mail": "com.google.android.gm", "zoom": "us.zoom.videomeetings",
+    "gmail": "com.google.android.gm", "telegram": "org.telegram.messenger",
 }
 
-# ==================== INTENT CLASSIFIER ====================
 def classify_intent(text: str) -> dict:
     text = text.lower().strip()
-    
-    # App launch
     for app_name, package in KNOWN_APPS.items():
         if app_name in text:
-            action = "open_app"
-            if any(w in text for w in ["close", "band"]):
-                action = "close_app"
+            action = "close_app" if any(w in text for w in ["close", "band"]) else "open_app"
             return {"action": action, "app": app_name, "package": package}
-    
-    # Navigation
-    if text in ["back", "go back", "peeche"]:
-        return {"action": "go_back"}
-    if text in ["home", "go home", "homescreen"]:
-        return {"action": "go_home"}
-    if text in ["recent", "recents", "recent apps"]:
-        return {"action": "open_recents"}
-    
-    # Screen reading
-    if any(phrase in text for phrase in ["what's on screen", "what is on screen", "read screen", "screen kya hai"]):
+    if text in ["back", "go back", "peeche"]: return {"action": "go_back"}
+    if text in ["home", "go home", "homescreen"]: return {"action": "go_home"}
+    if any(phrase in text for phrase in ["what's on screen", "read screen", "screen kya hai"]):
         return {"action": "read_screen"}
-    if any(phrase in text for phrase in ["list buttons", "what buttons"]):
-        return {"action": "list_buttons"}
-    
-    # Scrolling
-    if any(phrase in text for phrase in ["scroll up", "scroll down"]):
-        return {"action": "scroll_down" if "down" in text else "scroll_up"}
-    
-    # Help
-    if any(phrase in text for phrase in ["help", "madad"]):
-        return {"action": "show_help"}
-    
-    # Exit
-    if any(phrase in text for phrase in ["bye", "exit", "quit"]):
-        return {"action": "exit"}
-    
-    # Default: let Gemini handle it
+    if "scroll down" in text: return {"action": "scroll_down"}
+    if "scroll up" in text: return {"action": "scroll_up"}
+    if any(phrase in text for phrase in ["help", "madad"]): return {"action": "show_help"}
+    if any(phrase in text for phrase in ["bye", "exit", "quit"]): return {"action": "exit"}
     return {"action": "ask_ai", "text": text}
 
+def get_response_text(intent: dict) -> str:
+    action = intent.get("action")
+    responses = {
+        "open_app": f"Opening {intent['app']}.",
+        "close_app": f"Closing {intent['app']}.",
+        "go_back": "Going back.",
+        "go_home": "Going to home screen.",
+        "read_screen": "Reading screen content.",
+        "scroll_down": "Scrolling down.",
+        "scroll_up": "Scrolling up.",
+        "show_help": "I can open apps, read screen, scroll, and answer questions.",
+        "exit": "Goodbye!"
+    }
+    return responses.get(action, "I didn't understand.")
+
 # ==================== FASTAPI APP ====================
-app = FastAPI(title="JARVIS AI Cloud Server - Gemini Live")
+app = FastAPI(title="JARVIS AI Cloud")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ==================== HEALTH CHECK ====================
 @app.get("/health")
 async def health():
-    return {"status": "ok", "server": "JARVIS AI Cloud", "model": MODEL}
+    return {"status": "ok", "model": GEMINI_MODEL}
 
 @app.get("/")
 async def root():
-    return {"message": "JARVIS AI Cloud Server - Gemini Live API"}
+    return {"message": "JARVIS AI Cloud Server"}
 
-# ==================== WEBSOCKET ENDPOINT ====================
+# ==================== WEBSOCKET + GEMINI LIVE ====================
 @app.websocket("/ws/voice")
 async def voice_websocket(websocket: WebSocket):
-    """Main voice interaction endpoint using Gemini Live API"""
     await websocket.accept()
-    print("Client connected to Gemini Live!")
+    print("Client connected!")
     
     try:
-        # Create client
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        
-        # Send connection success
-        await websocket.send_text(json.dumps({
-            "type": "connected",
-            "text": "Connected to JARVIS AI with Gemini Live"
-        }))
-        
-        # Create Live session using async context manager
-        config = types.LiveConnectConfig(
-            response_modalities=["AUDIO"],
-            speech_config=types.SpeechConfig(
-                voice_config=types.VoiceConfig(
-                    prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Puck")
-                )
-            ),
-            system_instruction=types.Content(
-                parts=[types.Part(text=SYSTEM_INSTRUCTION)]
-            ),
-        )
-        
-        async with client.aio.live.connect(model=MODEL, config=config) as session:
-            print("Gemini Live session created!")
+        # Connect to Gemini Live via raw WebSocket
+        async with websockets.connect(GEMINI_URI) as gemini_ws:
+            print("Connected to Gemini Live!")
             
-            while True:
-                data = await websocket.receive_text()
-                message = json.loads(data)
-                
-                if message["type"] == "audio":
-                    # Receive audio from Android and send to Gemini
-                    audio_b64 = message["data"]
-                    audio_bytes = base64.b64decode(audio_b64)
-                    
-                    # Send audio to Gemini Live
-                    await session.send_realtime_input(
-                        audio=types.Blob(data=audio_bytes, mime_type="audio/pcm;rate=16000")
-                    )
-                    
-                    # Receive response from Gemini
-                    audio_response = []
-                    text_response = ""
-                    
-                    async for response in session.receive():
-                        if response.server_content:
-                            if response.server_content.interrupted:
-                                audio_response = []
-                                continue
-                            
-                            model_turn = response.server_content.model_turn
-                            if model_turn and model_turn.parts:
-                                for part in model_turn.parts:
-                                    if part.inline_data:
-                                        audio_response.append(part.inline_data.data)
-                                    if part.text:
-                                        text_response += part.text
-                            
-                            if response.server_content.turn_complete:
-                                break
-                    
-                    # Send audio back to Android
-                    if audio_response:
-                        combined_audio = b"".join(audio_response)
-                        await websocket.send_text(json.dumps({
-                            "type": "audio_response",
-                            "audio": base64.b64encode(combined_audio).decode(),
-                            "text": text_response
-                        }))
-                    else:
-                        await websocket.send_text(json.dumps({
-                            "type": "text_response",
-                            "text": text_response or "I didn't catch that."
-                        }))
-                
-                elif message["type"] == "text":
-                    # Text input (fallback)
-                    text = message["text"]
-                    
-                    # Check for local commands first
-                    intent = classify_intent(text)
-                    
-                    if intent["action"] == "ask_ai":
-                        # Send to Gemini Live as text
-                        await session.send_client_content(
-                            turns=types.Content(parts=[types.Part(text=text)]),
-                            turn_complete=True
-                        )
+            # Send setup message to Gemini
+            setup_msg = {
+                "setup": {
+                    "model": GEMINI_MODEL,
+                    "generation_config": {
+                        "response_modalities": ["AUDIO"],
+                        "speech_config": {
+                            "voice_config": {
+                                "prebuilt_voice_config": {
+                                    "voice_name": "Puck"
+                                }
+                            }
+                        }
+                    },
+                    "system_instruction": {
+                        "parts": [{"text": SYSTEM_INSTRUCTION}]
+                    }
+                }
+            }
+            
+            await gemini_ws.send(json.dumps(setup_msg))
+            
+            # Wait for setup response
+            raw_response = await gemini_ws.recv()
+            setup_response = json.loads(raw_response.decode("ascii"))
+            print("Gemini session started!")
+            
+            # Notify client
+            await websocket.send_text(json.dumps({
+                "type": "connected",
+                "text": "Connected to JARVIS AI"
+            }))
+            
+            async def receive_from_gemini():
+                """Background: receive from Gemini, send to client"""
+                try:
+                    async for raw_response in gemini_ws:
+                        response = json.loads(raw_response.decode("ascii"))
                         
-                        # Receive response
-                        audio_response = []
-                        text_response = ""
+                        try:
+                            parts = response["serverContent"]["modelTurn"]["parts"]
+                            for part in parts:
+                                if "inlineData" in part:
+                                    audio_b64 = part["inlineData"]["data"]
+                                    await websocket.send_text(json.dumps({
+                                        "type": "audio",
+                                        "audio": audio_b64
+                                    }))
+                                if "text" in part:
+                                    await websocket.send_text(json.dumps({
+                                        "type": "text",
+                                        "text": part["text"]
+                                    }))
+                        except KeyError:
+                            pass
                         
-                        async for response in session.receive():
-                            if response.server_content:
-                                model_turn = response.server_content.model_turn
-                                if model_turn and model_turn.parts:
-                                    for part in model_turn.parts:
-                                        if part.inline_data:
-                                            audio_response.append(part.inline_data.data)
-                                        if part.text:
-                                            text_response += part.text
-                                
-                                if response.server_content.turn_complete:
-                                    break
+                        if response.get("serverContent", {}).get("turnComplete"):
+                            await websocket.send_text(json.dumps({"type": "turn_complete"}))
+                except Exception as e:
+                    print(f"Gemini receive error: {e}")
+            
+            # Start background receiver
+            receive_task = asyncio.create_task(receive_from_gemini())
+            
+            try:
+                while True:
+                    data = await websocket.receive_text()
+                    message = json.loads(data)
+                    
+                    if message["type"] == "audio":
+                        # Stream audio to Gemini
+                        audio_b64 = message["data"]
                         
-                        if audio_response:
-                            combined_audio = b"".join(audio_response)
-                            await websocket.send_text(json.dumps({
-                                "type": "response",
-                                "text": text_response,
-                                "audio": base64.b64encode(combined_audio).decode(),
-                                "action": None
-                            }))
+                        msg = {
+                            "realtime_input": {
+                                "media_chunks": [{
+                                    "mime_type": "audio/pcm;rate=16000",
+                                    "data": audio_b64
+                                }]
+                            }
+                        }
+                        await gemini_ws.send(json.dumps(msg))
+                    
+                    elif message["type"] == "text":
+                        text = message["text"]
+                        intent = classify_intent(text)
+                        
+                        if intent["action"] == "ask_ai":
+                            # Send text to Gemini
+                            msg = {
+                                "client_content": {
+                                    "turn_complete": True,
+                                    "turns": [{"role": "user", "parts": [{"text": text}]}]
+                                }
+                            }
+                            await gemini_ws.send(json.dumps(msg))
                         else:
                             await websocket.send_text(json.dumps({
                                 "type": "response",
-                                "text": text_response,
-                                "action": None
+                                "text": get_response_text(intent),
+                                "action": intent
                             }))
-                    else:
-                        # Local command - no Gemini needed
-                        await websocket.send_text(json.dumps({
-                            "type": "response",
-                            "text": get_response_text(intent),
-                            "action": intent
-                        }))
-                
-                elif message["type"] == "screen_data":
-                    # Screen data from Android
-                    elements = message.get("elements", [])
-                    texts = [e.get("text", "") for e in elements if e.get("text")]
-                    buttons = [e.get("text", e.get("description", "")) for e in elements if e.get("clickable")]
-                    screen_context = f"Screen has: {', '.join(texts[:5])}. Buttons: {', '.join(buttons[:5])}"
                     
-                    # Send to Gemini for understanding
-                    await session.send_client_content(
-                        turns=types.Content(parts=[types.Part(text=f"The user's phone screen shows: {screen_context}")]),
-                        turn_complete=True
-                    )
-                    
-                    text_response = ""
-                    async for response in session.receive():
-                        if response.server_content:
-                            model_turn = response.server_content.model_turn
-                            if model_turn and model_turn.parts:
-                                for part in model_turn.parts:
-                                    if part.text:
-                                        text_response += part.text
-                            if response.server_content.turn_complete:
-                                break
-                    
-                    await websocket.send_text(json.dumps({
-                        "type": "screen_summary",
-                        "text": text_response or screen_context
-                    }))
+                    elif message["type"] == "screen_data":
+                        elements = message.get("elements", [])
+                        texts = [e.get("text", "") for e in elements if e.get("text")]
+                        buttons = [e.get("text", e.get("description", "")) for e in elements if e.get("clickable")]
+                        screen_context = f"Phone screen: {', '.join(texts[:5])}. Buttons: {', '.join(buttons[:5])}"
+                        
+                        msg = {
+                            "client_content": {
+                                "turn_complete": True,
+                                "turns": [{"role": "user", "parts": [{"text": screen_context}]}]
+                            }
+                        }
+                        await gemini_ws.send(json.dumps(msg))
+            
+            except WebSocketDisconnect:
+                print("Client disconnected")
+            finally:
+                receive_task.cancel()
     
-    except WebSocketDisconnect:
-        print("Client disconnected")
     except Exception as e:
         print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         try:
-            await websocket.send_text(json.dumps({
-                "type": "error",
-                "text": f"Server error: {str(e)}"
-            }))
+            await websocket.send_text(json.dumps({"type": "error", "text": str(e)}))
         except:
             pass
 
-# ==================== RESPONSE HELPER ====================
-def get_response_text(intent: dict) -> str:
-    action = intent.get("action")
-    if action == "open_app":
-        return f"Opening {intent['app']}."
-    elif action == "close_app":
-        return f"Closing {intent['app']}."
-    elif action == "go_back":
-        return "Going back."
-    elif action == "go_home":
-        return "Going to home screen."
-    elif action == "open_recents":
-        return "Opening recent apps."
-    elif action == "read_screen":
-        return "Reading screen content."
-    elif action == "list_buttons":
-        return "Listing available buttons."
-    elif action == "scroll_down":
-        return "Scrolling down."
-    elif action == "scroll_up":
-        return "Scrolling up."
-    elif action == "show_help":
-        return "I can open apps, read screen, scroll, click buttons, and answer questions. Just tell me what to do."
-    elif action == "exit":
-        return "Goodbye! Stay safe."
-    return "I didn't understand."
-
-# ==================== REST API ENDPOINT ====================
+# ==================== REST API ====================
 @app.post("/api/chat")
 async def chat_api(request: dict):
-    """REST API fallback for non-WebSocket clients"""
     text = request.get("text", "")
     if not text:
-        return JSONResponse(status_code=400, content={"error": "No text provided"})
+        return {"error": "No text"}
     
     intent = classify_intent(text)
-    
     if intent["action"] == "ask_ai":
-        # Use Gemini for general questions
-        try:
-            client = genai.Client(api_key=GEMINI_API_KEY)
-            response = client.models.generate_content(
-                model="gemini-flash-latest",
-                contents=f"{SYSTEM_INSTRUCTION}\n\nUser: {text}\nJARVIS:"
-            )
-            return {"text": response.text, "action": None, "intent": intent}
-        except Exception as e:
-            return {"text": "Sorry, I'm having trouble thinking right now.", "action": None}
+        return {"text": "Use WebSocket for AI responses", "action": None}
     
-    return {"text": get_response_text(intent), "action": intent, "intent": intent}
+    return {"text": get_response_text(intent), "action": intent}
 
-# ==================== START SERVER ====================
 if __name__ == "__main__":
-    print("Starting JARVIS AI Cloud Server with Gemini Live API...")
+    print("Starting JARVIS AI Cloud Server...")
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
