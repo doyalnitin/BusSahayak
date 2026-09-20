@@ -115,26 +115,6 @@ async def health():
 async def root():
     return {"message": "JARVIS AI Cloud Server - Gemini Live API"}
 
-# ==================== GEMINI LIVE API SESSION ====================
-async def create_live_session():
-    """Create a Gemini Live API session"""
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    
-    config = types.LiveConnectConfig(
-        response_modalities=["AUDIO"],
-        speech_config=types.SpeechConfig(
-            voice_config=types.VoiceConfig(
-                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Puck")
-            )
-        ),
-        system_instruction=types.Content(
-            parts=[types.Part(text=SYSTEM_INSTRUCTION)]
-        ),
-    )
-    
-    session = await client.aio.live.connect(model=MODEL, config=config)
-    return session, client
-
 # ==================== WEBSOCKET ENDPOINT ====================
 @app.websocket("/ws/voice")
 async def voice_websocket(websocket: WebSocket):
@@ -142,13 +122,9 @@ async def voice_websocket(websocket: WebSocket):
     await websocket.accept()
     print("Client connected to Gemini Live!")
     
-    session = None
-    client = None
-    
     try:
-        # Create Gemini Live session
-        session, client = await create_live_session()
-        print("Gemini Live session created!")
+        # Create client
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         # Send connection success
         await websocket.send_text(json.dumps({
@@ -156,75 +132,46 @@ async def voice_websocket(websocket: WebSocket):
             "text": "Connected to JARVIS AI with Gemini Live"
         }))
         
-        while True:
-            data = await websocket.receive_text()
-            message = json.loads(data)
-            
-            if message["type"] == "audio":
-                # Receive audio from Android and send to Gemini
-                audio_b64 = message["data"]
-                audio_bytes = base64.b64decode(audio_b64)
-                
-                # Send audio to Gemini Live
-                await session.send_realtime_input(
-                    audio=types.Blob(data=audio_bytes, mime_type="audio/pcm;rate=16000")
+        # Create Live session using async context manager
+        config = types.LiveConnectConfig(
+            response_modalities=["AUDIO"],
+            speech_config=types.SpeechConfig(
+                voice_config=types.VoiceConfig(
+                    prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Puck")
                 )
-                
-                # Receive response from Gemini
-                audio_response = []
-                text_response = ""
-                
-                async for response in session.receive():
-                    if response.server_content:
-                        if response.server_content.interrupted:
-                            audio_response = []
-                            continue
-                        
-                        model_turn = response.server_content.model_turn
-                        if model_turn and model_turn.parts:
-                            for part in model_turn.parts:
-                                if part.inline_data:
-                                    audio_response.append(part.inline_data.data)
-                                if part.text:
-                                    text_response += part.text
-                        
-                        if response.server_content.turn_complete:
-                            break
-                
-                # Send audio back to Android
-                if audio_response:
-                    combined_audio = b"".join(audio_response)
-                    await websocket.send_text(json.dumps({
-                        "type": "audio_response",
-                        "audio": base64.b64encode(combined_audio).decode(),
-                        "text": text_response
-                    }))
-                else:
-                    await websocket.send_text(json.dumps({
-                        "type": "text_response",
-                        "text": text_response or "I didn't catch that."
-                    }))
+            ),
+            system_instruction=types.Content(
+                parts=[types.Part(text=SYSTEM_INSTRUCTION)]
+            ),
+        )
+        
+        async with client.aio.live.connect(model=MODEL, config=config) as session:
+            print("Gemini Live session created!")
             
-            elif message["type"] == "text":
-                # Text input (fallback)
-                text = message["text"]
+            while True:
+                data = await websocket.receive_text()
+                message = json.loads(data)
                 
-                # Check for local commands first
-                intent = classify_intent(text)
-                
-                if intent["action"] == "ask_ai":
-                    # Send to Gemini Live as text
-                    await session.send_client_content(
-                        turns=types.Content(parts=[types.Part(text=text)]),
-                        turn_complete=True
+                if message["type"] == "audio":
+                    # Receive audio from Android and send to Gemini
+                    audio_b64 = message["data"]
+                    audio_bytes = base64.b64decode(audio_b64)
+                    
+                    # Send audio to Gemini Live
+                    await session.send_realtime_input(
+                        audio=types.Blob(data=audio_bytes, mime_type="audio/pcm;rate=16000")
                     )
                     
-                    # Receive response
+                    # Receive response from Gemini
                     audio_response = []
                     text_response = ""
                     
                     async for response in session.receive():
                         if response.server_content:
+                            if response.server_content.interrupted:
+                                audio_response = []
+                                continue
+                            
                             model_turn = response.server_content.model_turn
                             if model_turn and model_turn.parts:
                                 for part in model_turn.parts:
@@ -236,61 +183,108 @@ async def voice_websocket(websocket: WebSocket):
                             if response.server_content.turn_complete:
                                 break
                     
+                    # Send audio back to Android
                     if audio_response:
                         combined_audio = b"".join(audio_response)
                         await websocket.send_text(json.dumps({
-                            "type": "response",
-                            "text": text_response,
+                            "type": "audio_response",
                             "audio": base64.b64encode(combined_audio).decode(),
-                            "action": None
+                            "text": text_response
                         }))
                     else:
                         await websocket.send_text(json.dumps({
-                            "type": "response",
-                            "text": text_response,
-                            "action": None
+                            "type": "text_response",
+                            "text": text_response or "I didn't catch that."
                         }))
-                else:
-                    # Local command - no Gemini needed
+                
+                elif message["type"] == "text":
+                    # Text input (fallback)
+                    text = message["text"]
+                    
+                    # Check for local commands first
+                    intent = classify_intent(text)
+                    
+                    if intent["action"] == "ask_ai":
+                        # Send to Gemini Live as text
+                        await session.send_client_content(
+                            turns=types.Content(parts=[types.Part(text=text)]),
+                            turn_complete=True
+                        )
+                        
+                        # Receive response
+                        audio_response = []
+                        text_response = ""
+                        
+                        async for response in session.receive():
+                            if response.server_content:
+                                model_turn = response.server_content.model_turn
+                                if model_turn and model_turn.parts:
+                                    for part in model_turn.parts:
+                                        if part.inline_data:
+                                            audio_response.append(part.inline_data.data)
+                                        if part.text:
+                                            text_response += part.text
+                                
+                                if response.server_content.turn_complete:
+                                    break
+                        
+                        if audio_response:
+                            combined_audio = b"".join(audio_response)
+                            await websocket.send_text(json.dumps({
+                                "type": "response",
+                                "text": text_response,
+                                "audio": base64.b64encode(combined_audio).decode(),
+                                "action": None
+                            }))
+                        else:
+                            await websocket.send_text(json.dumps({
+                                "type": "response",
+                                "text": text_response,
+                                "action": None
+                            }))
+                    else:
+                        # Local command - no Gemini needed
+                        await websocket.send_text(json.dumps({
+                            "type": "response",
+                            "text": get_response_text(intent),
+                            "action": intent
+                        }))
+                
+                elif message["type"] == "screen_data":
+                    # Screen data from Android
+                    elements = message.get("elements", [])
+                    texts = [e.get("text", "") for e in elements if e.get("text")]
+                    buttons = [e.get("text", e.get("description", "")) for e in elements if e.get("clickable")]
+                    screen_context = f"Screen has: {', '.join(texts[:5])}. Buttons: {', '.join(buttons[:5])}"
+                    
+                    # Send to Gemini for understanding
+                    await session.send_client_content(
+                        turns=types.Content(parts=[types.Part(text=f"The user's phone screen shows: {screen_context}")]),
+                        turn_complete=True
+                    )
+                    
+                    text_response = ""
+                    async for response in session.receive():
+                        if response.server_content:
+                            model_turn = response.server_content.model_turn
+                            if model_turn and model_turn.parts:
+                                for part in model_turn.parts:
+                                    if part.text:
+                                        text_response += part.text
+                            if response.server_content.turn_complete:
+                                break
+                    
                     await websocket.send_text(json.dumps({
-                        "type": "response",
-                        "text": get_response_text(intent),
-                        "action": intent
+                        "type": "screen_summary",
+                        "text": text_response or screen_context
                     }))
-            
-            elif message["type"] == "screen_data":
-                # Screen data from Android
-                elements = message.get("elements", [])
-                texts = [e.get("text", "") for e in elements if e.get("text")]
-                buttons = [e.get("text", e.get("description", "")) for e in elements if e.get("clickable")]
-                screen_context = f"Screen has: {', '.join(texts[:5])}. Buttons: {', '.join(buttons[:5])}"
-                
-                # Send to Gemini for understanding
-                await session.send_client_content(
-                    turns=types.Content(parts=[types.Part(text=f"The user's phone screen shows: {screen_context}")]),
-                    turn_complete=True
-                )
-                
-                text_response = ""
-                async for response in session.receive():
-                    if response.server_content:
-                        model_turn = response.server_content.model_turn
-                        if model_turn and model_turn.parts:
-                            for part in model_turn.parts:
-                                if part.text:
-                                    text_response += part.text
-                        if response.server_content.turn_complete:
-                            break
-                
-                await websocket.send_text(json.dumps({
-                    "type": "screen_summary",
-                    "text": text_response or screen_context
-                }))
     
     except WebSocketDisconnect:
         print("Client disconnected")
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         try:
             await websocket.send_text(json.dumps({
                 "type": "error",
@@ -298,12 +292,6 @@ async def voice_websocket(websocket: WebSocket):
             }))
         except:
             pass
-    finally:
-        if session:
-            try:
-                await session.close()
-            except:
-                pass
 
 # ==================== RESPONSE HELPER ====================
 def get_response_text(intent: dict) -> str:
