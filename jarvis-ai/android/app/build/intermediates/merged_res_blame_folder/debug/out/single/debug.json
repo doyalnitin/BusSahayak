@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-merged_res-33:/xml_accessibility_service_config.xml.flat",
+        "source": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-main-35:/xml/accessibility_service_config.xml"
+    },
+    {
+        "merged": "ai.bussahayak.app-merged_res-33:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "ai.bussahayak.app-main-35:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-merged_res-33:/layout_activity_main.xml.flat",
+        "source": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-main-35:/layout/activity_main.xml"
+    },
+    {
+        "merged": "ai.bussahayak.app-merged_res-33:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "ai.bussahayak.app-main-35:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-merged_res-33:/drawable_circle_button.xml.flat",
+        "source": "/Users/nitindoyal.design/.gradle/daemon/8.5/ai.bussahayak.app-main-35:/drawable/circle_button.xml"
+    }
+]

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="#1a1a2e">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="JARVIS AI"
+        android:textSize="36sp"
+        android:textColor="#00d4ff"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Voice Assistant for Blind"
+        android:textSize="14sp"
+        android:textColor="#888888"
+        android:layout_marginBottom="48dp" />
+
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap button to start"
+        android:textSize="18sp"
+        android:textColor="#ffffff"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"
+        android:padding="16dp"
+        android:background="#2a2a4a" />
+
+    <!-- Main Button -->
+    <Button
+        android:id="@+id/speakButton"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:text="Hold\nto\nSpeak"
+        android:textSize="20sp"
+        android:textColor="#ffffff"
+        android:background="@drawable/circle_button"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Quick Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/readScreenBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Read Screen"
+            android:textSize="12sp"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/listAppsBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="List Apps"
+            android:textSize="12sp"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/helpBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Help"
+            android:textSize="12sp"
+            android:layout_margin="4dp" />
+
+    </LinearLayout>
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Commands: Open Gmail, Read messages, Scroll down, Click button, Go back"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        android:layout_marginTop="24dp" />
+
+</LinearLayout>

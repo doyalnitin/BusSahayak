@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#1a1a2e</color>
+    <string name="accessibility_service_description">JARVIS AI reads your screen and performs actions using voice commands. This helps blind and visually impaired users navigate their phone hands-free.</string>
+    <string name="app_name">JARVIS AI</string>
+    <style name="Theme.Jarvis" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#00d4ff</item>
+        <item name="colorPrimaryVariant">#0088cc</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorSecondary">#00d4ff</item>
+        <item name="android:statusBarColor">#1a1a2e</item>
+        <item name="android:navigationBarColor">#1a1a2e</item>
+    </style>
+</resources>

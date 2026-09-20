@@ -221,10 +221,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 launchApp(packageName)
             }
             "go_back" -> {
-                performGlobalAction(GLOBAL_ACTION_BACK)
+                JarvisService.instance?.goBack()
             }
             "go_home" -> {
-                performGlobalAction(GLOBAL_ACTION_HOME)
+                JarvisService.instance?.goHome()
             }
             "read_screen" -> {
                 readScreen()
@@ -233,10 +233,18 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 listButtons()
             }
             "scroll_down" -> {
-                performGlobalAction(GLOBAL_ACTION_SCROLL_FORWARD)
+                JarvisService.instance?.let { service ->
+                    service.findClickableElements().firstOrNull()?.let {
+                        service.scrollForward(it)
+                    }
+                }
             }
             "scroll_up" -> {
-                performGlobalAction(GLOBAL_ACTION_SCROLL_BACKWARD)
+                JarvisService.instance?.let { service ->
+                    service.findClickableElements().firstOrNull()?.let {
+                        service.scrollBackward(it)
+                    }
+                }
             }
             "click" -> {
                 // Find and click element
